@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import { getTheme } from './themes.js';
+import { directionalDestination } from './navigation.js';
 
 // Authored geometry, materials, motion, and layout. The destinations are content slots,
-// not a game simulation; arrow keys step between them in this exact order.
-const STOP_IDS = ['work', 'research', 'journal', 'journey', 'news'];
+// not a game simulation; arrows follow their current positions on the screen.
 const TAU = Math.PI * 2;
 const UP = new THREE.Vector3(0, 1, 0);
 
@@ -125,25 +125,45 @@ function buildSea(group) {
   const ocean = kit.mesh(new THREE.PlaneGeometry(400, 400, 70, 70), water, 0, -0.13, 0);
   ocean.rotation.x = -Math.PI / 2;
   ocean.castShadow = false;
-  const positions = { work: [5.1, 0.36, 1.25], research: [0.15, 0.36, -4.45], journal: [-5.0, 0.36, -0.6], journey: [-0.35, 0.36, 4.25], news: [5.9, 0.36, -4.7] };
+  // Spread around the camera's ground-plane axes: an upper research island,
+  // two side islands, and a foreground harbor. Journal and Journey have
+  // different screen columns as well as different depths.
+  const positions = { work: [5.4, 0.36, -0.45], research: [-3.0, 0.36, -3.9], journal: [-5.2, 0.36, 1.55], journey: [1.45, 0.36, 5.1], news: [2.4, 0.36, -5.2] };
   const stops = {};
   Object.entries(positions).forEach(([id, p], i) => {
-    const radius = id === 'news' ? 1.0 : id === 'journey' ? 1.7 : 1.75;
+    const radius = id === 'news' ? 1.12 : id === 'journey' ? 1.8 : 1.85;
     kit.mesh(islandGeometry(radius + 0.23, 0.12, 67 + i), sand, p[0], -0.09, p[2]);
     kit.mesh(islandGeometry(radius, 0.36, 67 + i), cutStone, p[0], -0.04, p[2]);
     kit.mesh(islandGeometry(radius * 0.92, 0.11, 67 + i), limestone, p[0], 0.31, p[2]);
     attachStop(kit, stops, id, p, id === 'news' ? 3.9 : 2.65, glow);
   });
+  // Scale each coherent landmark assembly around its own island, preserving
+  // doors, mullions, and support spacing. The map gains room without losing
+  // the readable ceramic objects that give each destination its identity.
+  const finishLandmark = (position, start, scale = 1.12) => {
+    const pieces = group.children.slice(start);
+    const landmark = new THREE.Group();
+    landmark.position.set(...position);
+    pieces.forEach((piece) => {
+      piece.position.sub(landmark.position);
+      landmark.add(piece);
+    });
+    landmark.scale.setScalar(scale);
+    group.add(landmark);
+  };
   // A terraced studio: a pergola, a colored door, and a low parapet.
   const w = positions.work;
+  let landmarkStart = group.children.length;
   kit.box(1.7, 0.9, 1.2, white, w[0], 0.98, w[2]);
   kit.box(1.86, 0.1, 1.36, limestone, w[0], 1.49, w[2]);
   kit.box(0.35, 0.64, 0.04, ink, w[0] + 0.43, 0.84, w[2] + 0.622);
   kit.box(0.52, 0.35, 0.04, glass, w[0] - 0.42, 1.0, w[2] + 0.622);
   for (let i = 0; i < 7; i++) kit.box(0.065, 0.065, 0.9, brass, w[0] - 0.67 + i * 0.2, 1.72, w[2] + 0.3);
   [-0.7, 0.7].forEach((x) => kit.box(0.04, 0.3, 0.04, brass, w[0] + x, 1.61, w[2] + 0.66));
+  finishLandmark(w, landmarkStart);
   // Observatory with an open dome slit and a precise telescope, not a stock icon.
   const r = positions.research;
+  landmarkStart = group.children.length;
   kit.cylinder(0.85, 0.85, 0.65, white, r[0], 0.8, r[2]);
   const dome = kit.mesh(new THREE.SphereGeometry(0.88, 32, 16, 0.13, TAU - 0.27, 0, Math.PI / 2), ink, r[0], 1.12, r[2]);
   dome.rotation.y = -0.6;
@@ -153,8 +173,10 @@ function buildSea(group) {
   kit.cylinder(0.12, 0.12, 0.95, brass, 0, 0.35, 0, telescope);
   kit.cylinder(0.15, 0.15, 0.08, glass, 0, 0.85, 0, telescope);
   group.add(telescope);
+  finishLandmark(r, landmarkStart);
   // Journal courtyard and cypress: a quiet outdoor desk rather than another building.
   const j = positions.journal;
+  landmarkStart = group.children.length;
   kit.box(1.75, 0.22, 1.65, white, j[0], 0.59, j[2]);
   kit.box(1.75, 0.63, 0.11, limestone, j[0], 0.95, j[2] - 0.76);
   kit.box(0.82, 0.06, 0.48, brass, j[0], 1.05, j[2] + 0.18);
@@ -164,14 +186,18 @@ function buildSea(group) {
   kit.cylinder(0.15, 0.22, 0.3, limestone, j[0] + 0.74, 0.85, j[2] - 0.35);
   const cypress = kit.sphere(0.45, ink, j[0] + 0.74, 1.57, j[2] - 0.35);
   cypress.scale.set(0.5, 1.8, 0.5);
+  finishLandmark(j, landmarkStart, 1.08);
   // Harbor steps, a pier, and mooring posts.
   const h = positions.journey;
+  landmarkStart = group.children.length;
   for (let i = 0; i < 4; i++) kit.box(1.7 - i * 0.2, 0.09, 0.5, white, h[0], 0.15 + i * 0.1, h[2] + 0.92 - i * 0.31);
   kit.box(0.56, 0.08, 1.25, brass, h[0] + 0.72, 0.18, h[2] + 1.35);
   [-0.18, 0.18].forEach((x) => kit.cylinder(0.04, 0.04, 0.38, ink, h[0] + 0.72 + x, 0.2, h[2] + 1.86));
   kit.ring(0.61, 0.035, ink, h[0] - 0.34, 0.57, h[2] - 0.3);
+  finishLandmark(h, landmarkStart, 1.08);
   // News lighthouse; its slow beam gives the world a distinct, legible motion.
   const n = positions.news;
+  landmarkStart = group.children.length;
   kit.cylinder(0.27, 0.43, 2.1, white, n[0], 1.46, n[2]);
   kit.cylinder(0.36, 0.36, 0.08, brass, n[0], 2.51, n[2]);
   kit.cylinder(0.23, 0.23, 0.34, glass, n[0], 2.72, n[2]);
@@ -182,6 +208,7 @@ function buildSea(group) {
   const lightBeam = kit.mesh(new THREE.ConeGeometry(0.46, 3, 24, 1, true), kit.mat('#93e9da', { transparent: true, opacity: 0.075, depthWrite: false, side: THREE.DoubleSide }), 1.5, 0, 0, beacon);
   lightBeam.rotation.z = Math.PI / 2;
   group.add(beacon);
+  finishLandmark(n, landmarkStart, 1.08);
   // A tiny sailboat, with a curved ceramic hull and cotton sail.
   const traveler = new THREE.Group();
   const hull = kit.sphere(0.42, white, 0, 0.14, 0, traveler);
@@ -194,7 +221,7 @@ function buildSea(group) {
   sail.rotation.y = Math.PI / 2;
   group.add(traveler);
   return {
-    kit, stops, traveler, background: '#071d27', fog: ['#071d27', 29, 61], camera: [12.75, 10.625, 16.15], target: [0, 0.1, 0],
+    kit, stops, traveler, background: '#071d27', fog: ['#071d27', 29, 61], camera: [11.5, 11.4, 14.5], target: [0, 0.1, 0],
     travelPoint(id) { const p = stops[id].position; return new THREE.Vector3(p.x, 0, p.z + 1.9); },
     animate(time) {
       water.uniforms.uTime.value = time;
@@ -214,7 +241,7 @@ function buildOrbital(group) {
   const amber = kit.mat('#e6bf85', { emissive: '#98734b', emissiveIntensity: 0.25 });
   const glass = kit.mat('#77b6ce', { metalness: 0.7, roughness: 0.12 });
   const stops = {};
-  const positions = { work: [4.6, 1.05, 1.35], research: [0.5, 2, -4.3], journal: [-4.8, 0.5, -1.35], journey: [-0.6, 0, 4.6], news: [5.5, 0.4, -5.4] };
+  const positions = { work: [5.28, 1.05, -0.96], research: [-4.36, 2, -3.98], journal: [-5.34, 0.5, 2.38], journey: [1.76, 0, 4.68], news: [2.04, 0.4, -5.78] };
   // Fine illuminated rails describe an authored constellation, not sea islands.
   [['journey', 'journal'], ['journal', 'research'], ['research', 'news'], ['news', 'work'], ['work', 'journey']].forEach(([a, b]) => {
     const p = positions[a]; const q = positions[b];
@@ -226,7 +253,10 @@ function buildOrbital(group) {
     kit.cylinder(radius, radius * 0.78, 0.18, ceramic, p[0], p[1] - 0.18, p[2]);
     kit.cylinder(radius * 0.64, radius * 0.85, 0.4, graphite, p[0], p[1] - 0.46, p[2]);
     kit.ring(radius + 0.09, 0.018, glow, p[0], p[1] - 0.12, p[2]);
-    attachStop(kit, stops, id, p, p[1] + (id === 'research' ? 2.65 : 1.95), glow);
+    // Raise the dish's label above its antenna so News and the workshop remain
+    // clearly separate on narrow screens, without shrinking the station.
+    const labelHeight = id === 'research' ? 2.65 : id === 'news' ? 2.75 : 1.95;
+    attachStop(kit, stops, id, p, p[1] + labelHeight, glow);
   });
   const w = positions.work;
   kit.box(1.5, 0.8, 1.1, ceramic, w[0], w[1] + 0.5, w[2]);
@@ -290,7 +320,7 @@ function buildOrbital(group) {
   engine.rotation.x = Math.PI / 2;
   group.add(traveler);
   return {
-    kit, stops, traveler, background: '#090f23', fog: ['#090f23', 37, 79], camera: [15, 11, 20], target: [0, 0.5, 0],
+    kit, stops, traveler, background: '#090f23', fog: ['#090f23', 37, 79], camera: [13, 12.5, 17.33], target: [0, 0.5, 0],
     travelPoint(id) { const p = stops[id].position; return new THREE.Vector3(p.x, p.y + 0.72, p.z + 1.6); },
     animate(time) {
       instrument.rotation.y = time * 0.17;
@@ -316,17 +346,38 @@ function buildWoodland(group) {
   const glow = kit.mat('#deefac', { emissive: '#c1d780', emissiveIntensity: 0.75 });
   const glass = kit.mat('#a4d2bc', { transparent: true, opacity: 0.18, roughness: 0.08, metalness: 0.15, depthWrite: false, side: THREE.DoubleSide });
   const stops = {};
-  const positions = { work: [4.8, 0.16, 1.2], research: [0.05, 0.16, -4.1], journal: [-4.7, 0.16, -1.5], journey: [-0.3, 0.16, 4.4], news: [5.5, 0.16, -4.6] };
-  const land = kit.cylinder(10, 9.8, 0.4, earth, 0, -0.22, 0, group, 96);
-  land.scale.z = 0.82;
-  const under = kit.cylinder(9.8, 8.8, 0.45, dark, 0, -0.62, 0, group, 96);
-  under.scale.z = 0.82;
+  const positions = { work: [5.35, 0.16, -0.35], research: [-2.8, 0.16, -4.4], journal: [-5.35, 0.16, 1.55], journey: [1.65, 0.16, 5.0], news: [2.5, 0.16, -5.45] };
+  const land = kit.cylinder(10.5, 10.2, 0.4, earth, 0, -0.22, 0, group, 96);
+  land.scale.z = 0.86;
+  const under = kit.cylinder(10.2, 9.2, 0.45, dark, 0, -0.62, 0, group, 96);
+  under.scale.z = 0.86;
   Object.entries(positions).forEach(([id, p]) => {
     const clearing = kit.cylinder(id === 'journey' ? 1.45 : 1.65, 1.55, 0.05, moss, p[0], 0.02, p[2]);
     clearing.scale.z = 0.85;
     const rim = kit.ring(1.5, 0.012, path, p[0], 0.07, p[2]);
-    rim.scale.y = 0.85;
+    rim.scale.z = 0.85;
     attachStop(kit, stops, id, p, id === 'news' ? 3.8 : 2.5, glow);
+  });
+  const trailRoutes = [
+    ['journey', 'journal', [-1.8, 0.085, 3.25]],
+    ['journey', 'work', [4.3, 0.085, 3.4]],
+    ['journal', 'research', [-5.45, 0.085, -1.6]],
+    ['research', 'news', [-0.1, 0.085, -6.1]],
+    ['news', 'work', [5.15, 0.085, -3.1]],
+  ];
+  const trailCurves = trailRoutes.map(([from, to, bend]) => {
+    const a = positions[from]; const b = positions[to];
+    return new THREE.CatmullRomCurve3([
+      new THREE.Vector3(a[0], 0.085, a[2]),
+      new THREE.Vector3(...bend),
+      new THREE.Vector3(b[0], 0.085, b[2]),
+    ]);
+  });
+  trailCurves.forEach((curve) => {
+    const trail = kit.mesh(new THREE.TubeGeometry(curve, 32, 0.075, 6, false), path);
+    trail.scale.y = 0.18;
+    trail.position.y = 0.055;
+    trail.castShadow = false;
   });
   // Meandering narrow creek, drawn as a flat ribbon, with small stepping stones.
   const stream = new THREE.CatmullRomCurve3([
@@ -354,7 +405,8 @@ function buildWoodland(group) {
     const angle = random() * TAU;
     const radius = Math.sqrt(random()) * 9.0;
     const x = Math.cos(angle) * radius; const z = Math.sin(angle) * radius * 0.8;
-    if (Object.values(positions).some((p) => Math.hypot(p[0] - x, p[2] - z) < 2.05)) continue;
+    if (Object.values(positions).some((p) => Math.hypot(p[0] - x, p[2] - z) < 2.2)) continue;
+    if (trailCurves.some((curve) => curve.getPoints(12).some((p) => Math.hypot(p.x - x, p.z - z) < 0.75))) continue;
     if (z > 2 && Math.abs(x) < 5.5) continue; // Keep the reading foreground open.
     const scale = 0.65 + random() * 0.6;
     const trunk = kit.mesh(trunkGeometry, timber, x, 0.7 * scale, z);
@@ -420,7 +472,7 @@ function buildWoodland(group) {
   const halo = kit.sphere(0.24, kit.mat('#d6ed9d', { transparent: true, opacity: 0.035, depthWrite: false }), 0, 0, 0, traveler);
   group.add(traveler);
   return {
-    kit, stops, traveler, background: '#0c2427', fog: ['#0c2427', 24, 48], camera: [15, 13, 20], target: [0, 0.3, 0],
+    kit, stops, traveler, background: '#0c2427', fog: ['#0c2427', 24, 48], camera: [13, 13.5, 17.33], target: [0, 0.3, 0],
     travelPoint(id) { const p = stops[id].position; return new THREE.Vector3(p.x, 1.18, p.z + 1.32); },
     animate(time) {
       wings.forEach((wing, i) => { wing.rotation.z = Math.sin(time * 15) * (i ? -0.2 : 0.2); });
@@ -489,6 +541,7 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   let transition = null;
   let width = 1;
   let height = 1;
+  let lastArrowAt = -Infinity;
   const labelPosition = new THREE.Vector3();
   const canDraw = () => !destroyed && !contextLost && inView && !document.hidden && width > 1 && height > 1;
   const moving = () => motionRequested && !reducedMotion.matches;
@@ -551,16 +604,19 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     camera.updateProjectionMatrix();
     // Fit projected labels as well as objects. A wide desktop composition should
     // never push the lighthouse or its button out of a narrow mobile frame.
-    const padding = Math.min(45, width * 0.14);
+    const padding = Math.min(24, width * 0.06);
     for (let attempt = 0; attempt < 14; attempt++) {
       camera.position.set(...world.camera).multiplyScalar(scale);
       camera.lookAt(...world.target);
       camera.updateMatrixWorld();
-      const fits = Object.values(world.stops).every((stop) => {
+      const fits = labels.every(({ element, id }) => {
+        const stop = world.stops[id];
         labelPosition.copy(stop.label).project(camera);
         const x = (labelPosition.x * 0.5 + 0.5) * width;
         const y = (-labelPosition.y * 0.5 + 0.5) * height;
-        return x >= padding && x <= width - padding && y >= 56 && y <= height - 80;
+        const halfWidth = element.offsetWidth / 2;
+        const halfHeight = element.offsetHeight / 2;
+        return x - halfWidth >= padding && x + halfWidth <= width - padding && y - halfHeight >= 76 && y + halfHeight <= height - 88;
       });
       if (fits) break;
       scale *= 1.08;
@@ -570,6 +626,7 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
 
   function select(id) {
     if (destroyed || !world?.stops[id]) return;
+    if (selectedId === id && transition) return;
     selectedId = id;
     const target = world.travelPoint(id);
     if (moving() && canDraw()) transition = { from: world.traveler.position.clone(), to: target, progress: 0 };
@@ -583,7 +640,7 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   }
 
   function announce() {
-    onStatus({ ready: true, message: 'Explore: arrow keys step between destinations, Enter opens one, Escape returns to the page. Travel is decorative; the reading view opens immediately.' });
+    onStatus({ ready: true, message: 'Click a landmark or the background to explore. Arrows follow the map; Enter reads the selected destination; Escape leaves the map.' });
   }
 
   function setTheme(id) {
@@ -607,8 +664,14 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
       element.className = 'world-label';
       element.textContent = stop.label;
       element.dataset.destination = stop.id;
-      element.setAttribute('aria-label', `Open ${stop.label}`);
-      element.addEventListener('click', () => activate(stop.id, true));
+      element.setAttribute('aria-label', `Visit ${stop.label}`);
+      element.addEventListener('click', event => {
+        // Native keyboard activation opens the reader. A pointer visit stays in
+        // the map so the next arrow keeps exploration going.
+        const openReader = event.detail === 0;
+        activate(stop.id, openReader);
+        if (!openReader) mount.focus({ preventScroll: true });
+      });
       mount.append(element);
       labels.push({ element, id: stop.id });
     });
@@ -628,25 +691,44 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   }
 
   function handleKey(event) {
-    if (event.target !== mount || document.activeElement !== mount) return;
+    if (destroyed || contextLost || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    const focusedLabel = event.target.closest?.('.world-label');
+    if (!mount.contains(document.activeElement) || (event.target !== mount && !focusedLabel)) return;
     if (event.key === 'Escape') {
       event.preventDefault();
       mount.blur();
       onExit();
       return;
     }
-    const order = STOP_IDS.filter((id) => destinations.some((stop) => stop.id === id));
-    if (event.key === 'Enter') {
+    if (event.key === 'Enter' && event.target === mount) {
       event.preventDefault();
       if (!event.repeat) activate(selectedId, true);
       return;
     }
-    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key) || !order.length) return;
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) return;
     event.preventDefault();
-    if (event.repeat) return;
-    const offset = event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 1;
-    const current = Math.max(0, order.indexOf(selectedId));
-    activate(order[(current + offset + order.length) % order.length]);
+    const now = performance.now();
+    if (event.repeat && now - lastArrowAt < 180) return;
+    lastArrowAt = now;
+    const originId = focusedLabel?.dataset.destination || selectedId;
+    const points = labels.map(({ element, id }) => {
+      labelPosition.copy(world.stops[id].label).project(camera);
+      const x = (labelPosition.x * 0.5 + 0.5) * width;
+      const y = (-labelPosition.y * 0.5 + 0.5) * height;
+      return { id, x, y, visible: labelPosition.z > -1 && labelPosition.z < 1 && x >= 0 && x <= width && y >= 0 && y <= height && !element.hidden };
+    });
+    const next = directionalDestination(points, originId, event.key);
+    if (next) {
+      activate(next);
+      if (focusedLabel) labels.find(label => label.id === next)?.element.focus({ preventScroll: true });
+    } else {
+      const direction = event.key.slice(5).toLowerCase();
+      onStatus({ ready: true, message: `No landmark farther ${direction}. Try another arrow, or press Enter to read this destination.` });
+    }
+  }
+
+  function handleBackgroundPointer(event) {
+    if (!destroyed && !contextLost && event.target === renderer.domElement && event.button === 0) mount.focus({ preventScroll: true });
   }
 
   function handleVisibility() {
@@ -665,6 +747,7 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   }
   function handleWindowBlur() { previousTimestamp = 0; }
   mount.addEventListener('keydown', handleKey);
+  mount.addEventListener('pointerdown', handleBackgroundPointer);
   mount.addEventListener('blur', handleWindowBlur);
   window.addEventListener('blur', handleWindowBlur);
   document.addEventListener('visibilitychange', handleVisibility);
@@ -687,6 +770,7 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     resizeObserver.disconnect();
     intersectionObserver.disconnect();
     mount.removeEventListener('keydown', handleKey);
+    mount.removeEventListener('pointerdown', handleBackgroundPointer);
     mount.removeEventListener('blur', handleWindowBlur);
     window.removeEventListener('blur', handleWindowBlur);
     document.removeEventListener('visibilitychange', handleVisibility);

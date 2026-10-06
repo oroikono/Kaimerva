@@ -22,7 +22,7 @@ test('real build and HTTP provider exclude drafts, preserve empty updates and re
   let server;
   try {
     for (const dir of ['src','scripts','data']) await mkdir(path.join(temporary, dir));
-    for (const file of ['package.json','index.html','LICENSE','src/main.js','src/content.js','src/world.js','src/themes.js','src/styles.css','scripts/build.mjs','scripts/serve.mjs','data/assets.json']) await copyFile(path.join(root, file), path.join(temporary, file));
+    for (const file of ['package.json','index.html','LICENSE','src/main.js','src/content.js','src/world.js','src/navigation.js','src/themes.js','src/styles.css','scripts/build.mjs','scripts/serve.mjs','data/assets.json']) await copyFile(path.join(root, file), path.join(temporary, file));
     await symlink(path.join(root, 'node_modules'), path.join(temporary, 'node_modules'), 'dir');
     const input = JSON.parse(await readFile(path.join(root, 'data/site.json'), 'utf8'));
     input.items[1].published = false; input.items[1].body = 'PRIVATE_DRAFT_SENTINEL';

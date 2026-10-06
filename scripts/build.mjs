@@ -17,7 +17,7 @@ export async function build() {
   await rm(output, { recursive: true, force: true });
   await mkdir(path.join(output, 'src'), { recursive: true });
   await mkdir(path.join(output, 'vendor'), { recursive: true });
-  const files = ['index.html', 'LICENSE', 'src/main.js', 'src/content.js', 'src/world.js', 'src/themes.js', 'src/styles.css'];
+  const files = ['index.html', 'LICENSE', 'src/main.js', 'src/content.js', 'src/world.js', 'src/navigation.js', 'src/themes.js', 'src/styles.css'];
   for (const file of files) await copyFile(path.join(root, file), path.join(output, file));
   await writeFile(path.join(output, 'content.json'), JSON.stringify(publicSnapshot(snapshot), null, 2) + '\n');
   await copyFile(path.join(root, 'data/assets.json'), path.join(output, 'assets.json'));
