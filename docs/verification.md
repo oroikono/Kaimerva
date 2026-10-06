@@ -39,6 +39,7 @@ This record separates executable checks from design intentions and host compatib
 - Five clockwise moves in voyage view kept the selected stop reachable, including the wrap. An offscreen selected stop receives a directional edge label. Enter opened the reader. F/V toggled the field/camera from world focus and synchronized the visible controls.
 - Responsive viewport checks at 320 × 844 and 390 × 844 found no horizontal document overflow. At 390 × 844 all five atlas labels were visible and bounded after the camera settled; the field controls and readable entry fitted the phone layout. These are viewport checks, not physical-device tests.
 - Browser review found and corrected a bubbling theme handler that reset controls on unrelated clicks, an invisible instrument mesh receiving ray hits, and a context-loss resize path that could restore stale labels. Context loss itself was reviewed in source, not induced in the browser.
+- All eleven tests and the bounded source/provenance check passed for the final source. GitHub Pages reported the exact observatory deployment as built. A live reload loaded its new versioned entrypoint; F/V synchronized the field and camera controls, Right selected News from Journey while retaining world focus, and the browser reported no warnings or errors. The sea screenshot was saved from this public deployment.
 
 ## Limits
 
