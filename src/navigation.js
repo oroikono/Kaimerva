@@ -1,27 +1,21 @@
-const directions = {
-  ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1],
-};
+/** Right/Down follow the clockwise loop; Left/Up retrace it. */
+export function cycleDirection(key) {
+  if (key === 'ArrowRight' || key === 'ArrowDown') return 1;
+  if (key === 'ArrowLeft' || key === 'ArrowUp') return -1;
+  return 0;
+}
 
-/** Choose a visible neighbor in screen space. An edge stays an edge; no wrapping. */
-export function directionalDestination(points, originId, key) {
-  const axis = directions[key];
-  const usable = points.filter(point => point.visible !== false && Number.isFinite(point.x) && Number.isFinite(point.y));
-  const origin = usable.find(point => point.id === originId);
-  if (!axis || !origin) return null;
-  let best = null;
-  let bestScore = Infinity;
-  for (const point of usable) {
-    if (point.id === originId) continue;
-    const dx = point.x - origin.x;
-    const dy = point.y - origin.y;
-    const forward = dx * axis[0] + dy * axis[1];
-    if (forward <= 1) continue;
-    const sideways = Math.abs(dx * axis[1] - dy * axis[0]);
-    const score = Math.hypot(dx, dy) * (1 + 2 * (sideways / forward) ** 2);
-    if (score < bestScore || (score === bestScore && point.id < best.id)) {
-      best = point;
-      bestScore = score;
-    }
-  }
-  return best?.id || null;
+export function cyclicDestination(order, originId, key) {
+  const direction = cycleDirection(key);
+  const index = order.indexOf(originId);
+  if (!direction || index < 0 || order.length < 2) return null;
+  return order[(index + direction + order.length) % order.length];
+}
+
+/** Unwrap a closed route without teleporting an in-flight traveler at the seam. */
+export function targetPhase(current, index, count, direction = 0) {
+  if (!Number.isFinite(current) || !Number.isInteger(count) || count < 1 || !Number.isInteger(index) || index < 0 || index >= count) return null;
+  if (direction > 0) return index + Math.ceil((current - index) / count) * count;
+  if (direction < 0) return index + Math.floor((current - index) / count) * count;
+  return index + Math.round((current - index) / count) * count;
 }

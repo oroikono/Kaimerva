@@ -28,7 +28,7 @@ npm ci
 npm run dev
 ```
 
-Open **http://127.0.0.1:4310**. Switch between the coast, orbital field, and woodland trail. Click a landmark or the background to explore, or use the readable index. **Explore with arrows** also focuses the world: arrows move toward landmarks in that direction on the screen, Enter opens the selected entry, and Escape returns to the page. Map edges do not wrap. Holding an arrow repeats at a bounded pace; keyboard Enter/Space on a landmark opens its entry directly. This starter uses destination navigation; it does not include free steering or a collision simulation.
+Open **http://127.0.0.1:4310**. Switch between the coast, orbital field, and woodland trail. Click a landmark or the background to explore, or use the readable index. **Explore the loop** also focuses the world: Right/Down move clockwise to the adjacent stop, Left/Up go counterclockwise, Enter opens the selected entry, and Escape returns to the page. The last stop connects back to the first. The traveler follows the visible curved route; pointer visits take its shortest arc. Holding an arrow repeats at a bounded pace; keyboard Enter/Space on a landmark opens its entry directly. This starter uses destination navigation; it does not include free steering or a collision simulation.
 
 ```sh
 npm test         # Content validation and real build/server publication checks

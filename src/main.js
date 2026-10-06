@@ -65,7 +65,7 @@ function activate(id, fromWorld = false) {
 }
 const world = createWorld({
   mount, themeId: 'sea', destinations: collections,
-  onVisit: (id, { openReader } = {}) => { activate(id, true); const label = collections.find(item => item.id === id)?.label; status.textContent = openReader ? `${label} opened in the readable index.` : `${label} selected. Use the arrows to move across the map; press Enter to read.`; if (openReader) focusReader(); },
+  onVisit: (id, { openReader } = {}) => { activate(id, true); const label = collections.find(item => item.id === id)?.label; status.textContent = openReader ? `${label} opened in the readable index.` : `${label} selected. Right / Down go clockwise; Left / Up go back; Enter reads this stop.`; if (openReader) focusReader(); },
   onStatus: ({ ready, message }) => {
     sceneReady = ready;
     byId('explore').disabled = !ready;
@@ -87,7 +87,7 @@ function syncMotion() {
 syncMotion();
 byId('motion').addEventListener('click', () => { paused = !paused; syncMotion(); });
 reducedMotion.addEventListener('change', syncMotion);
-byId('explore').addEventListener('click', () => { mount.focus({ preventScroll: true }); status.textContent = 'Arrows move to a landmark in that direction on the map. Enter reads it. Escape returns to this button.'; });
+byId('explore').addEventListener('click', () => { mount.focus({ preventScroll: true }); status.textContent = 'Right / Down follow the loop clockwise. Left / Up go back. Enter reads the selected stop. Escape returns to this button.'; });
 for (const button of document.querySelectorAll('[data-theme]')) {
   button.addEventListener('click', () => {
     const theme = themePresets.find(item => item.id === button.dataset.theme);
