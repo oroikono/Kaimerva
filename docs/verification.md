@@ -19,7 +19,8 @@ This record separates executable checks from design intentions and host compatib
 - A temporary edit to the source JSON appeared through Refresh content without a build, and the original fixture was restored and refreshed. The static production snapshot distinction remains documented.
 - Source/provenance checks allow only the three authored JPEG screenshots as release binaries. Public output uses an explicit file allowlist, strips drafts, and copies the installed Three.js MIT notice.
 - WebGL creation/context-loss fallback, reduced-motion preference enforcement, offscreen/hidden animation suspension, resource disposal, and BFCache preservation were inspected in source. Their browser failure/preference states were not induced during this check.
+- The independent repository was initialized, committed, and published as `oroikono/personal-worlds`. GitHub metadata confirms public visibility, template status, and MIT recognition. A separate reviewed build was deployed on GitHub Pages; the live sea scene and example content loaded at the project subdirectory. The sea screenshot captures that public demo.
 
 ## Limits
 
-No real Claude Code invocation, multi-browser/mobile-device matrix, live CMS account, server-rendered content integration, public hosting, or third-party media rights clearance is claimed. Reduced-motion and context-loss behavior may be inspected separately from any browser-tested controls; do not infer one from the other. No guaranteed frame rate, unique design or GitHub popularity is promised.
+No real Claude Code invocation, multi-browser/mobile-device matrix, live CMS account, server-rendered content integration, or third-party media rights clearance is claimed. The public demo is a static snapshot. Reduced-motion and context-loss behavior may be inspected separately from any browser-tested controls; do not infer one from the other. No guaranteed frame rate, unique design or GitHub popularity is promised.

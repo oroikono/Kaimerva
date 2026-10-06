@@ -4,6 +4,8 @@
 
 Built by [Orestis Oikonomou](https://orestis-site.vercel.app), from the practical work of making a research, projects, and personal-life portfolio feel like a place.
 
+**[Try the live demo](https://oroikono.github.io/personal-worlds/)** · **[Use this template](https://github.com/oroikono/personal-worlds/generate)** · **[Read the skill](skills/build-personal-world/SKILL.md)**
+
 ![The archipelago starter](docs/assets/sea.jpg)
 
 Your setting could be a coast, a station in orbit, a forest, a desert observatory, or something else entirely. Its objects, materials, motion, and navigation should express your story. The readable work and updates remain separate from the scenery.
@@ -80,6 +82,8 @@ In Codex, explicitly invoke `$build-personal-world`; in Claude Code use `/build-
 In the local preview, edit `data/site.json` and press **Refresh content**. The server validates the file on each request, so content edits need no rebuild. A successful empty collection stays empty; only an explicit `published: true` entry is displayed. The demo tells you when it is showing example content or a prior validated snapshot after a failed refresh.
 
 The production build is a **static snapshot**, not a hosted CMS. To update a deployed site without rebuilding it, replace its public content JSON or implement a runtime endpoint/provider. The skill includes a provider-neutral workflow; no live Notion adapter or hosting account is configured. [Content and CMS notes](docs/content.md).
+
+The public demo is hosted free on GitHub Pages from the separate `codex/demo` branch. Paths are relative so the build also works under a project subdirectory. [Hosting notes](docs/hosting.md).
 
 The demo's content is rendered in the browser. For a production personal/research website, add server/build-rendered entry pages, real identity metadata, canonical URLs, feeds and a sitemap in your chosen stack. The existing collection anchors are not a complete SEO or routing system.
 
