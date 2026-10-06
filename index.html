@@ -4,30 +4,30 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Personal Worlds: a free agent skill and starter for building a portfolio that feels like your world.">
-  <meta name="theme-color" content="#f1f0e9">
-  <title>Personal Worlds — a portfolio with a sense of place</title>
+  <meta name="theme-color" content="#09181f">
+  <title>Personal Worlds — beyond the visible</title>
   <link rel="stylesheet" href="./src/styles.css">
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
   <script type="module" src="./src/main.js"></script>
 </head>
-<body>
+<body data-theme="sea">
   <a class="skip" href="#content">Skip the world. Read the work.</a>
   <header class="masthead">
     <a class="brand" href="./" aria-label="Personal Worlds home"><span class="brand-mark" aria-hidden="true">pw.</span> <span>Personal<br>Worlds</span></a>
-    <p class="edition">An open-source field kit <span>/</span> 001</p>
+    <p class="edition">Open-source observatory <span>/</span> 001</p>
     <a href="#content" class="quiet-link">Browse the content <span aria-hidden="true">↗</span></a>
   </header>
   <main>
     <section class="intro" aria-labelledby="intro-title">
       <div class="intro-copy">
-        <p class="eyebrow"><span class="status-dot"></span> A portfolio with a sense of place</p>
-        <h1 id="intro-title">Make it<br><em>your world.</em></h1>
-        <p class="lede">Your work, ideas, and the places in between. One story. More than one way to explore it.</p>
+        <p class="eyebrow"><span class="status-dot"></span> Personal worlds / beyond the ordinary</p>
+        <h1 id="intro-title">Beyond the<br><em>visible.</em></h1>
+        <p class="lede">A place for your work, your questions, and everything still taking shape. Explore the world. Reveal its hidden field.</p>
       </div>
       <div class="theme-selector">
-        <p class="eyebrow">Choose a setting</p>
+        <p class="eyebrow">Three possible worlds</p>
         <div class="theme-options" role="group" aria-label="World setting">
-          <button data-theme="sea" aria-pressed="true"><span class="theme-number">01</span><span>Aegean coast<small>Limestone · light · open water</small></span><span aria-hidden="true">↗</span></button>
+          <button data-theme="sea" aria-pressed="true"><span class="theme-number">01</span><span>Aegean observatory<small>Open water · instruments · hidden fields</small></span><span aria-hidden="true">↗</span></button>
           <button data-theme="orbital" aria-pressed="false"><span class="theme-number">02</span><span>Orbital field<small>Instruments · arcs · distant signals</small></span><span aria-hidden="true">↗</span></button>
           <button data-theme="woodland" aria-pressed="false"><span class="theme-number">03</span><span>Woodland trail<small>Glasshouses · paths · quiet growth</small></span><span aria-hidden="true">↗</span></button>
         </div>
@@ -35,11 +35,22 @@
     </section>
 
     <section class="world-section" aria-labelledby="world-title">
-      <div class="world-bar"><div><span class="eyebrow" id="world-kicker">01 / Aegean coast</span><h2 id="world-title">Follow your curiosity.</h2></div><span class="world-tag">Procedural 3D / no downloaded models</span></div>
+      <div class="world-bar"><div><span class="eyebrow" id="world-kicker">01 / Aegean observatory</span><h2 id="world-title">An ocean. An instrument.</h2></div><span class="world-tag">An original procedural world</span></div>
       <div class="world-frame">
         <div id="world" class="world" tabindex="0" role="group" aria-label="Interactive portfolio map. Right and Down follow the circular route clockwise. Left and Up go counterclockwise. Enter reads the selected destination. Escape leaves the map." aria-describedby="scene-status"></div>
-        <div class="world-caption"><span class="mini-compass" aria-hidden="true">N ↟</span><span id="world-description">A small archipelago, with room for a life beyond the work.</span></div>
+        <div class="world-caption"><span class="mini-compass" aria-hidden="true">N ↟</span><span id="world-description">Sail a ring of limestone islands. Reveal the invisible patterns between them.</span></div>
         <div class="world-controls"><button id="explore">Explore the loop <span aria-hidden="true">↻</span></button><button id="motion" aria-pressed="false">Pause motion</button></div>
+      </div>
+      <div class="sea-instruments" id="sea-instruments" role="group" aria-label="Aegean observatory instruments">
+        <p class="instrument-label"><span class="eyebrow">Surface instrument / 01</span><span>A second way to see.</span></p>
+        <div class="instrument-actions">
+          <button id="field-toggle" aria-pressed="false" aria-controls="field-settings" disabled>Reveal the field</button>
+          <button id="view-toggle" aria-pressed="false" disabled>Voyage view</button>
+        </div>
+        <div class="field-settings" id="field-settings" hidden>
+          <div class="field-description"><p class="eyebrow">Wave interference · illustrative study</p><p id="field-description">Two wave sources overlap to form an interference pattern. Drag across the sea or adjust Wave spacing to move them closer or farther apart.</p></div>
+          <div class="field-slider"><label for="wave-spacing">Wave spacing <output id="wave-spacing-value" for="wave-spacing">0.45</output></label><input id="wave-spacing" type="range" min="0" max="1" step="0.01" value="0.45" aria-describedby="field-description" disabled><span class="slider-ends" aria-hidden="true"><span>Closer</span><span>Farther</span></span></div>
+        </div>
       </div>
       <p class="world-instructions" id="scene-status" role="status">Loading the world. Every destination is also available below.</p>
     </section>

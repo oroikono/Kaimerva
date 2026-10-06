@@ -44,3 +44,8 @@ The [Agent Skills specification](https://agentskills.io/specification) defines a
 A correctly structured skill does not prove compatibility with every agent. Record actual host invocation tests and rendering evidence rather than inferring them from a manifest or a successful file copy.
 
 No first-of-its-kind claim, guaranteed unique output or GitHub popularity prediction is made.
+
+
+## Observatory art direction
+
+The sea prototype studies the relationship between exploration and scientific instruments in [JETT's official visual gallery](https://www.jett.fyi/vis), the ocean exploration described by [ABZÛ's developer](https://giantsquidstudios.com/ABZU), and vessel/environment storytelling in [FAR: Changing Tides' developer introduction](https://news.xbox.com/en-us/2021/06/14/presenting-far-changing-tides/). These are conceptual references. Their assets, scripts, models, screenshots, music, typography and compositions are not bundled. The observatory geometry, shader, wake, controls and interface are authored for this repository. No first-of-its-kind claim is made.

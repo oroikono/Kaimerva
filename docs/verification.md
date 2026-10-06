@@ -31,6 +31,15 @@ This record separates executable checks from design intentions and host compatib
 - GitHub Pages confirmed the revised deployment built successfully. A normal reload loaded the versioned entrypoint and new cyclic scene; live Right presses visited Journey → News → Projects, and Left wrapped back to News while retaining map focus. The sea screenshot was refreshed from that public deployment.
 - The route phase remains continuous when an arrow interrupts a trip or crosses the last/first seam. Paused and reduced-motion selection is immediate. Hold-repeat throttling and manual Pause preservation across OS preference changes remain in source; a physical held-key or OS-preference-cycle test has not been performed.
 
+## Aegean observatory update
+
+- The sea builder now uses authored irregular coastlines, submerged shoals, a bronze/glass instrument, a sailor and responsive sails, and a fixed-capacity fading wake. Its two-source analytic wave field is an illustrative visual study; it is not a paper figure, fluid simulation, or validated research result. No new dependency or third-party media was added.
+- An independent actual-Three.js CPU review exercised 825 frames, finite geometry and poses, field spacing and source markers, route endpoints and wrapping, wake bounds/expiry, paused updates, teleport/time-rewind resets, and disposal of all 122 geometries and 19 materials. This establishes bounded geometry and update behavior, not GPU performance or scientific accuracy.
+- Local browser checks rendered the new field and voyage camera. Clicking the lens synchronized the button and controls; horizontal water dragging changed source spacing; native range Home/End keys reached both endpoints. These controls remained usable while paused. Theme changes reset the field and camera and hid the sea-only panel in other worlds.
+- Five clockwise moves in voyage view kept the selected stop reachable, including the wrap. An offscreen selected stop receives a directional edge label. Enter opened the reader. F/V toggled the field/camera from world focus and synchronized the visible controls.
+- Responsive viewport checks at 320 × 844 and 390 × 844 found no horizontal document overflow. At 390 × 844 all five atlas labels were visible and bounded after the camera settled; the field controls and readable entry fitted the phone layout. These are viewport checks, not physical-device tests.
+- Browser review found and corrected a bubbling theme handler that reset controls on unrelated clicks, an invisible instrument mesh receiving ray hits, and a context-loss resize path that could restore stale labels. Context loss itself was reviewed in source, not induced in the browser.
+
 ## Limits
 
 No real Claude Code invocation, multi-browser/mobile-device matrix, live CMS account, server-rendered content integration, or third-party media rights clearance is claimed. The public demo is a static snapshot. Reduced-motion and context-loss behavior may be inspected separately from any browser-tested controls; do not infer one from the other. No guaranteed frame rate, unique design or GitHub popularity is promised.

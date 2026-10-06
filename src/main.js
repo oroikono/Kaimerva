@@ -12,6 +12,25 @@ let snapshot = null;
 let paused = false;
 let request = 0;
 let sceneReady = false;
+let currentTheme = 'sea';
+let fieldEnabled = false;
+let fieldSpacing = 0.45;
+let sceneView = 'atlas';
+
+function syncInstruments() {
+  const isSea = currentTheme === 'sea';
+  byId('sea-instruments').hidden = !isSea;
+  byId('field-toggle').disabled = !sceneReady || !isSea;
+  byId('field-toggle').textContent = fieldEnabled ? 'Return to sea' : 'Reveal the field';
+  byId('field-toggle').setAttribute('aria-pressed', String(fieldEnabled));
+  byId('view-toggle').disabled = !sceneReady || !isSea;
+  byId('view-toggle').textContent = sceneView === 'voyage' ? 'Atlas view' : 'Voyage view';
+  byId('view-toggle').setAttribute('aria-pressed', String(sceneView === 'voyage'));
+  byId('field-settings').hidden = !isSea || !fieldEnabled;
+  byId('wave-spacing').disabled = !sceneReady || !isSea || !fieldEnabled;
+  byId('wave-spacing').value = String(fieldSpacing);
+  byId('wave-spacing-value').value = fieldSpacing.toFixed(2);
+}
 
 function node(tag, className, value) {
   const element = document.createElement(tag);
@@ -73,6 +92,20 @@ const world = createWorld({
     mount.tabIndex = ready ? 0 : -1;
     status.textContent = message;
     mount.classList.toggle('is-unavailable', !ready);
+    syncInstruments();
+  },
+  onFieldChange: ({ enabled, spacing }) => {
+    const changed = fieldEnabled !== enabled;
+    fieldEnabled = enabled;
+    fieldSpacing = spacing;
+    syncInstruments();
+    if (changed) status.textContent = enabled ? 'The interference field is revealed. Drag across the sea or adjust Wave spacing to explore the pattern.' : 'The ocean surface is restored.';
+  },
+  onViewChange: ({ view }) => {
+    const changed = sceneView !== view;
+    sceneView = view;
+    syncInstruments();
+    if (changed) status.textContent = view === 'voyage' ? 'Voyage view. Arrows follow the route closer to the water.' : 'Atlas view. All five stops form one circular route.';
   },
   onExit: () => byId('explore').focus(),
 });
@@ -85,19 +118,45 @@ function syncMotion() {
   byId('motion').setAttribute('aria-pressed', String(motionPaused));
 }
 syncMotion();
+syncInstruments();
 byId('motion').addEventListener('click', () => { paused = !paused; syncMotion(); });
 reducedMotion.addEventListener('change', syncMotion);
-byId('explore').addEventListener('click', () => { mount.focus({ preventScroll: true }); status.textContent = 'Right / Down follow the loop clockwise. Left / Up go back. Enter reads the selected stop. Escape returns to this button.'; });
-for (const button of document.querySelectorAll('[data-theme]')) {
+byId('explore').addEventListener('click', () => { mount.focus({ preventScroll: true }); status.textContent = `Right / Down follow the loop clockwise. Left / Up go back. Enter reads the selected stop. Escape returns to this button.${currentTheme === 'sea' ? ' F reveals the field; V changes the view.' : ''}`; });
+byId('field-toggle').addEventListener('click', () => {
+  fieldEnabled = !fieldEnabled;
+  world.setField(fieldEnabled, fieldSpacing);
+  syncInstruments();
+  status.textContent = fieldEnabled ? 'The interference field is revealed. Adjust Wave spacing to explore how two overlapping waves form a pattern.' : 'The ocean surface is restored. You can continue exploring the islands.';
+});
+byId('wave-spacing').addEventListener('input', event => {
+  fieldSpacing = Number(event.target.value);
+  byId('wave-spacing-value').value = fieldSpacing.toFixed(2);
+  world.setField(fieldEnabled, fieldSpacing);
+});
+byId('view-toggle').addEventListener('click', () => {
+  sceneView = sceneView === 'atlas' ? 'voyage' : 'atlas';
+  world.setView(sceneView);
+  syncInstruments();
+  status.textContent = sceneView === 'voyage' ? 'Voyage view. Follow the route closer to the water; arrows still move between neighboring stops.' : 'Atlas view. All five stops form one circular route.';
+});
+for (const button of document.querySelectorAll('button[data-theme]')) {
   button.addEventListener('click', () => {
     const theme = themePresets.find(item => item.id === button.dataset.theme);
     if (!theme) return;
-    for (const choice of document.querySelectorAll('[data-theme]')) choice.setAttribute('aria-pressed', String(choice === button));
+    currentTheme = theme.id;
+    fieldEnabled = false;
+    fieldSpacing = 0.45;
+    sceneView = 'atlas';
+    for (const choice of document.querySelectorAll('button[data-theme]')) choice.setAttribute('aria-pressed', String(choice === button));
     document.body.dataset.theme = theme.id;
     byId('world-kicker').textContent = `${String(themePresets.indexOf(theme) + 1).padStart(2, '0')} / ${theme.name}`;
     byId('world-description').textContent = theme.description;
+    byId('world-title').textContent = theme.title;
     world.setTheme(theme.id);
+    world.setField(false, fieldSpacing);
+    world.setView('atlas');
     world.select(selected);
+    syncInstruments();
   });
 }
 function focusReader() {
