@@ -89,53 +89,132 @@ function attachStop(kit, stops, id, position, labelHeight, accent) {
 
 function buildSea(group) {
   const kit = modelKit(group);
-  const limestone = kit.mat('#e0d5b7', { roughness: 0.9, metalness: 0.02 });
-  const cutStone = kit.mat('#ffffff', { vertexColors: true, roughness: 0.93, metalness: 0.01 });
+  const surfaceTextures = new Set();
+  // Small, deterministic material studies are authored here rather than fetched
+  // texture packs. Separate linear height maps keep the relief physically legible.
+  const materialStudy = (kind, seed) => {
+    const size = 128; const color = new Uint8Array(size * size * 4); const height = new Uint8Array(size * size * 4);
+    const hash = (x, y) => {
+      let value = Math.imul(x + seed * 131, 374761393) ^ Math.imul(y + seed * 59, 668265263);
+      value = Math.imul(value ^ (value >>> 13), 1274126177);
+      return ((value ^ (value >>> 16)) >>> 0) / 4294967295;
+    };
+    for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+      const grain = hash(x, y); const broad = hash(Math.floor(x / 8), Math.floor(y / 8));
+      let tone; let relief;
+      if (kind === 'linen') {
+        const warp = x % 4 < 2 ? 1 : 0; const weft = y % 4 < 2 ? 1 : 0;
+        tone = 0.83 + (warp + weft) * 0.055 + grain * 0.05;
+        relief = 0.22 + warp * 0.3 + weft * 0.3 + grain * 0.06;
+      } else if (kind === 'wood') {
+        const fibers = Math.sin(x * 0.42 + Math.sin(y * TAU / size) * 2.1 + broad * 0.8);
+        tone = 0.79 + fibers * 0.1 + grain * 0.065;
+        relief = 0.48 + fibers * 0.18 + grain * 0.1;
+      } else {
+        const pores = grain < 0.065 ? 0.17 : 0;
+        tone = 0.87 + broad * 0.07 + grain * 0.045 - pores;
+        relief = 0.42 + grain * 0.22 + broad * 0.12 - pores;
+      }
+      const offset = (y * size + x) * 4;
+      color.fill(Math.round(THREE.MathUtils.clamp(tone, 0, 1) * 255), offset, offset + 3); color[offset + 3] = 255;
+      height.fill(Math.round(THREE.MathUtils.clamp(relief, 0, 1) * 255), offset, offset + 3); height[offset + 3] = 255;
+    }
+    const texture = (data, colorSpace) => {
+      const result = new THREE.DataTexture(data, size, size, THREE.RGBAFormat);
+      result.colorSpace = colorSpace; result.wrapS = result.wrapT = THREE.RepeatWrapping;
+      result.magFilter = THREE.LinearFilter; result.minFilter = THREE.LinearMipmapLinearFilter;
+      result.generateMipmaps = true; result.needsUpdate = true;
+      surfaceTextures.add(result); return result;
+    };
+    return { map: texture(color, THREE.SRGBColorSpace), bumpMap: texture(height, THREE.NoColorSpace) };
+  };
+  const stoneStudy = materialStudy('stone', 71);
+  const woodStudy = materialStudy('wood', 23);
+  const linenStudy = materialStudy('linen', 41);
+  const limestone = kit.mat('#d4c6a7', { ...stoneStudy, bumpScale: 0.023, roughness: 0.94, metalness: 0 });
+  const cutStone = kit.mat('#ffffff', { ...stoneStudy, bumpScale: 0.018, vertexColors: true, roughness: 0.96, metalness: 0 });
   const sand = kit.mat('#177f91', { transparent: true, opacity: 0.35, depthWrite: false });
-  const ink = kit.mat('#142744', { metalness: 0.32, roughness: 0.36 });
-  const brass = kit.mat('#b88952', { metalness: 0.78, roughness: 0.27 });
-  const white = kit.mat('#eee7d2', { roughness: 0.68 });
-  const glass = kit.mat('#389aad', { metalness: 0.54, roughness: 0.13 });
+  const ink = kit.mat('#173547', { metalness: 0.45, roughness: 0.4 });
+  const brass = kit.mat('#ac8453', { metalness: 0.8, roughness: 0.32 });
+  const white = kit.mat('#f2e9d6', { ...stoneStudy, bumpScale: 0.007, roughness: 0.87, metalness: 0 });
+  const wood = kit.mat('#a78257', { ...woodStudy, bumpScale: 0.012, roughness: 0.79, metalness: 0 });
+  const foliage = kit.mat('#344d37', { ...stoneStudy, bumpScale: 0.012, roughness: 0.95, metalness: 0 });
+  const glass = kit.mat('#77b8c7', { metalness: 0.16, roughness: 0.12 });
   const glow = kit.mat('#8ee8db', { emissive: '#3ebbaa', emissiveIntensity: 1.2, roughness: 0.25 });
   const water = new THREE.ShaderMaterial({
     uniforms: {
       uTime: { value: 0 }, uField: { value: 0 }, uSpacing: { value: 0.5 },
-      uIslands: { value: [] }, uRadii: { value: [] },
+      uIslands: { value: [] }, uRadii: { value: [] }, uCoastPhases: { value: [] },
+      uReflection: { value: null }, uReflectionMatrix: { value: new THREE.Matrix4() },
+      uReflectionStrength: { value: 0 },
     },
-    vertexShader: `varying vec3 vWorld; uniform float uTime;
+    vertexShader: `varying vec3 vWorld; varying vec4 vReflection; uniform float uTime;
+      uniform mat4 uReflectionMatrix;
       void main() {
-        vec3 p = position;
-        float wave = sin(p.x * 0.48 + uTime * 0.36) * cos(p.y * 0.57 + uTime * 0.23);
-        p.z += wave * 0.055;
-        vec4 world = modelMatrix * vec4(p, 1.0); vWorld = world.xyz;
+        vec4 world = modelMatrix * vec4(position, 1.0);
+        vec2 p = world.xz;
+        float a = dot(p, vec2(0.94, 0.33)) * 1.6 + uTime * 0.78;
+        float b = dot(p, vec2(-0.37, 0.93)) * 2.8 - uTime * 1.03;
+        float c = dot(p, vec2(0.3, 0.88)) * 0.32 - uTime * 0.25;
+        world.y += sin(a) * 0.025 + sin(b) * 0.014 + sin(c) * 0.045;
+        vWorld = world.xyz; vReflection = uReflectionMatrix * world;
         gl_Position = projectionMatrix * viewMatrix * world;
       }`,
-    fragmentShader: `varying vec3 vWorld; uniform float uTime; uniform float uField; uniform float uSpacing;
-      uniform vec2 uIslands[5]; uniform float uRadii[5];
+    fragmentShader: `varying vec3 vWorld; varying vec4 vReflection;
+      uniform float uTime; uniform float uField; uniform float uSpacing;
+      uniform sampler2D uReflection; uniform float uReflectionStrength;
+      uniform vec2 uIslands[5]; uniform float uRadii[5]; uniform vec3 uCoastPhases[5];
+      float grain(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
       void main() {
         vec2 p = vWorld.xz;
-        float distanceFade = 1.0 - smoothstep(9.0, 24.0, length(p));
-        vec3 normal = normalize(vec3(sin(p.x * 0.63 + uTime * 0.36) * 0.07, 1.0, cos(p.y * 0.74 - uTime * 0.27) * 0.065));
+        float a = dot(p, vec2(0.94, 0.33)) * 1.6 + uTime * 0.78;
+        float b = dot(p, vec2(-0.37, 0.93)) * 2.8 - uTime * 1.03;
+        float c = dot(p, vec2(0.3, 0.88)) * 0.32 - uTime * 0.25;
+        vec2 slope = cos(a) * 0.04 * vec2(0.94, 0.33) + cos(b) * 0.0392 * vec2(-0.37, 0.93);
+        slope += cos(c) * 0.0144 * vec2(0.3, 0.88);
+        slope += sin(p * 18.0 + vec2(uTime * 0.65, -uTime * 0.43)) * 0.012;
+        vec3 normal = normalize(vec3(-slope.x, 1.0, -slope.y));
         vec3 view = normalize(cameraPosition - vWorld);
-        float fresnel = pow(1.0 - max(dot(view, normal), 0.0), 3.0);
-        float ripples = sin(p.x * 2.1 + p.y * 0.8 + uTime * 0.46) * sin(p.y * 2.9 - p.x * 0.7 - uTime * 0.31);
-        float shimmer = pow(max(ripples, 0.0), 18.0);
-        vec3 sea = mix(vec3(0.008, 0.025, 0.072), vec3(0.014, 0.115, 0.17), distanceFade);
-        sea += vec3(0.06, 0.1, 0.16) * fresnel;
-        sea += vec3(0.25, 0.37, 0.33) * shimmer * distanceFade * 0.12;
-        float shoreline = 0.0;
+        float fresnel = 0.025 + 0.975 * pow(1.0 - max(dot(view, normal), 0.0), 5.0);
+        float nearestBank = 100.0;
         for (int i = 0; i < 5; i++) {
-          float d = abs(length(p - uIslands[i]) - uRadii[i]);
-          shoreline += (1.0 - smoothstep(0.06, 0.42, d)) * 0.5;
+          vec2 relative = p - uIslands[i];
+          float angle = atan(relative.y, relative.x);
+          vec3 phases = uCoastPhases[i];
+          float irregular = 0.96 + sin(angle * 3.0 + phases.x) * 0.11 + sin(angle * 5.0 + phases.y) * 0.065 + sin(angle * 11.0 + phases.z) * 0.026;
+          float shelves = sin(angle * 13.0 + phases.x) * 0.019 + sin(angle * 23.0 + phases.y) * 0.012;
+          float edge = uRadii[i] * (irregular + shelves);
+          nearestBank = min(nearestBank, length(relative) - edge);
         }
-        sea += vec3(0.015, 0.12, 0.11) * shoreline;
+        float shallow = 1.0 - smoothstep(0.0, 1.65, nearestBank);
+        vec3 sea = mix(vec3(0.005, 0.078, 0.16), vec3(0.018, 0.27, 0.23), shallow * 0.8);
+        float caustic = pow(1.0 - abs(sin(p.x * 4.6 + sin(p.y * 3.4 + uTime * 0.4)) * sin(p.y * 4.3 + sin(p.x * 3.6 - uTime * 0.32))), 17.0);
+        sea += vec3(0.06, 0.14, 0.095) * caustic * shallow * 0.22;
+        float foamBand = exp(-abs(nearestBank - 0.06 - sin(a * 0.7) * 0.055) * 24.0);
+        float foam = foamBand * smoothstep(0.28, 0.86, grain(floor(p * 45.0)));
+        sea = mix(sea, vec3(0.62, 0.74, 0.68), foam * 0.6);
+        vec2 reflectionUV = vReflection.xy / max(vReflection.w, 0.001);
+        reflectionUV += normal.xz * (0.013 + 0.004 * sin(a));
+        float reflectionValid = smoothstep(0.01, 0.05, reflectionUV.x) * (1.0 - smoothstep(0.95, 0.99, reflectionUV.x));
+        reflectionValid *= smoothstep(0.01, 0.05, reflectionUV.y) * (1.0 - smoothstep(0.95, 0.99, reflectionUV.y));
+        vec2 reflectionSample = clamp(reflectionUV, 0.002, 0.998);
+        vec3 reflected = texture2D(uReflection, reflectionSample).rgb * 0.5;
+        reflected += texture2D(uReflection, reflectionSample + vec2(0.0009, 0.0006)).rgb * 0.25;
+        reflected += texture2D(uReflection, reflectionSample - vec2(0.0009, 0.0006)).rgb * 0.25;
+        sea = mix(sea, reflected, (0.1 + fresnel * 0.82) * uReflectionStrength * reflectionValid);
+        vec3 sunDirection = normalize(vec3(-8.0, 14.0, 7.0));
+        vec3 halfDirection = normalize(sunDirection + view);
+        float sunGlint = pow(max(dot(normal, halfDirection), 0.0), 340.0);
+        sea += vec3(1.0, 0.83, 0.61) * sunGlint * 0.75;
+        float atmospheric = 1.0 - exp(-length(cameraPosition - vWorld) * 0.0035);
+        sea = mix(sea, vec3(0.23, 0.38, 0.44), atmospheric);
         // An illustrative analytic field, not measured ocean or paper data.
         float frequency = 4.2;
         vec2 source = normalize(vec2(1.3, -0.65)) * mix(0.55, 2.55, uSpacing);
-        float a = length(p + source);
-        float b = length(p - source);
-        float interference = sin(a * frequency - uTime * 0.9) + sin(b * frequency + uTime * 0.66);
-        float fronts = pow(1.0 - abs(sin((a - b) * frequency * 0.7 - uTime * 0.19)), 16.0);
+        float sourceA = length(p + source);
+        float sourceB = length(p - source);
+        float interference = sin(sourceA * frequency - uTime * 0.9) + sin(sourceB * frequency + uTime * 0.66);
+        float fronts = pow(1.0 - abs(sin((sourceA - sourceB) * frequency * 0.7 - uTime * 0.19)), 16.0);
         float depth = 0.55 + sin(p.x * 0.43) * cos(p.y * 0.39) * 0.24 + sin(length(p) * 0.51) * 0.17;
         float contours = pow(1.0 - abs(sin(depth * 37.0)), 20.0);
         float envelope = 1.0 - smoothstep(6.3, 11.0, length(p));
@@ -150,7 +229,14 @@ function buildSea(group) {
   });
   // Keep the boundary beyond the camera's far plane; the sea must not read as
   // a rectangular tabletop. The grid density stays fixed for the same draw cost.
-  const ocean = kit.mesh(new THREE.PlaneGeometry(400, 400, 70, 70), water, 0, -0.13, 0);
+  const oceanGeometry = new THREE.PlaneGeometry(400, 400, 160, 160);
+  const oceanVertices = oceanGeometry.attributes.position;
+  // Concentrate vertices in the visible bay, while retaining a distant boundary.
+  for (let i = 0; i < oceanVertices.count; i++) {
+    oceanVertices.setXY(i, Math.pow(oceanVertices.getX(i) / 200, 3) * 200, Math.pow(oceanVertices.getY(i) / 200, 3) * 200);
+  }
+  oceanGeometry.computeBoundingSphere();
+  const ocean = kit.mesh(oceanGeometry, water, 0, -0.13, 0);
   ocean.rotation.x = -Math.PI / 2;
   ocean.castShadow = false;
   // A clockwise loop, authored in the camera's ground-plane basis. The center
@@ -167,31 +253,40 @@ function buildSea(group) {
   const stops = {};
   water.uniforms.uIslands.value = order.map((id) => new THREE.Vector2(positions[id][0], positions[id][2]));
   water.uniforms.uRadii.value = order.map((id) => id === 'news' ? 1.12 : id === 'journey' ? 1.8 : 1.85);
+  water.uniforms.uCoastPhases.value = order.map((_, i) => { const random = randomFrom(67 + i); return new THREE.Vector3(random() * TAU, random() * TAU, random() * TAU); });
   const sculptedIsland = (radius, seed) => {
     const random = randomFrom(seed);
     const phases = [random() * TAU, random() * TAU, random() * TAU];
-    const rings = [0.04, 0.38, 0.68, 0.85, 1.0, 1.035];
-    const heights = [0.45, 0.45, 0.43, 0.34, 0.035, -0.23];
-    const vertices = []; const colors = []; const indices = [];
-    const top = new THREE.Color('#e5d9b9'); const cliff = new THREE.Color('#83969c'); const wet = new THREE.Color('#325b68');
+    const segments = 80;
+    // Close pairs of terraces make erosion shelves and crisp limestone strata;
+    // the low inner relief still gives the landmark assemblies stable ground.
+    const rings = [0.23, 0.46, 0.64, 0.75, 0.8, 0.815, 0.855, 0.87, 0.9, 0.915, 0.955, 0.99, 1.045];
+    const heights = [0.47, 0.48, 0.46, 0.44, 0.43, 0.335, 0.32, 0.22, 0.21, 0.115, 0.095, -0.01, -0.25];
+    const vertices = [0, 0.47, 0]; const colors = []; const uvs = [0.5, 0.5]; const indices = [];
+    const top = new THREE.Color('#d7c9a5'); const cliff = new THREE.Color('#c0b697'); const wet = new THREE.Color('#526b64');
+    colors.push(top.r, top.g, top.b);
     const color = new THREE.Color();
-    for (let r = 0; r < rings.length; r++) for (let i = 0; i < 48; i++) {
-      const angle = i / 48 * TAU;
-      const irregular = 1 + Math.sin(angle * 3 + phases[0]) * 0.065 + Math.sin(angle * 7 + phases[1]) * 0.04;
-      const noise = Math.sin(angle * 5 + phases[2]) * 0.028 * (r > 1 ? 1 : 0.35);
-      vertices.push(Math.cos(angle) * radius * rings[r] * irregular, heights[r] + noise, Math.sin(angle) * radius * rings[r] * irregular);
-      color.copy(r < 3 ? top : r < 5 ? cliff : wet);
-      color.multiplyScalar(0.94 + Math.sin(angle * 9 + phases[0]) * 0.035);
+    for (let r = 0; r < rings.length; r++) for (let i = 0; i < segments; i++) {
+      const angle = i / segments * TAU;
+      const irregular = 0.96 + Math.sin(angle * 3 + phases[0]) * 0.11 + Math.sin(angle * 5 + phases[1]) * 0.065 + Math.sin(angle * 11 + phases[2]) * 0.026;
+      const shelfBreaks = Math.sin(angle * 13 + phases[0]) * 0.019 + Math.sin(angle * 23 + phases[1]) * 0.012;
+      const rim = radius * (rings[r] * irregular + (r > 3 ? shelfBreaks : 0));
+      const noise = Math.sin(angle * 5 + phases[2]) * (r > 3 ? 0.035 : 0.018);
+      const x = Math.cos(angle) * rim; const y = heights[r] + noise; const z = Math.sin(angle) * rim;
+      vertices.push(x, y, z); uvs.push(x * 0.53 + 0.5, z * 0.53 + y * 0.45 + 0.5);
+      color.copy(r < 4 ? top : r < 11 ? cliff : wet);
+      color.multiplyScalar((r > 4 && r % 2 === 1 ? 0.89 : 1) * (0.94 + Math.sin(angle * 9 + phases[0]) * 0.05));
       colors.push(color.r, color.g, color.b);
       if (r < rings.length - 1) {
-        const a = r * 48 + i; const b = r * 48 + (i + 1) % 48;
-        indices.push(a, b, a + 48, b, b + 48, a + 48);
+        const a = 1 + r * segments + i; const b = 1 + r * segments + (i + 1) % segments;
+        indices.push(a, b, a + segments, b, b + segments, a + segments);
       }
     }
-    for (let i = 1; i < 47; i++) indices.push(0, i + 1, i);
+    for (let i = 0; i < segments; i++) indices.push(0, 1 + (i + 1) % segments, 1 + i);
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
     geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
     geometry.setIndex(indices); geometry.computeVertexNormals();
     return geometry;
   };
@@ -200,17 +295,28 @@ function buildSea(group) {
     const shoal = kit.mesh(sculptedIsland(radius * 1.23, 67 + i), sand, p[0], -0.61, p[2]);
     shoal.castShadow = false;
     kit.mesh(sculptedIsland(radius, 67 + i), cutStone, p[0], 0, p[2]);
-    for (let rock = 0; rock < 6; rock++) {
-      const angle = rock / 6 * TAU + i * 0.73;
-      const boulder = kit.mesh(new THREE.DodecahedronGeometry(0.13 + rock % 3 * 0.035, 0), limestone, p[0] + Math.cos(angle) * radius * 0.87, 0.27, p[2] + Math.sin(angle) * radius * 0.87);
-      boulder.scale.set(1.1, 0.65 + rock % 2 * 0.4, 0.85);
-      boulder.rotation.y = angle;
+    const rockRandom = randomFrom(101 + i * 19);
+    // Unequal clusters follow the authored coast, breaking the repeated disc
+    // silhouette without adding texture downloads or unbounded instance counts.
+    for (let rock = 0; rock < 10; rock++) {
+      const angle = rock / 10 * TAU + i * 0.73 + rockRandom() * 0.18;
+      const coast = 0.81 + rockRandom() * 0.11;
+      const boulder = kit.mesh(new THREE.DodecahedronGeometry(0.1 + rockRandom() * 0.13, 1), limestone, p[0] + Math.cos(angle) * radius * coast, 0.13 + rockRandom() * 0.12, p[2] + Math.sin(angle) * radius * coast);
+      const points = boulder.geometry.attributes.position;
+      const rockPhase = rockRandom() * TAU;
+      for (let vertex = 0; vertex < points.count; vertex++) {
+        const relief = 0.95 + Math.sin(points.getX(vertex) * 31 + points.getY(vertex) * 23 + points.getZ(vertex) * 19 + rockPhase) * 0.12;
+        points.setXYZ(vertex, points.getX(vertex) * relief, points.getY(vertex) * relief, points.getZ(vertex) * relief);
+      }
+      boulder.geometry.computeVertexNormals();
+      boulder.scale.set(1.3, 0.35 + rockRandom() * 0.4, 0.75 + rockRandom() * 0.35);
+      boulder.rotation.set(rockRandom() * 0.3, angle, rockRandom() * 0.25);
     }
     attachStop(kit, stops, id, p, id === 'news' ? 3.9 : 2.65, glow);
   });
   // Scale each coherent landmark assembly around its own island, preserving
   // doors, mullions, and support spacing. The map gains room without losing
-  // the readable ceramic objects that give each destination its identity.
+  // the readable landmark silhouettes that give each destination its identity.
   const finishLandmark = (position, start, scale = 1.12) => {
     const pieces = group.children.slice(start);
     const landmark = new THREE.Group();
@@ -230,8 +336,8 @@ function buildSea(group) {
   kit.box(1.86, 0.1, 1.36, limestone, w[0], 1.49, w[2]);
   kit.box(0.35, 0.64, 0.04, ink, w[0] + 0.43, 0.84, w[2] + 0.622);
   kit.box(0.52, 0.35, 0.04, glass, w[0] - 0.42, 1.0, w[2] + 0.622);
-  for (let i = 0; i < 7; i++) kit.box(0.065, 0.065, 0.9, brass, w[0] - 0.67 + i * 0.2, 1.72, w[2] + 0.3);
-  [-0.7, 0.7].forEach((x) => kit.box(0.04, 0.3, 0.04, brass, w[0] + x, 1.61, w[2] + 0.66));
+  for (let i = 0; i < 7; i++) kit.box(0.065, 0.065, 0.9, wood, w[0] - 0.67 + i * 0.2, 1.72, w[2] + 0.3);
+  [-0.7, 0.7].forEach((x) => kit.box(0.04, 0.3, 0.04, wood, w[0] + x, 1.61, w[2] + 0.66));
   const roofWing = kit.box(1.08, 0.035, 0.83, glass, w[0] - 0.29, 1.83, w[2] - 0.13);
   roofWing.rotation.z = -0.11;
   kit.beam([w[0] - 0.78, 1.52, w[2] - 0.45], [w[0] - 0.78, 1.89, w[2] - 0.45], 0.015, brass);
@@ -259,19 +365,22 @@ function buildSea(group) {
   landmarkStart = group.children.length;
   kit.box(1.75, 0.22, 1.65, white, j[0], 0.59, j[2]);
   kit.box(1.75, 0.63, 0.11, limestone, j[0], 0.95, j[2] - 0.76);
-  kit.box(0.82, 0.06, 0.48, brass, j[0], 1.05, j[2] + 0.18);
+  kit.box(0.82, 0.06, 0.48, wood, j[0], 1.05, j[2] + 0.18);
   [-0.3, 0.3].forEach((x) => kit.box(0.06, 0.42, 0.3, ink, j[0] + x, 0.83, j[2] + 0.18));
   const book = kit.box(0.3, 0.025, 0.24, white, j[0], 1.1, j[2] + 0.18);
   book.rotation.y = 0.28;
   kit.cylinder(0.15, 0.22, 0.3, limestone, j[0] + 0.74, 0.85, j[2] - 0.35);
-  const cypress = kit.sphere(0.45, ink, j[0] + 0.74, 1.57, j[2] - 0.35);
-  cypress.scale.set(0.5, 1.8, 0.5);
+  kit.cylinder(0.025, 0.041, 0.63, wood, j[0] + 0.74, 1.21, j[2] - 0.35, group, 8);
+  for (let crown = 0; crown < 4; crown++) {
+    const cypress = kit.mesh(new THREE.IcosahedronGeometry(0.29 - crown * 0.033, 1), foliage, j[0] + 0.74, 1.3 + crown * 0.23, j[2] - 0.35);
+    cypress.scale.set(0.8, 1.28, 0.77); cypress.rotation.y = crown * 0.7;
+  }
   finishLandmark(j, landmarkStart, 1.08);
   // Harbor steps, a pier, and mooring posts.
   const h = positions.journey;
   landmarkStart = group.children.length;
   for (let i = 0; i < 5; i++) kit.box(1.25 + i * 0.1, 0.08, 0.44, white, h[0], 0.03 + i * 0.12, h[2] + 2.08 - i * 0.29);
-  kit.box(0.58, 0.08, 1.4, brass, h[0] + 0.71, 0.09, h[2] + 1.98);
+  for (let plank = 0; plank < 8; plank++) kit.box(0.58, 0.075, 0.16, wood, h[0] + 0.71, 0.09, h[2] + 1.4 + plank * 0.18);
   [-0.2, 0.2].forEach((x) => kit.cylinder(0.04, 0.04, 0.4, ink, h[0] + 0.71 + x, 0.17, h[2] + 2.56));
   kit.ring(0.61, 0.035, ink, h[0] - 0.34, 0.57, h[2] - 0.3);
   const harbor = finishLandmark(h, landmarkStart, 1.08);
@@ -286,8 +395,9 @@ function buildSea(group) {
   kit.sphere(0.12, glow, n[0], 2.72, n[2]);
   const beacon = new THREE.Group();
   beacon.position.set(n[0], 2.72, n[2]);
-  const lightBeam = kit.mesh(new THREE.ConeGeometry(0.46, 3, 24, 1, true), kit.mat('#93e9da', { transparent: true, opacity: 0.075, depthWrite: false, side: THREE.DoubleSide }), 1.5, 0, 0, beacon);
+  const lightBeam = kit.mesh(new THREE.ConeGeometry(0.46, 3, 24, 1, true), kit.mat('#93e9da', { transparent: true, opacity: 0.02, depthWrite: false, side: THREE.DoubleSide }), 1.5, 0, 0, beacon);
   lightBeam.rotation.z = Math.PI / 2;
+  lightBeam.castShadow = false;
   group.add(beacon);
   finishLandmark(n, landmarkStart, 1.08);
   // A slender bronze-trimmed sailing craft and a small, original sailor figure.
@@ -298,16 +408,35 @@ function buildSea(group) {
   hull.scale.set(0.44, 0.28, 1.37);
   const gunwale = kit.sphere(0.63, brass, 0, 0.26, 0, boatBody);
   gunwale.scale.set(0.44, 0.035, 1.35);
-  kit.box(0.39, 0.04, 1.1, ink, 0, 0.3, -0.04, boatBody);
-  kit.box(0.27, 0.035, 0.46, limestone, 0, 0.34, -0.24, boatBody);
+  kit.box(0.39, 0.04, 1.1, wood, 0, 0.3, -0.04, boatBody);
+  for (let plank = 0; plank < 4; plank++) kit.box(0.005, 0.006, 1.06, brass, -0.14 + plank * 0.092, 0.323, -0.04, boatBody);
+  kit.box(0.27, 0.035, 0.46, wood, 0, 0.34, -0.24, boatBody);
   kit.cylinder(0.015, 0.019, 1.46, brass, 0, 1.02, 0.08, boatBody, 10);
-  const sailShape = new THREE.Shape();
-  sailShape.moveTo(0.025, 0); sailShape.lineTo(0.025, 1.25); sailShape.quadraticCurveTo(0.23, 0.59, 0.73, 0); sailShape.closePath();
-  const sail = kit.mesh(new THREE.ShapeGeometry(sailShape, 24), kit.mat('#f7edd5', { side: THREE.DoubleSide, roughness: 0.92 }), 0, 0.43, 0.08, boatBody);
+  const sailGeometry = (width, height, fullness) => {
+    const segments = 14; const vertices = []; const uvs = []; const indices = []; const rows = [];
+    for (let row = 0; row <= segments; row++) {
+      const v = row / segments; const count = segments - row; rows.push(vertices.length / 3);
+      for (let column = 0; column <= count; column++) {
+        const u = count ? column / count : 0;
+        vertices.push(0.025 + width * u * (1 - v) * (1 + Math.sin(v * Math.PI) * 0.16), height * v, Math.sin(u * Math.PI) * Math.sin(v * Math.PI) * fullness);
+        uvs.push(u * (1 - v), v);
+        if (row < segments && column < count) {
+          const a = rows[row] + column; const b = a + 1;
+          const c = rows[row] + count + 1 + column;
+          indices.push(a, b, c);
+          if (column < count - 1) indices.push(b, c + 1, c);
+        }
+      }
+    }
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+    geometry.setIndex(indices); geometry.computeVertexNormals(); return geometry;
+  };
+  const sailCloth = kit.mat('#f7efd9', { ...linenStudy, bumpScale: 0.005, side: THREE.DoubleSide, roughness: 0.96, metalness: 0 });
+  const sail = kit.mesh(sailGeometry(0.73, 1.25, 0.13), sailCloth, 0, 0.43, 0.08, boatBody);
   sail.rotation.y = Math.PI / 2 + 0.1;
-  const jibShape = new THREE.Shape();
-  jibShape.moveTo(0, 0); jibShape.lineTo(0, 1.08); jibShape.quadraticCurveTo(0.2, 0.45, 0.6, 0); jibShape.closePath();
-  const jib = kit.mesh(new THREE.ShapeGeometry(jibShape, 20), kit.mat('#e8dfc6', { side: THREE.DoubleSide, roughness: 0.92 }), 0, 0.44, 0.12, boatBody);
+  const jib = kit.mesh(sailGeometry(0.6, 1.08, 0.095), sailCloth, 0, 0.44, 0.12, boatBody);
   jib.rotation.y = -Math.PI / 2 - 0.14;
   kit.beam([0, 0.45, 0.73], [0, 1.72, 0.08], 0.005, brass, boatBody);
   kit.beam([0, 0.46, -0.69], [0, 1.67, 0.08], 0.005, brass, boatBody);
@@ -337,6 +466,7 @@ function buildSea(group) {
   innerLens.rotation.set(1.35, 0.22, -0.1);
   const lensDisk = kit.mesh(new THREE.CircleGeometry(1.04, 64), kit.mat('#497f99', { transparent: true, opacity: 0.36, metalness: 0.6, roughness: 0.09, side: THREE.DoubleSide, depthWrite: false }), 0, 0, 0, instrument);
   lensDisk.rotation.copy(outerLens.rotation);
+  lensDisk.castShadow = false;
   const equator = kit.ring(0.57, 0.013, brass, 0, 0.03, 0, instrument);
   equator.rotation.set(0.4, 0.5, 1.1);
   const lensCore = kit.sphere(0.17, glow, 0, 0.03, 0, instrument);
@@ -344,6 +474,7 @@ function buildSea(group) {
   lensCrown.rotation.z = -0.15;
   const projection = kit.mesh(new THREE.ConeGeometry(1.1, 1.18, 48, 1, true), kit.mat('#64dcd2', { transparent: true, opacity: 0.1, depthWrite: false, side: THREE.DoubleSide, emissive: '#30a49e', emissiveIntensity: 0.75 }), 0, -0.6, 0, instrument);
   projection.visible = false;
+  projection.castShadow = false;
   group.add(instrument);
   const sourceMaterial = kit.mat('#a8ffdf', { emissive: '#49debc', emissiveIntensity: 1.5 });
   const sourceMarkers = [-1, 1].map((side) => {
@@ -488,7 +619,7 @@ function buildSea(group) {
       boatBody.rotation.x = Math.sin(time * 1.2) * 0.021;
       traveler.position.y = Math.sin(time * 1.6) * 0.022;
     },
-    dispose() { routeMaterial.dispose(); },
+    dispose() { routeMaterial.dispose(); surfaceTextures.forEach((texture) => texture.dispose()); },
   };
 }
 
@@ -779,6 +910,92 @@ function buildWoodland(group) {
 
 const BUILDERS = { sea: buildSea, orbital: buildOrbital, woodland: buildWoodland };
 
+// A small authored sky supplies broad, coherent environment lighting. It is
+// generated locally; no HDRI, photograph or skybox is downloaded.
+function coastalSky() {
+  const width = 512; const height = 256;
+  const pixels = new Uint8Array(width * height * 4);
+  const zenith = new THREE.Color('#528eb3');
+  const horizon = new THREE.Color('#bddce0');
+  const ground = new THREE.Color('#45606b');
+  const warm = new THREE.Color('#fff0d3');
+  const color = new THREE.Color();
+  const direction = new THREE.Vector3();
+  const sun = new THREE.Vector3(-8, 14, 7).normalize();
+  for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+    const latitude = (y / (height - 1) - 0.5) * Math.PI;
+    const longitude = (x / width - 0.5) * TAU;
+    direction.set(Math.cos(latitude) * Math.cos(longitude), Math.sin(latitude), Math.cos(latitude) * Math.sin(longitude));
+    const elevation = direction.y;
+    color.copy(elevation > 0 ? horizon : ground);
+    if (elevation > 0) color.lerp(zenith, Math.pow(elevation, 0.55));
+    const cloud = Math.sin(direction.x * 13 + direction.z * 9) * Math.sin(direction.z * 19 - direction.x * 6);
+    const veil = Math.max(0, cloud - 0.15) * 0.09 * Math.max(0, 1 - Math.abs(elevation - 0.32) * 3);
+    color.lerp(horizon, veil);
+    const glow = Math.pow(Math.max(0, direction.dot(sun)), 60) * 0.28;
+    color.lerp(warm, glow);
+    color.convertLinearToSRGB();
+    const offset = (y * width + x) * 4;
+    pixels[offset] = Math.round(color.r * 255); pixels[offset + 1] = Math.round(color.g * 255);
+    pixels[offset + 2] = Math.round(color.b * 255); pixels[offset + 3] = 255;
+  }
+  const texture = new THREE.DataTexture(pixels, width, height, THREE.RGBAFormat);
+  texture.mapping = THREE.EquirectangularReflectionMapping;
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.minFilter = THREE.LinearFilter; texture.magFilter = THREE.LinearFilter;
+  texture.needsUpdate = true;
+  return texture;
+}
+
+// Reflect a camera across the flat mean water plane. Global clipping keeps
+// submerged land out of the reflected image. The ripple shader perturbs its UVs.
+// No scene is cloned, and the pass has a fixed, modest resolution ceiling.
+function seaReflection(surface, renderer) {
+  const material = surface.material;
+  const target = new THREE.WebGLRenderTarget(512, 512, { depthBuffer: true, type: THREE.HalfFloatType });
+  target.texture.colorSpace = THREE.LinearSRGBColorSpace;
+  target.texture.generateMipmaps = false;
+  const reflectedCamera = new THREE.PerspectiveCamera();
+  const forward = new THREE.Vector3(); const aim = new THREE.Vector3();
+  const bias = new THREE.Matrix4().set(0.5, 0, 0, 0.5, 0, 0.5, 0, 0.5, 0, 0, 0.5, 0.5, 0, 0, 0, 1);
+  const clipping = [new THREE.Plane(new THREE.Vector3(0, 1, 0), -surface.position.y + 0.015)];
+  let size = 512;
+  material.uniforms.uReflection.value = target.texture;
+  return {
+    render(scene, camera, width) {
+      const requested = width < 700 ? 256 : 512;
+      if (size !== requested) { size = requested; target.setSize(size, size); }
+      const waterY = surface.position.y;
+      if (camera.position.y <= waterY) { material.uniforms.uReflectionStrength.value = 0; return; }
+      reflectedCamera.copy(camera, false);
+      reflectedCamera.position.y = 2 * waterY - camera.position.y;
+      camera.getWorldDirection(forward);
+      aim.copy(camera.position).add(forward); aim.y = 2 * waterY - aim.y;
+      reflectedCamera.up.copy(camera.up); reflectedCamera.up.y *= -1;
+      reflectedCamera.lookAt(aim); reflectedCamera.updateMatrixWorld();
+      material.uniforms.uReflectionMatrix.value.copy(bias).multiply(reflectedCamera.projectionMatrix).multiply(reflectedCamera.matrixWorldInverse);
+      const previousTarget = renderer.getRenderTarget();
+      const previousClipping = renderer.clippingPlanes;
+      const previousShadow = renderer.shadowMap.autoUpdate;
+      const wasVisible = surface.visible;
+      surface.visible = false;
+      try {
+        renderer.clippingPlanes = clipping;
+        // Shadows are generated by the main pass; a reflection need not rebuild them.
+        renderer.shadowMap.autoUpdate = false;
+        renderer.setRenderTarget(target); renderer.clear(); renderer.render(scene, reflectedCamera);
+        material.uniforms.uReflectionStrength.value = 1;
+      } finally {
+        surface.visible = wasVisible;
+        renderer.clippingPlanes = previousClipping;
+        renderer.shadowMap.autoUpdate = previousShadow;
+        renderer.setRenderTarget(previousTarget);
+      }
+    },
+    dispose() { material.uniforms.uReflection.value = null; target.dispose(); },
+  };
+}
+
 /**
  * Owns its canvas, projected HTML buttons, input listeners, and WebGL resources.
  * select() mirrors external content selection silently. Actual world interactions
@@ -797,7 +1014,7 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.12;
+  renderer.toneMappingExposure = 1.0;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.domElement.setAttribute('aria-hidden', 'true');
@@ -825,6 +1042,9 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   let motionRequested = !reducedMotion.matches && !initialTouch;
   let world;
   let worldGroup;
+  let reflection = null;
+  let skyTexture = null;
+  let skyEnvironment = null;
   let selectedId = destinations.some((stop) => stop.id === 'journey') ? 'journey' : destinations[0]?.id || 'work';
   let labels = [];
   let frame = 0;
@@ -930,6 +1150,7 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
       lastHeading = heading;
       updateCamera(dt);
     }
+    reflection?.render(scene, camera, width);
     renderer.render(scene, camera);
     updateLabels();
     invalidated = false;
@@ -1000,6 +1221,7 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     } else {
       routePhase = target; placeTraveler(routePhase, direction || 1); transition = null;
       lastTravelerPosition.copy(world.traveler.position); lastHeading = world.traveler.rotation.y;
+      renderer.shadowMap.needsUpdate = true;
       updateCamera(0, true);
     }
     invalidate();
@@ -1025,6 +1247,7 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     elapsed = 0;
     labels.forEach(({ element }) => element.remove());
     labels = [];
+    reflection?.dispose(); reflection = null;
     if (world) { world.dispose?.(); world.kit.dispose(); scene.remove(worldGroup); }
     const theme = getTheme(id);
     worldGroup = new THREE.Group();
@@ -1032,10 +1255,30 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     scene.add(worldGroup);
     scene.background = new THREE.Color(world.background);
     scene.fog = new THREE.Fog(...world.fog);
-    hemisphere.color.set(theme.id === 'orbital' ? '#b8c7ff' : theme.id === 'woodland' ? '#c9e5c2' : '#c0e3de');
-    hemisphere.intensity = theme.id === 'sea' ? 1.4 : 2.2;
-    keyLight.color.set(theme.id === 'sea' ? '#ffe0bd' : '#fff2d8');
-    fillLight.color.set(theme.id === 'sea' ? '#689bd7' : '#7dabbf');
+    if (theme.id === 'sea') {
+      if (!skyTexture) {
+        skyTexture = coastalSky();
+        const environmentGenerator = new THREE.PMREMGenerator(renderer);
+        try { skyEnvironment = environmentGenerator.fromEquirectangular(skyTexture); }
+        finally { environmentGenerator.dispose(); }
+      }
+      scene.environment = skyEnvironment.texture;
+      scene.environmentIntensity = 0.65;
+      scene.background = skyTexture;
+      scene.backgroundIntensity = 0.8;
+      scene.fog = new THREE.Fog('#91b6bd', 45, 115);
+      worldGroup.traverse(object => { if (object.isMesh && object.material.uniforms?.uReflection) reflection = seaReflection(object, renderer); });
+    } else {
+      scene.environment = null;
+      scene.backgroundIntensity = 1;
+    }
+    renderer.toneMappingExposure = theme.id === 'sea' ? 0.95 : 1.12;
+    hemisphere.color.set(theme.id === 'orbital' ? '#b8c7ff' : theme.id === 'woodland' ? '#c9e5c2' : '#badce7');
+    hemisphere.intensity = theme.id === 'sea' ? 0.8 : 2.2;
+    keyLight.color.set(theme.id === 'sea' ? '#fff1d5' : '#fff2d8');
+    keyLight.intensity = theme.id === 'sea' ? 3.6 : 3.0;
+    fillLight.color.set(theme.id === 'sea' ? '#93bed2' : '#7dabbf');
+    fillLight.intensity = theme.id === 'sea' ? 0.45 : 1.3;
     destinations.filter((stop) => world.stops[stop.id]).forEach((stop) => {
       const element = document.createElement('button');
       element.type = 'button';
@@ -1060,6 +1303,9 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     world.setField?.(fieldEnabled, fieldSpacing);
     lastTravelerPosition.copy(world.traveler.position);
     lastHeading = world.traveler.rotation.y;
+    // The first reflection of a new theme also needs that theme's shadow map,
+    // including on a coarse-pointer or manually paused initial render.
+    renderer.shadowMap.needsUpdate = true;
     resize();
     announce();
   }
@@ -1236,6 +1482,9 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     labels.forEach(({ element }) => element.remove());
     world?.dispose?.();
     world?.kit.dispose();
+    reflection?.dispose();
+    skyEnvironment?.dispose();
+    skyTexture?.dispose();
     keyLight.shadow.map?.dispose();
     renderer.dispose();
     renderer.domElement.remove();

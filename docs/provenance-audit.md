@@ -47,6 +47,10 @@ These features support a distinctive project description. They do not establish 
 
 Possible next contributions to investigate are content-specific interactive instruments derived from the author's own research, and documented rules that generate meaningful world changes from content updates. These are proposals, not implemented or verified globally novel features.
 
+## Graphics inventory extension — 2026-10-06
+
+After the audited snapshot above, the coastal graphics were expanded with AI-assisted project-authored stone/wood/linen DataTextures, an equirectangular sky/environment, deformed coastal geometry and a planar mirrored-camera reflection pass. No upstream Reflector implementation, downloaded texture, HDRI, model, font or additional dependency was bundled. The standard graphics techniques and Three.js APIs are established methods; this change does not establish a novel reflection algorithm or exclusive ownership of the visual ideas. The original audit/comparison results above remain scoped to their stated snapshot. The asset manifest records the expanded procedural inventory.
+
 ## Reuse and remaining limits
 
 [Swiss IPI guidance](https://www.ige.ch/en/protecting-your-ip/copyright/the-basics) distinguishes ideas and algorithms from protected expression such as source code, artwork and photographs. Newness or combining ideas does not establish permission for copied material. Record the exact source, license/permission, modifications and required notices for each future reused asset. Credit alone does not grant reuse rights.
