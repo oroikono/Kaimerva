@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { getTheme } from './themes.js?v=ce51c3b8040c';
-import { cycleDirection, cyclicDestination, targetPhase } from './navigation.js?v=ce51c3b8040c';
+import { getTheme } from './themes.js?v=16cca2eddc57';
+import { cycleDirection, cyclicDestination, targetPhase } from './navigation.js?v=16cca2eddc57';
 
 // Authored geometry, materials, motion, and layout. The destinations are content slots,
 // arranged along a closed route; exploration follows its neighboring stops.
@@ -89,33 +89,61 @@ function attachStop(kit, stops, id, position, labelHeight, accent) {
 
 function buildSea(group) {
   const kit = modelKit(group);
-  const limestone = kit.mat('#efe9d7');
-  const cutStone = kit.mat('#c7cdbd');
-  const sand = kit.mat('#88b9b0');
-  const ink = kit.mat('#164248');
-  const brass = kit.mat('#d6b581', { metalness: 0.65, roughness: 0.3 });
-  const white = kit.mat('#faf5e9');
-  const glass = kit.mat('#58b3b4', { metalness: 0.35, roughness: 0.2 });
-  const glow = kit.mat('#85ede0', { emissive: '#48ac9e', emissiveIntensity: 0.7 });
+  const limestone = kit.mat('#e0d5b7', { roughness: 0.9, metalness: 0.02 });
+  const cutStone = kit.mat('#ffffff', { vertexColors: true, roughness: 0.93, metalness: 0.01 });
+  const sand = kit.mat('#177f91', { transparent: true, opacity: 0.35, depthWrite: false });
+  const ink = kit.mat('#142744', { metalness: 0.32, roughness: 0.36 });
+  const brass = kit.mat('#b88952', { metalness: 0.78, roughness: 0.27 });
+  const white = kit.mat('#eee7d2', { roughness: 0.68 });
+  const glass = kit.mat('#389aad', { metalness: 0.54, roughness: 0.13 });
+  const glow = kit.mat('#8ee8db', { emissive: '#3ebbaa', emissiveIntensity: 1.2, roughness: 0.25 });
   const water = new THREE.ShaderMaterial({
-    uniforms: { uTime: { value: 0 } },
+    uniforms: {
+      uTime: { value: 0 }, uField: { value: 0 }, uSpacing: { value: 0.5 },
+      uIslands: { value: [] }, uRadii: { value: [] },
+    },
     vertexShader: `varying vec3 vWorld; uniform float uTime;
       void main() {
         vec3 p = position;
-        float wave = sin(p.x * 0.7 + uTime * 0.38) * cos(p.y * 0.52 + uTime * 0.24);
-        p.z += wave * 0.045;
+        float wave = sin(p.x * 0.48 + uTime * 0.36) * cos(p.y * 0.57 + uTime * 0.23);
+        p.z += wave * 0.055;
         vec4 world = modelMatrix * vec4(p, 1.0); vWorld = world.xyz;
         gl_Position = projectionMatrix * viewMatrix * world;
       }`,
-    fragmentShader: `varying vec3 vWorld; uniform float uTime;
+    fragmentShader: `varying vec3 vWorld; uniform float uTime; uniform float uField; uniform float uSpacing;
+      uniform vec2 uIslands[5]; uniform float uRadii[5];
       void main() {
-        float ripple = sin(vWorld.x * 2.0 + vWorld.z * 1.1 + uTime * 0.5);
-        float crossing = sin(vWorld.z * 3.0 - vWorld.x * 0.6 - uTime * 0.3);
-        float shimmer = pow(max(0.0, ripple * crossing), 14.0);
-        float distanceFade = 1.0 - smoothstep(2.0, 16.0, length(vWorld.xz));
-        vec3 water = mix(vec3(0.023, 0.078, 0.102), vec3(0.041, 0.24, 0.27), distanceFade);
-        water += vec3(0.13, 0.24, 0.23) * shimmer * distanceFade * 0.24;
-        gl_FragColor = vec4(water, 1.0);
+        vec2 p = vWorld.xz;
+        float distanceFade = 1.0 - smoothstep(9.0, 24.0, length(p));
+        vec3 normal = normalize(vec3(sin(p.x * 0.63 + uTime * 0.36) * 0.07, 1.0, cos(p.y * 0.74 - uTime * 0.27) * 0.065));
+        vec3 view = normalize(cameraPosition - vWorld);
+        float fresnel = pow(1.0 - max(dot(view, normal), 0.0), 3.0);
+        float ripples = sin(p.x * 2.1 + p.y * 0.8 + uTime * 0.46) * sin(p.y * 2.9 - p.x * 0.7 - uTime * 0.31);
+        float shimmer = pow(max(ripples, 0.0), 18.0);
+        vec3 sea = mix(vec3(0.008, 0.025, 0.072), vec3(0.014, 0.115, 0.17), distanceFade);
+        sea += vec3(0.06, 0.1, 0.16) * fresnel;
+        sea += vec3(0.25, 0.37, 0.33) * shimmer * distanceFade * 0.12;
+        float shoreline = 0.0;
+        for (int i = 0; i < 5; i++) {
+          float d = abs(length(p - uIslands[i]) - uRadii[i]);
+          shoreline += (1.0 - smoothstep(0.06, 0.42, d)) * 0.5;
+        }
+        sea += vec3(0.015, 0.12, 0.11) * shoreline;
+        // An illustrative analytic field, not measured ocean or paper data.
+        float frequency = 4.2;
+        vec2 source = normalize(vec2(1.3, -0.65)) * mix(0.55, 2.55, uSpacing);
+        float a = length(p + source);
+        float b = length(p - source);
+        float interference = sin(a * frequency - uTime * 0.9) + sin(b * frequency + uTime * 0.66);
+        float fronts = pow(1.0 - abs(sin((a - b) * frequency * 0.7 - uTime * 0.19)), 16.0);
+        float depth = 0.55 + sin(p.x * 0.43) * cos(p.y * 0.39) * 0.24 + sin(length(p) * 0.51) * 0.17;
+        float contours = pow(1.0 - abs(sin(depth * 37.0)), 20.0);
+        float envelope = 1.0 - smoothstep(6.3, 11.0, length(p));
+        vec3 field = vec3(0.015, 0.08, 0.13) + vec3(0.045, 0.43, 0.38) * fronts;
+        field += vec3(0.17, 0.12, 0.055) * contours * 0.65;
+        field += vec3(0.02, 0.13, 0.17) * (interference * 0.25 + 0.5);
+        sea = mix(sea, sea * 0.62 + field, uField * envelope);
+        gl_FragColor = vec4(sea, 1.0);
         #include <tonemapping_fragment>
         #include <colorspace_fragment>
       }`,
@@ -137,11 +165,47 @@ function buildSea(group) {
     return [id, [p.x, 0.36, p.z]];
   }));
   const stops = {};
+  water.uniforms.uIslands.value = order.map((id) => new THREE.Vector2(positions[id][0], positions[id][2]));
+  water.uniforms.uRadii.value = order.map((id) => id === 'news' ? 1.12 : id === 'journey' ? 1.8 : 1.85);
+  const sculptedIsland = (radius, seed) => {
+    const random = randomFrom(seed);
+    const phases = [random() * TAU, random() * TAU, random() * TAU];
+    const rings = [0.04, 0.38, 0.68, 0.85, 1.0, 1.035];
+    const heights = [0.45, 0.45, 0.43, 0.34, 0.035, -0.23];
+    const vertices = []; const colors = []; const indices = [];
+    const top = new THREE.Color('#e5d9b9'); const cliff = new THREE.Color('#83969c'); const wet = new THREE.Color('#325b68');
+    const color = new THREE.Color();
+    for (let r = 0; r < rings.length; r++) for (let i = 0; i < 48; i++) {
+      const angle = i / 48 * TAU;
+      const irregular = 1 + Math.sin(angle * 3 + phases[0]) * 0.065 + Math.sin(angle * 7 + phases[1]) * 0.04;
+      const noise = Math.sin(angle * 5 + phases[2]) * 0.028 * (r > 1 ? 1 : 0.35);
+      vertices.push(Math.cos(angle) * radius * rings[r] * irregular, heights[r] + noise, Math.sin(angle) * radius * rings[r] * irregular);
+      color.copy(r < 3 ? top : r < 5 ? cliff : wet);
+      color.multiplyScalar(0.94 + Math.sin(angle * 9 + phases[0]) * 0.035);
+      colors.push(color.r, color.g, color.b);
+      if (r < rings.length - 1) {
+        const a = r * 48 + i; const b = r * 48 + (i + 1) % 48;
+        indices.push(a, b, a + 48, b, b + 48, a + 48);
+      }
+    }
+    for (let i = 1; i < 47; i++) indices.push(0, i + 1, i);
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    geometry.setIndex(indices); geometry.computeVertexNormals();
+    return geometry;
+  };
   Object.entries(positions).forEach(([id, p], i) => {
     const radius = id === 'news' ? 1.12 : id === 'journey' ? 1.8 : 1.85;
-    kit.mesh(islandGeometry(radius + 0.23, 0.12, 67 + i), sand, p[0], -0.09, p[2]);
-    kit.mesh(islandGeometry(radius, 0.36, 67 + i), cutStone, p[0], -0.04, p[2]);
-    kit.mesh(islandGeometry(radius * 0.92, 0.11, 67 + i), limestone, p[0], 0.31, p[2]);
+    const shoal = kit.mesh(sculptedIsland(radius * 1.23, 67 + i), sand, p[0], -0.61, p[2]);
+    shoal.castShadow = false;
+    kit.mesh(sculptedIsland(radius, 67 + i), cutStone, p[0], 0, p[2]);
+    for (let rock = 0; rock < 6; rock++) {
+      const angle = rock / 6 * TAU + i * 0.73;
+      const boulder = kit.mesh(new THREE.DodecahedronGeometry(0.13 + rock % 3 * 0.035, 0), limestone, p[0] + Math.cos(angle) * radius * 0.87, 0.27, p[2] + Math.sin(angle) * radius * 0.87);
+      boulder.scale.set(1.1, 0.65 + rock % 2 * 0.4, 0.85);
+      boulder.rotation.y = angle;
+    }
     attachStop(kit, stops, id, p, id === 'news' ? 3.9 : 2.65, glow);
   });
   // Scale each coherent landmark assembly around its own island, preserving
@@ -168,6 +232,11 @@ function buildSea(group) {
   kit.box(0.52, 0.35, 0.04, glass, w[0] - 0.42, 1.0, w[2] + 0.622);
   for (let i = 0; i < 7; i++) kit.box(0.065, 0.065, 0.9, brass, w[0] - 0.67 + i * 0.2, 1.72, w[2] + 0.3);
   [-0.7, 0.7].forEach((x) => kit.box(0.04, 0.3, 0.04, brass, w[0] + x, 1.61, w[2] + 0.66));
+  const roofWing = kit.box(1.08, 0.035, 0.83, glass, w[0] - 0.29, 1.83, w[2] - 0.13);
+  roofWing.rotation.z = -0.11;
+  kit.beam([w[0] - 0.78, 1.52, w[2] - 0.45], [w[0] - 0.78, 1.89, w[2] - 0.45], 0.015, brass);
+  kit.beam([w[0] + 0.28, 1.52, w[2] - 0.45], [w[0] + 0.28, 1.77, w[2] - 0.45], 0.015, brass);
+  kit.box(1.6, 0.012, 0.014, glow, w[0], 0.57, w[2] + 0.65);
   finishLandmark(w, landmarkStart);
   // Observatory with an open dome slit and a precise telescope, not a stock icon.
   const r = positions.research;
@@ -181,6 +250,9 @@ function buildSea(group) {
   kit.cylinder(0.12, 0.12, 0.95, brass, 0, 0.35, 0, telescope);
   kit.cylinder(0.15, 0.15, 0.08, glass, 0, 0.85, 0, telescope);
   group.add(telescope);
+  const observatoryOrbit = kit.ring(1.11, 0.022, brass, r[0], 1.82, r[2]);
+  observatoryOrbit.rotation.set(0.36, 0, -0.18);
+  kit.ring(0.96, 0.009, glow, r[0], 1.65, r[2]);
   finishLandmark(r, landmarkStart);
   // Journal courtyard and cypress: a quiet outdoor desk rather than another building.
   const j = positions.journal;
@@ -198,9 +270,9 @@ function buildSea(group) {
   // Harbor steps, a pier, and mooring posts.
   const h = positions.journey;
   landmarkStart = group.children.length;
-  for (let i = 0; i < 4; i++) kit.box(1.7 - i * 0.2, 0.09, 0.5, white, h[0], 0.15 + i * 0.1, h[2] + 0.92 - i * 0.31);
-  kit.box(0.56, 0.08, 1.25, brass, h[0] + 0.72, 0.18, h[2] + 1.35);
-  [-0.18, 0.18].forEach((x) => kit.cylinder(0.04, 0.04, 0.38, ink, h[0] + 0.72 + x, 0.2, h[2] + 1.86));
+  for (let i = 0; i < 5; i++) kit.box(1.25 + i * 0.1, 0.08, 0.44, white, h[0], 0.03 + i * 0.12, h[2] + 2.08 - i * 0.29);
+  kit.box(0.58, 0.08, 1.4, brass, h[0] + 0.71, 0.09, h[2] + 1.98);
+  [-0.2, 0.2].forEach((x) => kit.cylinder(0.04, 0.04, 0.4, ink, h[0] + 0.71 + x, 0.17, h[2] + 2.56));
   kit.ring(0.61, 0.035, ink, h[0] - 0.34, 0.57, h[2] - 0.3);
   const harbor = finishLandmark(h, landmarkStart, 1.08);
   harbor.rotation.y = Math.atan2(-h[0], -h[2]);
@@ -218,17 +290,174 @@ function buildSea(group) {
   lightBeam.rotation.z = Math.PI / 2;
   group.add(beacon);
   finishLandmark(n, landmarkStart, 1.08);
-  // A tiny sailboat, with a curved ceramic hull and cotton sail.
+  // A slender bronze-trimmed sailing craft and a small, original sailor figure.
   const traveler = new THREE.Group();
-  const hull = kit.sphere(0.42, white, 0, 0.14, 0, traveler);
-  hull.scale.set(0.43, 0.28, 1.15);
-  kit.box(0.22, 0.04, 0.63, brass, 0, 0.21, 0, traveler);
-  kit.cylinder(0.013, 0.013, 0.83, ink, 0, 0.57, 0, traveler, 8);
+  const boatBody = new THREE.Group();
+  traveler.add(boatBody);
+  const hull = kit.sphere(0.62, white, 0, 0.2, 0, boatBody);
+  hull.scale.set(0.44, 0.28, 1.37);
+  const gunwale = kit.sphere(0.63, brass, 0, 0.26, 0, boatBody);
+  gunwale.scale.set(0.44, 0.035, 1.35);
+  kit.box(0.39, 0.04, 1.1, ink, 0, 0.3, -0.04, boatBody);
+  kit.box(0.27, 0.035, 0.46, limestone, 0, 0.34, -0.24, boatBody);
+  kit.cylinder(0.015, 0.019, 1.46, brass, 0, 1.02, 0.08, boatBody, 10);
   const sailShape = new THREE.Shape();
-  sailShape.moveTo(0.018, 0); sailShape.lineTo(0.018, 0.73); sailShape.quadraticCurveTo(0.19, 0.29, 0.46, 0); sailShape.closePath();
-  const sail = kit.mesh(new THREE.ShapeGeometry(sailShape), kit.mat('#fff7e5', { side: THREE.DoubleSide }), 0, 0.25, 0, traveler);
-  sail.rotation.y = Math.PI / 2;
+  sailShape.moveTo(0.025, 0); sailShape.lineTo(0.025, 1.25); sailShape.quadraticCurveTo(0.23, 0.59, 0.73, 0); sailShape.closePath();
+  const sail = kit.mesh(new THREE.ShapeGeometry(sailShape, 24), kit.mat('#f7edd5', { side: THREE.DoubleSide, roughness: 0.92 }), 0, 0.43, 0.08, boatBody);
+  sail.rotation.y = Math.PI / 2 + 0.1;
+  const jibShape = new THREE.Shape();
+  jibShape.moveTo(0, 0); jibShape.lineTo(0, 1.08); jibShape.quadraticCurveTo(0.2, 0.45, 0.6, 0); jibShape.closePath();
+  const jib = kit.mesh(new THREE.ShapeGeometry(jibShape, 20), kit.mat('#e8dfc6', { side: THREE.DoubleSide, roughness: 0.92 }), 0, 0.44, 0.12, boatBody);
+  jib.rotation.y = -Math.PI / 2 - 0.14;
+  kit.beam([0, 0.45, 0.73], [0, 1.72, 0.08], 0.005, brass, boatBody);
+  kit.beam([0, 0.46, -0.69], [0, 1.67, 0.08], 0.005, brass, boatBody);
+  const skin = kit.mat('#c59774', { roughness: 0.9 });
+  const sailor = new THREE.Group();
+  sailor.position.set(0.06, 0.35, -0.44);
+  kit.cylinder(0.053, 0.064, 0.15, ink, 0, 0.18, 0, sailor, 12);
+  kit.sphere(0.06, skin, 0, 0.31, 0, sailor);
+  kit.cylinder(0.061, 0.061, 0.028, white, 0, 0.354, 0, sailor, 12);
+  [-1, 1].forEach((side) => {
+    kit.cylinder(0.018, 0.021, 0.12, white, side * 0.028, 0.065, 0, sailor, 8);
+    kit.beam([side * 0.065, 0.235, 0], [side * 0.035, 0.2, 0.105], 0.017, skin, sailor);
+  });
+  const helm = kit.ring(0.062, 0.009, brass, 0, 0.19, 0.13, sailor);
+  helm.rotation.x = 0.4;
+  boatBody.add(sailor);
+  kit.sphere(0.023, glow, -0.21, 0.34, 0.25, boatBody);
+  kit.sphere(0.023, kit.mat('#e4c08a', { emissive: '#c2955c', emissiveIntensity: 0.8 }), 0.21, 0.34, 0.25, boatBody);
   group.add(traveler);
+  // A suspended scientific lens is an approachable object in the world, not
+  // a HUD. Its analytic projection is separate from the permanent bronze body.
+  const instrument = new THREE.Group();
+  instrument.position.y = 1.28;
+  const outerLens = kit.ring(1.2, 0.037, brass, 0, 0, 0, instrument);
+  outerLens.rotation.set(1.35, 0.22, -0.1);
+  const innerLens = kit.ring(1.06, 0.018, ink, 0, 0, 0, instrument);
+  innerLens.rotation.set(1.35, 0.22, -0.1);
+  const lensDisk = kit.mesh(new THREE.CircleGeometry(1.04, 64), kit.mat('#497f99', { transparent: true, opacity: 0.36, metalness: 0.6, roughness: 0.09, side: THREE.DoubleSide, depthWrite: false }), 0, 0, 0, instrument);
+  lensDisk.rotation.copy(outerLens.rotation);
+  const equator = kit.ring(0.57, 0.013, brass, 0, 0.03, 0, instrument);
+  equator.rotation.set(0.4, 0.5, 1.1);
+  const lensCore = kit.sphere(0.17, glow, 0, 0.03, 0, instrument);
+  const lensCrown = kit.cylinder(0.05, 0.1, 0.21, ink, 0, 0.2, 0, instrument, 16);
+  lensCrown.rotation.z = -0.15;
+  const projection = kit.mesh(new THREE.ConeGeometry(1.1, 1.18, 48, 1, true), kit.mat('#64dcd2', { transparent: true, opacity: 0.1, depthWrite: false, side: THREE.DoubleSide, emissive: '#30a49e', emissiveIntensity: 0.75 }), 0, -0.6, 0, instrument);
+  projection.visible = false;
+  group.add(instrument);
+  const sourceMaterial = kit.mat('#a8ffdf', { emissive: '#49debc', emissiveIntensity: 1.5 });
+  const sourceMarkers = [-1, 1].map((side) => {
+    const marker = kit.ring(0.095, 0.012, sourceMaterial, side * 1.3, -0.015, side * -0.65);
+    marker.visible = false;
+    return marker;
+  });
+  // Fixed-capacity wake ribbon. All geometry/arrays are allocated once; birth
+  // times fade old foam even after the craft has stopped moving.
+  const wakeCapacity = 64;
+  const wakeCenters = new Float32Array(wakeCapacity * 3);
+  const wakeBirths = new Float32Array(wakeCapacity);
+  const wakeWidths = new Float32Array(wakeCapacity);
+  const wakePositions = new Float32Array(wakeCapacity * 6);
+  const wakeTimes = new Float32Array(wakeCapacity * 2);
+  const wakeSides = new Float32Array(wakeCapacity * 2);
+  const wakeIndices = [];
+  for (let i = 0; i < wakeCapacity; i++) {
+    wakeSides[i * 2] = -1; wakeSides[i * 2 + 1] = 1;
+    if (i < wakeCapacity - 1) wakeIndices.push(i * 2, i * 2 + 1, i * 2 + 2, i * 2 + 1, i * 2 + 3, i * 2 + 2);
+  }
+  const wakeGeometry = new THREE.BufferGeometry();
+  wakeGeometry.setAttribute('position', new THREE.BufferAttribute(wakePositions, 3).setUsage(THREE.DynamicDrawUsage));
+  wakeGeometry.setAttribute('aBirth', new THREE.BufferAttribute(wakeTimes, 1).setUsage(THREE.DynamicDrawUsage));
+  wakeGeometry.setAttribute('aSide', new THREE.BufferAttribute(wakeSides, 1));
+  wakeGeometry.setIndex(wakeIndices); wakeGeometry.setDrawRange(0, 0);
+  const wakeMaterial = new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 } }, transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending,
+    vertexShader: `attribute float aBirth; attribute float aSide; varying float vBirth; varying float vSide;
+      void main(){vBirth=aBirth;vSide=aSide;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+    fragmentShader: `uniform float uTime; varying float vBirth; varying float vSide;
+      void main(){float age=clamp((uTime-vBirth)/3.2,0.0,1.0);float edge=1.0-smoothstep(0.15,1.0,abs(vSide));
+        float alpha=pow(1.0-age,2.0)*edge*0.63;gl_FragColor=vec4(vec3(0.15,0.72,0.62),alpha);
+        #include <tonemapping_fragment>
+        #include <colorspace_fragment>
+      }`,
+  });
+  const wake = kit.mesh(wakeGeometry, wakeMaterial);
+  wake.castShadow = false; wake.receiveShadow = false; wake.frustumCulled = false; wake.visible = false;
+  let wakeCount = 0;
+  let fieldEnabled = false;
+  let bank = 0;
+  let sailOffset = 0.1;
+  let lastWakeTime = 0;
+  const setField = (enabled, spacing = 0.5) => {
+    fieldEnabled = Boolean(enabled);
+    const normalized = Number.isFinite(spacing) ? THREE.MathUtils.clamp(spacing, 0, 1) : 0.5;
+    water.uniforms.uField.value = fieldEnabled ? 1 : 0;
+    water.uniforms.uSpacing.value = normalized;
+    projection.visible = fieldEnabled;
+    lensDisk.material.opacity = fieldEnabled ? 0.58 : 0.36;
+    const separation = 0.55 + normalized * 2;
+    sourceMarkers.forEach((marker, i) => {
+      const side = i === 0 ? -1 : 1;
+      marker.position.set(side * separation * 0.894427191, -0.015, side * separation * -0.4472135955);
+      marker.visible = fieldEnabled;
+    });
+  };
+  const update = (dt, time, state = {}) => {
+    const step = Number.isFinite(dt) ? THREE.MathUtils.clamp(dt, 0, 0.1) : 0;
+    const now = Number.isFinite(time) ? time : 0;
+    const speed = Number.isFinite(state.speed) ? THREE.MathUtils.clamp(Math.abs(state.speed), 0, 14) : 0;
+    const turn = Number.isFinite(state.turn) ? THREE.MathUtils.clamp(state.turn, -1, 1) : 0;
+    const response = 1 - Math.exp(-step * 5);
+    bank = THREE.MathUtils.lerp(bank, -turn * Math.min(speed / 3, 1) * 0.14, response);
+    sailOffset = THREE.MathUtils.lerp(sailOffset, 0.1 + turn * 0.22 + Math.min(speed / 14, 1) * 0.1, response);
+    boatBody.rotation.z = bank;
+    sail.rotation.y = Math.PI / 2 + sailOffset;
+    jib.rotation.y = -Math.PI / 2 - sailOffset * 0.7;
+    helm.rotation.z = THREE.MathUtils.lerp(helm.rotation.z, turn * 0.3, response);
+    wakeMaterial.uniforms.uTime.value = now;
+    if (step === 0) return;
+    if (now < lastWakeTime) wakeCount = 0;
+    lastWakeTime = now;
+    let expired = 0;
+    while (expired < wakeCount && now - wakeBirths[expired] > 3.2) expired++;
+    if (expired) {
+      wakeCenters.copyWithin(0, expired * 3); wakeBirths.copyWithin(0, expired); wakeWidths.copyWithin(0, expired);
+      wakeCount -= expired;
+    }
+    const yaw = traveler.rotation.y;
+    const x = traveler.position.x - Math.sin(yaw) * 0.83;
+    const z = traveler.position.z - Math.cos(yaw) * 0.83;
+    const last = Math.max(0, wakeCount - 1) * 3;
+    const distance = wakeCount ? Math.hypot(x - wakeCenters[last], z - wakeCenters[last + 2]) : 0;
+    if (distance > 2.2) wakeCount = 0;
+    if (state.moving && speed > 0.025 && (!wakeCount || distance > 0.055)) {
+      if (wakeCount === wakeCapacity) {
+        wakeCenters.copyWithin(0, 3); wakeBirths.copyWithin(0, 1); wakeWidths.copyWithin(0, 1);
+        wakeCount--;
+      }
+      const index = wakeCount++;
+      wakeCenters[index * 3] = x; wakeCenters[index * 3 + 1] = 0.012; wakeCenters[index * 3 + 2] = z;
+      wakeBirths[index] = now; wakeWidths[index] = 0.042 + speed * 0.007;
+    }
+    for (let i = 0; i < wakeCount; i++) {
+      const previous = Math.max(0, i - 1) * 3; const next = Math.min(wakeCount - 1, i + 1) * 3;
+      let dx = wakeCenters[next] - wakeCenters[previous]; let dz = wakeCenters[next + 2] - wakeCenters[previous + 2];
+      const length = Math.hypot(dx, dz);
+      if (length > 0.0001) { dx /= length; dz /= length; } else { dx = Math.sin(yaw); dz = Math.cos(yaw); }
+      const width = wakeWidths[i] * (1 + Math.min((now - wakeBirths[i]) / 3.2, 1) * 1.4);
+      for (let edge = 0; edge < 2; edge++) {
+        const side = edge === 0 ? -1 : 1; const vertex = (i * 2 + edge) * 3;
+        wakePositions[vertex] = wakeCenters[i * 3] - dz * width * side;
+        wakePositions[vertex + 1] = 0.012;
+        wakePositions[vertex + 2] = wakeCenters[i * 3 + 2] + dx * width * side;
+        wakeTimes[i * 2 + edge] = wakeBirths[i];
+      }
+    }
+    wakeGeometry.attributes.position.needsUpdate = true;
+    wakeGeometry.attributes.aBirth.needsUpdate = true;
+    wakeGeometry.setDrawRange(0, Math.max(0, (wakeCount - 1) * 6));
+    wake.visible = wakeCount > 1;
+  };
   const travelPoints = order.map((id) => {
     const p = positions[id];
     return new THREE.Vector3(p[0] * 0.64, 0, p[2] * 0.64);
@@ -248,13 +477,16 @@ function buildSea(group) {
   nauticalRoute.computeLineDistances();
   group.add(nauticalRoute);
   return {
-    kit, stops, traveler, route, background: '#071d27', fog: ['#071d27', 29, 61], camera: [11.5, 11.4, 14.5], target: [0, 0.1, 0],
+    kit, stops, traveler, route, setField, update, instrumentHit: instrument, background: '#081b36', fog: ['#081b36', 29, 61], camera: [11.5, 11.4, 14.5], target: [0, 0.1, 0],
     travelPoint(id) { return route.point(order.indexOf(id)); },
     animate(time) {
       water.uniforms.uTime.value = time;
       beacon.rotation.y = time * 0.23;
-      traveler.children[0].rotation.z = Math.sin(time * 1.2) * 0.025;
-      traveler.position.y = Math.sin(time * 1.6) * 0.028;
+      observatoryOrbit.rotation.y = time * 0.12;
+      equator.rotation.y = 0.5 + time * 0.15;
+      instrument.position.y = 1.28 + Math.sin(time * 0.55) * 0.04;
+      boatBody.rotation.x = Math.sin(time * 1.2) * 0.021;
+      traveler.position.y = Math.sin(time * 1.6) * 0.022;
     },
     dispose() { routeMaterial.dispose(); },
   };
@@ -552,7 +784,7 @@ const BUILDERS = { sea: buildSea, orbital: buildOrbital, woodland: buildWoodland
  * select() mirrors external content selection silently. Actual world interactions
  * invoke onVisit immediately; travel is visual and never gates access to content.
  */
-export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit = () => {}, onStatus = () => {}, onExit = () => {} } = {}) {
+export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit = () => {}, onStatus = () => {}, onExit = () => {}, onFieldChange = () => {}, onViewChange = () => {} } = {}) {
   if (!mount) throw new TypeError('createWorld requires a mount element.');
   const noop = () => {};
   let renderer;
@@ -560,7 +792,7 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'low-power' });
   } catch {
     onStatus({ ready: false, message: 'The 3D view is unavailable here. Every destination is still available in the reading view.' });
-    return { select: noop, setTheme: noop, setMotion: noop, destroy: noop };
+    return { select: noop, setTheme: noop, setMotion: noop, setField: noop, setView: noop, destroy: noop };
   }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -607,7 +839,20 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   let width = 1;
   let height = 1;
   let lastArrowAt = -Infinity;
+  let sceneView = 'atlas';
+  let fieldEnabled = false;
+  let fieldSpacing = 0.45;
+  let fieldDrag = null;
+  const instrumentRay = new THREE.Raycaster();
+  const pointerPosition = new THREE.Vector2();
   const labelPosition = new THREE.Vector3();
+  const atlasPosition = new THREE.Vector3();
+  const atlasTarget = new THREE.Vector3();
+  const cameraAim = new THREE.Vector3();
+  const desiredPosition = new THREE.Vector3();
+  const desiredTarget = new THREE.Vector3();
+  const lastTravelerPosition = new THREE.Vector3();
+  let lastHeading = 0;
   const canDraw = () => !destroyed && !contextLost && inView && !document.hidden && width > 1 && height > 1;
   const moving = () => motionRequested && !reducedMotion.matches;
 
@@ -618,13 +863,43 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     if (tangent.lengthSq() > 0.00001) world.traveler.rotation.y = Math.atan2(tangent.x, tangent.z);
   }
 
+  function updateCamera(dt, immediate = false) {
+    if (sceneView === 'voyage') {
+      // A fixed bearing keeps reversing on the loop from flipping the camera.
+      // Frame the current boat and its destination together; the field lens is
+      // the focal point while inspecting the illustrative study.
+      desiredTarget.copy(world.traveler.position);
+      desiredTarget.lerp(fieldEnabled ? atlasTarget : world.stops[selectedId].position, fieldEnabled ? 0.58 : 0.38);
+      desiredTarget.y = fieldEnabled ? 1.1 : 1.3;
+      const phoneScale = Math.max(1, Math.sqrt(1.25 / camera.aspect));
+      desiredPosition.set(...world.camera).sub(atlasTarget).multiplyScalar(0.43 * phoneScale);
+      desiredPosition.y *= 0.77;
+      desiredPosition.add(desiredTarget);
+    } else {
+      desiredPosition.copy(atlasPosition);
+      desiredTarget.copy(atlasTarget);
+    }
+    const blend = immediate ? 1 : 1 - Math.exp(-dt * 4);
+    camera.position.lerp(desiredPosition, blend);
+    cameraAim.lerp(desiredTarget, blend);
+    camera.lookAt(cameraAim);
+    camera.updateMatrixWorld();
+  }
+
   function updateLabels() {
-    labels.forEach(({ element, id }) => {
+    labels.forEach(({ element, id, boxWidth, boxHeight }) => {
       labelPosition.copy(world.stops[id].label).project(camera);
-      const visible = labelPosition.z > -1 && labelPosition.z < 1;
-      element.hidden = !visible;
-      element.style.left = `${(labelPosition.x * 0.5 + 0.5) * width}px`;
-      element.style.top = `${(-labelPosition.y * 0.5 + 0.5) * height}px`;
+      const x = (labelPosition.x * 0.5 + 0.5) * width;
+      const y = (-labelPosition.y * 0.5 + 0.5) * height;
+      const visible = labelPosition.z > -1 && labelPosition.z < 1 && x >= boxWidth / 2 && x <= width - boxWidth / 2 && y >= 76 + boxHeight / 2 && y <= height - 88 - boxHeight / 2;
+      const pinned = sceneView === 'voyage' && id === selectedId && !visible;
+      if (!visible && !pinned && document.activeElement === element) mount.focus({ preventScroll: true });
+      element.hidden = !visible && !pinned;
+      element.classList.toggle('is-edge', pinned);
+      element.dataset.bearing = y < 76 ? '↑' : y > height - 88 ? '↓' : x < width / 2 ? '←' : '→';
+      element.title = pinned ? 'Selected stop outside this camera view' : '';
+      element.style.left = `${pinned ? Math.max(boxWidth / 2 + 16, Math.min(width - boxWidth / 2 - 16, x)) : x}px`;
+      element.style.top = `${pinned ? Math.max(76 + boxHeight / 2, Math.min(height - 88 - boxHeight / 2, y)) : y}px`;
       element.classList.toggle('is-active', id === selectedId);
       element.setAttribute('aria-pressed', String(id === selectedId));
     });
@@ -646,6 +921,14 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
         if (t === 1) transition = null;
       }
       world.animate(elapsed);
+      const sailed = Math.hypot(lastTravelerPosition.x - world.traveler.position.x, lastTravelerPosition.z - world.traveler.position.z);
+      const speed = dt ? Math.min(14, sailed / dt) : 0;
+      const heading = world.traveler.rotation.y;
+      const turn = Math.atan2(Math.sin(heading - lastHeading), Math.cos(heading - lastHeading));
+      world.update?.(dt, elapsed, { moving: speed > 0.025, speed, turn: Math.max(-1, Math.min(1, dt ? turn / dt * 0.25 : 0)) });
+      lastTravelerPosition.copy(world.traveler.position);
+      lastHeading = heading;
+      updateCamera(dt);
     }
     renderer.render(scene, camera);
     updateLabels();
@@ -666,11 +949,18 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   }
 
   function resize() {
+    if (destroyed || contextLost) return;
     width = Math.round(mount.clientWidth);
     height = Math.round(mount.clientHeight);
     if (!width || !height || !world) return;
     renderer.setSize(width, height, false);
     camera.aspect = width / height;
+    // Hidden voyage labels still have to participate in the atlas fit.
+    labels.forEach(label => {
+      label.element.hidden = false;
+      label.boxWidth = label.element.offsetWidth;
+      label.boxHeight = label.element.offsetHeight;
+    });
     let scale = Math.max(1, Math.sqrt(1.45 / camera.aspect));
     camera.updateProjectionMatrix();
     // Fit projected labels as well as objects. A wide desktop composition should
@@ -692,6 +982,10 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
       if (fits) break;
       scale *= 1.08;
     }
+    atlasPosition.copy(camera.position);
+    atlasTarget.set(...world.target);
+    cameraAim.copy(atlasTarget);
+    updateCamera(0, true);
     invalidate();
   }
 
@@ -703,7 +997,11 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     if (target === null) return;
     if (moving() && canDraw() && Math.abs(target - routePhase) > 0.00001) {
       transition = { from: routePhase, to: target, progress: 0, duration: Math.min(2.8, 1.15 * Math.max(1, Math.abs(target - routePhase))) };
-    } else { routePhase = target; placeTraveler(routePhase, direction || 1); transition = null; }
+    } else {
+      routePhase = target; placeTraveler(routePhase, direction || 1); transition = null;
+      lastTravelerPosition.copy(world.traveler.position); lastHeading = world.traveler.rotation.y;
+      updateCamera(0, true);
+    }
     invalidate();
   }
 
@@ -713,13 +1011,17 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   }
 
   function announce() {
-    onStatus({ ready: true, message: 'Click a landmark to explore. Right / Down follow the loop clockwise; Left / Up go back. Enter reads the selected stop; Escape leaves the map.' });
+    onStatus({ ready: true, message: `Click a landmark to explore. Right / Down follow the loop clockwise; Left / Up go back. Enter reads the selected stop; Escape leaves the map.${world.setField ? ' F reveals the field; V changes the view.' : ''}` });
   }
 
   function setTheme(id) {
     if (destroyed || contextLost) return;
     suspend();
+    cancelFieldDrag();
     transition = null;
+    sceneView = 'atlas';
+    fieldEnabled = false;
+    fieldSpacing = 0.45;
     elapsed = 0;
     labels.forEach(({ element }) => element.remove());
     labels = [];
@@ -731,6 +1033,9 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     scene.background = new THREE.Color(world.background);
     scene.fog = new THREE.Fog(...world.fog);
     hemisphere.color.set(theme.id === 'orbital' ? '#b8c7ff' : theme.id === 'woodland' ? '#c9e5c2' : '#c0e3de');
+    hemisphere.intensity = theme.id === 'sea' ? 1.4 : 2.2;
+    keyLight.color.set(theme.id === 'sea' ? '#ffe0bd' : '#fff2d8');
+    fillLight.color.set(theme.id === 'sea' ? '#689bd7' : '#7dabbf');
     destinations.filter((stop) => world.stops[stop.id]).forEach((stop) => {
       const element = document.createElement('button');
       element.type = 'button';
@@ -752,6 +1057,9 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     routePhase = world.route.order.indexOf(selectedId);
     placeTraveler(routePhase);
     world.animate(0);
+    world.setField?.(fieldEnabled, fieldSpacing);
+    lastTravelerPosition.copy(world.traveler.position);
+    lastHeading = world.traveler.rotation.y;
     resize();
     announce();
   }
@@ -761,6 +1069,27 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     motionRequested = Boolean(enabled);
     suspend();
     // Pause freezes ambient geometry and an in-flight traveler at their current pose.
+    invalidate();
+  }
+
+  function setField(enabled, spacing = fieldSpacing) {
+    if (destroyed || contextLost || !world?.setField) return;
+    fieldEnabled = Boolean(enabled);
+    if (!fieldEnabled) cancelFieldDrag();
+    if (Number.isFinite(spacing)) fieldSpacing = Math.max(0, Math.min(1, spacing));
+    world.setField(fieldEnabled, fieldSpacing);
+    renderer.domElement.style.touchAction = fieldEnabled ? 'pan-y' : 'auto';
+    renderer.domElement.style.cursor = fieldEnabled ? 'ew-resize' : 'default';
+    onFieldChange({ enabled: fieldEnabled, spacing: fieldSpacing });
+    if (!moving()) updateCamera(0, true);
+    invalidate();
+  }
+
+  function setView(view) {
+    if (destroyed || contextLost || !world) return;
+    sceneView = view === 'voyage' ? 'voyage' : 'atlas';
+    onViewChange({ view: sceneView });
+    updateCamera(0, !moving());
     invalidate();
   }
 
@@ -779,41 +1108,98 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
       if (!event.repeat) activate(selectedId, true);
       return;
     }
+    const shortcut = event.key.toLowerCase();
+    if (world.setField && (shortcut === 'f' || shortcut === 'v')) {
+      event.preventDefault();
+      if (!event.repeat) {
+        if (shortcut === 'f') setField(!fieldEnabled);
+        else setView(sceneView === 'atlas' ? 'voyage' : 'atlas');
+      }
+      return;
+    }
     if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) return;
     event.preventDefault();
     const now = performance.now();
     if (event.repeat && now - lastArrowAt < 180) return;
     lastArrowAt = now;
     const originId = focusedLabel?.dataset.destination || selectedId;
-    const order = world.route.order.filter(id => labels.some(label => label.id === id && !label.element.hidden));
+    const order = world.route.order.filter(id => labels.some(label => label.id === id));
     const next = cyclicDestination(order, originId, event.key);
     if (next) {
       activate(next, false, cycleDirection(event.key));
-      if (focusedLabel) labels.find(label => label.id === next)?.element.focus({ preventScroll: true });
+      if (focusedLabel) {
+        const nextLabel = labels.find(label => label.id === next)?.element;
+        (nextLabel && !nextLabel.hidden ? nextLabel : mount).focus({ preventScroll: true });
+      }
     }
   }
 
   function handleBackgroundPointer(event) {
-    if (!destroyed && !contextLost && event.target === renderer.domElement && event.button === 0) mount.focus({ preventScroll: true });
+    if (destroyed || contextLost || event.target !== renderer.domElement || event.button !== 0) return;
+    mount.focus({ preventScroll: true });
+    if (hitsInstrument(event)) {
+      setField(!fieldEnabled);
+      event.preventDefault();
+    }
+    if (fieldEnabled) {
+      fieldDrag = { id: event.pointerId, x: event.clientX, y: event.clientY, spacing: fieldSpacing };
+      renderer.domElement.setPointerCapture(event.pointerId);
+    }
+  }
+
+  function hitsInstrument(event) {
+    if (!world?.instrumentHit) return false;
+    const rect = mount.getBoundingClientRect();
+    pointerPosition.set((event.clientX - rect.left) / width * 2 - 1, -(event.clientY - rect.top) / height * 2 + 1);
+    instrumentRay.setFromCamera(pointerPosition, camera);
+    return instrumentRay.intersectObject(world.instrumentHit, true).some(hit => {
+      // Raycaster also intersects hidden meshes; a dormant projection is not
+      // an invisible button over otherwise empty water.
+      for (let object = hit.object; object; object = object.parent) if (!object.visible) return false;
+      return true;
+    });
+  }
+
+  function handleFieldPointerMove(event) {
+    if (destroyed || contextLost || event.target !== renderer.domElement) return;
+    if (fieldDrag && event.pointerId === fieldDrag.id && fieldEnabled) {
+      const dx = event.clientX - fieldDrag.x;
+      if (Math.abs(dx) > 5 && Math.abs(dx) > Math.abs(event.clientY - fieldDrag.y)) {
+        event.preventDefault();
+        setField(true, fieldDrag.spacing + dx / width * 1.25);
+      }
+    } else if (event.pointerType === 'mouse') {
+      renderer.domElement.style.cursor = fieldEnabled ? 'ew-resize' : hitsInstrument(event) ? 'pointer' : 'default';
+    }
+  }
+
+  function cancelFieldDrag() {
+    if (fieldDrag && renderer.domElement.hasPointerCapture(fieldDrag.id)) renderer.domElement.releasePointerCapture(fieldDrag.id);
+    fieldDrag = null;
   }
 
   function handleVisibility() {
-    if (document.hidden) suspend();
+    if (document.hidden) { suspend(); cancelFieldDrag(); }
     else if (invalidated || moving()) invalidate();
   }
   function handleReducedMotion() { suspend(); invalidate(); }
   function handleContextLost(event) {
     event.preventDefault();
     contextLost = true;
+    cancelFieldDrag();
     suspend();
     renderer.domElement.hidden = true;
     renderer.domElement.style.display = 'none';
     labels.forEach(({ element }) => { element.hidden = true; });
     onStatus({ ready: false, message: 'The 3D view stopped because its graphics context was lost. The reading view still contains every destination. Reload to retry the world.' });
   }
-  function handleWindowBlur() { previousTimestamp = 0; }
+  function handleWindowBlur() { previousTimestamp = 0; cancelFieldDrag(); }
   mount.addEventListener('keydown', handleKey);
   mount.addEventListener('pointerdown', handleBackgroundPointer);
+  mount.addEventListener('pointermove', handleFieldPointerMove);
+  renderer.domElement.addEventListener('pointerup', cancelFieldDrag);
+  renderer.domElement.addEventListener('pointercancel', cancelFieldDrag);
+  renderer.domElement.addEventListener('lostpointercapture', cancelFieldDrag);
   mount.addEventListener('blur', handleWindowBlur);
   window.addEventListener('blur', handleWindowBlur);
   document.addEventListener('visibilitychange', handleVisibility);
@@ -823,7 +1209,7 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   resizeObserver.observe(mount);
   const intersectionObserver = new IntersectionObserver(([entry]) => {
     inView = entry.isIntersecting;
-    if (!inView) suspend();
+    if (!inView) { suspend(); cancelFieldDrag(); }
     else if (invalidated || moving()) invalidate();
   }, { threshold: 0.01 });
   intersectionObserver.observe(mount);
@@ -832,11 +1218,16 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   function destroy() {
     if (destroyed) return;
     destroyed = true;
+    cancelFieldDrag();
     suspend();
     resizeObserver.disconnect();
     intersectionObserver.disconnect();
     mount.removeEventListener('keydown', handleKey);
     mount.removeEventListener('pointerdown', handleBackgroundPointer);
+    mount.removeEventListener('pointermove', handleFieldPointerMove);
+    renderer.domElement.removeEventListener('pointerup', cancelFieldDrag);
+    renderer.domElement.removeEventListener('pointercancel', cancelFieldDrag);
+    renderer.domElement.removeEventListener('lostpointercapture', cancelFieldDrag);
     mount.removeEventListener('blur', handleWindowBlur);
     window.removeEventListener('blur', handleWindowBlur);
     document.removeEventListener('visibilitychange', handleVisibility);
@@ -851,5 +1242,5 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     scene.clear();
   }
 
-  return { select, setTheme, setMotion, destroy };
+  return { select, setTheme, setMotion, setField, setView, destroy };
 }
