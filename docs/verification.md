@@ -48,6 +48,7 @@ This record separates executable checks from design intentions and host compatib
 - A separate reflection review checked mirrored-camera position and mean-plane projection agreement, restoration of render targets/clipping/shadow state/visibility after success and a thrown render, reflection resizing and sampler cleanup. Reflection targets are bounded at 512 × 512 on larger viewports and 256 × 256 below 700 pixels. The sky/environment resources are reused across theme changes and disposed at destruction. These are CPU/resource and source checks, not measured GPU speed.
 - Desktop browser checks at 1280 × 720 rendered the final water shader, materials, lighting and shadows with no new warnings/errors. Paused arrow selection and F/V field/camera toggles retained world focus. Transparent instruments no longer cast opaque shadows; first rendering and paused selection request fresh shadows. A 390 × 844 viewport showed all five separated atlas labels and no horizontal document overflow. Sea → orbital → woodland → sea changes preserved manual Pause and restored the sea-only controls. These are browser viewport checks, not physical-device testing.
 - All eleven tests and the source/provenance check passed after the final graphics edits.
+- GitHub Pages reported deployment `99c28e9ba4907eab104b8c178adaa4168c59e065` as built. A live reload loaded version `8ae8eefc8fb7`; paused arrow wrapping, F/V controls and return to the atlas remained usable with no new warnings/errors. The sea screenshot was refreshed from that public deployment.
 
 ## Limits
 
