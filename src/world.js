@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import { getTheme } from './themes.js';
-import { directionalDestination } from './navigation.js';
+import { cycleDirection, cyclicDestination, targetPhase } from './navigation.js';
 
 // Authored geometry, materials, motion, and layout. The destinations are content slots,
-// not a game simulation; arrows follow their current positions on the screen.
+// arranged along a closed route; exploration follows its neighboring stops.
 const TAU = Math.PI * 2;
 const UP = new THREE.Vector3(0, 1, 0);
 
@@ -125,10 +125,17 @@ function buildSea(group) {
   const ocean = kit.mesh(new THREE.PlaneGeometry(400, 400, 70, 70), water, 0, -0.13, 0);
   ocean.rotation.x = -Math.PI / 2;
   ocean.castShadow = false;
-  // Spread around the camera's ground-plane axes: an upper research island,
-  // two side islands, and a foreground harbor. Journal and Journey have
-  // different screen columns as well as different depths.
-  const positions = { work: [5.4, 0.36, -0.45], research: [-3.0, 0.36, -3.9], journal: [-5.2, 0.36, 1.55], journey: [1.45, 0.36, 5.1], news: [2.4, 0.36, -5.2] };
+  // A clockwise loop, authored in the camera's ground-plane basis. The center
+  // stays open water; every visible edge follows the circumference.
+  const order = ['work', 'research', 'journal', 'journey', 'news'];
+  const bearing = Math.atan2(11.5, 14.5);
+  const right = new THREE.Vector3(Math.cos(bearing), 0, -Math.sin(bearing));
+  const near = new THREE.Vector3(Math.sin(bearing), 0, Math.cos(bearing));
+  const positions = Object.fromEntries(order.map((id, i) => {
+    const angle = -Math.PI / 2 + i * TAU / order.length;
+    const p = right.clone().multiplyScalar(Math.cos(angle) * 6.0).addScaledVector(near, Math.sin(angle) * 6.0);
+    return [id, [p.x, 0.36, p.z]];
+  }));
   const stops = {};
   Object.entries(positions).forEach(([id, p], i) => {
     const radius = id === 'news' ? 1.12 : id === 'journey' ? 1.8 : 1.85;
@@ -150,6 +157,7 @@ function buildSea(group) {
     });
     landmark.scale.setScalar(scale);
     group.add(landmark);
+    return landmark;
   };
   // A terraced studio: a pergola, a colored door, and a low parapet.
   const w = positions.work;
@@ -194,7 +202,8 @@ function buildSea(group) {
   kit.box(0.56, 0.08, 1.25, brass, h[0] + 0.72, 0.18, h[2] + 1.35);
   [-0.18, 0.18].forEach((x) => kit.cylinder(0.04, 0.04, 0.38, ink, h[0] + 0.72 + x, 0.2, h[2] + 1.86));
   kit.ring(0.61, 0.035, ink, h[0] - 0.34, 0.57, h[2] - 0.3);
-  finishLandmark(h, landmarkStart, 1.08);
+  const harbor = finishLandmark(h, landmarkStart, 1.08);
+  harbor.rotation.y = Math.atan2(-h[0], -h[2]);
   // News lighthouse; its slow beam gives the world a distinct, legible motion.
   const n = positions.news;
   landmarkStart = group.children.length;
@@ -220,15 +229,34 @@ function buildSea(group) {
   const sail = kit.mesh(new THREE.ShapeGeometry(sailShape), kit.mat('#fff7e5', { side: THREE.DoubleSide }), 0, 0.25, 0, traveler);
   sail.rotation.y = Math.PI / 2;
   group.add(traveler);
+  const travelPoints = order.map((id) => {
+    const p = positions[id];
+    return new THREE.Vector3(p[0] * 0.64, 0, p[2] * 0.64);
+  });
+  const routeCurve = new THREE.CatmullRomCurve3(travelPoints, true, 'centripetal');
+  const route = {
+    order,
+    point(phase) {
+      const wrapped = ((phase % order.length) + order.length) % order.length;
+      return routeCurve.getPoint(wrapped / order.length);
+    },
+  };
+  const routeGeometry = kit.geo(new THREE.BufferGeometry().setFromPoints(routeCurve.getPoints(180)));
+  const routeMaterial = new THREE.LineDashedMaterial({ color: '#e2e0c0', dashSize: 0.24, gapSize: 0.16, transparent: true, opacity: 0.72 });
+  const nauticalRoute = new THREE.Line(routeGeometry, routeMaterial);
+  nauticalRoute.position.y = -0.025;
+  nauticalRoute.computeLineDistances();
+  group.add(nauticalRoute);
   return {
-    kit, stops, traveler, background: '#071d27', fog: ['#071d27', 29, 61], camera: [11.5, 11.4, 14.5], target: [0, 0.1, 0],
-    travelPoint(id) { const p = stops[id].position; return new THREE.Vector3(p.x, 0, p.z + 1.9); },
+    kit, stops, traveler, route, background: '#071d27', fog: ['#071d27', 29, 61], camera: [11.5, 11.4, 14.5], target: [0, 0.1, 0],
+    travelPoint(id) { return route.point(order.indexOf(id)); },
     animate(time) {
       water.uniforms.uTime.value = time;
       beacon.rotation.y = time * 0.23;
       traveler.children[0].rotation.z = Math.sin(time * 1.2) * 0.025;
       traveler.position.y = Math.sin(time * 1.6) * 0.028;
     },
+    dispose() { routeMaterial.dispose(); },
   };
 }
 
@@ -241,13 +269,35 @@ function buildOrbital(group) {
   const amber = kit.mat('#e6bf85', { emissive: '#98734b', emissiveIntensity: 0.25 });
   const glass = kit.mat('#77b6ce', { metalness: 0.7, roughness: 0.12 });
   const stops = {};
-  const positions = { work: [5.28, 1.05, -0.96], research: [-4.36, 2, -3.98], journal: [-5.34, 0.5, 2.38], journey: [1.76, 0, 4.68], news: [2.04, 0.4, -5.78] };
-  // Fine illuminated rails describe an authored constellation, not sea islands.
-  [['journey', 'journal'], ['journal', 'research'], ['research', 'news'], ['news', 'work'], ['work', 'journey']].forEach(([a, b]) => {
-    const p = positions[a]; const q = positions[b];
-    kit.beam([p[0], p[1] - 0.42, p[2]], [q[0], q[1] - 0.42, q[2]], 0.025, trim);
-    kit.beam([p[0], p[1] - 0.37, p[2]], [q[0], q[1] - 0.37, q[2]], 0.009, glow);
+  const order = ['work', 'research', 'journal', 'journey', 'news'];
+  const bearing = Math.atan2(13, 17.33);
+  const right = new THREE.Vector3(Math.cos(bearing), 0, -Math.sin(bearing));
+  const near = new THREE.Vector3(Math.sin(bearing), 0, Math.cos(bearing));
+  const elevations = { work: 1.05, research: 2, journal: 0.5, journey: 0, news: 0.4 };
+  const positions = Object.fromEntries(order.map((id, i) => {
+    const angle = -Math.PI / 2 + i * TAU / order.length;
+    const p = right.clone().multiplyScalar(Math.cos(angle) * 6.1).addScaledVector(near, Math.sin(angle) * 6.1);
+    return [id, [p.x, elevations[id], p.z]];
+  }));
+  const travelPoints = order.map((id) => {
+    const p = positions[id];
+    return new THREE.Vector3(p[0] * 0.8, p[1] + 0.72, p[2] * 0.8);
   });
+  const routeCurve = new THREE.CatmullRomCurve3(travelPoints, true, 'centripetal');
+  const route = {
+    order,
+    point(phase) {
+      const wrapped = ((phase % order.length) + order.length) % order.length;
+      return routeCurve.getPoint(wrapped / order.length);
+    },
+  };
+  // Closed, gently climbing rails follow the same loop as the capsule. They
+  // do not connect opposing stations through the middle of the constellation.
+  const railCurve = new THREE.CatmullRomCurve3(travelPoints.map((p) => p.clone().add(new THREE.Vector3(0, -1.12, 0))), true, 'centripetal');
+  const rail = kit.mesh(new THREE.TubeGeometry(railCurve, 160, 0.027, 8, true), trim);
+  rail.castShadow = false;
+  const guide = kit.mesh(new THREE.TubeGeometry(railCurve, 160, 0.009, 6, true), glow, 0, 0.05, 0);
+  guide.castShadow = false;
   Object.entries(positions).forEach(([id, p]) => {
     const radius = id === 'news' ? 0.85 : 1.35;
     kit.cylinder(radius, radius * 0.78, 0.18, ceramic, p[0], p[1] - 0.18, p[2]);
@@ -320,8 +370,8 @@ function buildOrbital(group) {
   engine.rotation.x = Math.PI / 2;
   group.add(traveler);
   return {
-    kit, stops, traveler, background: '#090f23', fog: ['#090f23', 37, 79], camera: [13, 12.5, 17.33], target: [0, 0.5, 0],
-    travelPoint(id) { const p = stops[id].position; return new THREE.Vector3(p.x, p.y + 0.72, p.z + 1.6); },
+    kit, stops, traveler, route, background: '#090f23', fog: ['#090f23', 37, 79], camera: [13, 12.5, 17.33], target: [0, 0.5, 0],
+    travelPoint(id) { return route.point(order.indexOf(id)); },
     animate(time) {
       instrument.rotation.y = time * 0.17;
       middle.rotation.z = time * 0.2;
@@ -346,7 +396,15 @@ function buildWoodland(group) {
   const glow = kit.mat('#deefac', { emissive: '#c1d780', emissiveIntensity: 0.75 });
   const glass = kit.mat('#a4d2bc', { transparent: true, opacity: 0.18, roughness: 0.08, metalness: 0.15, depthWrite: false, side: THREE.DoubleSide });
   const stops = {};
-  const positions = { work: [5.35, 0.16, -0.35], research: [-2.8, 0.16, -4.4], journal: [-5.35, 0.16, 1.55], journey: [1.65, 0.16, 5.0], news: [2.5, 0.16, -5.45] };
+  const order = ['work', 'research', 'journal', 'journey', 'news'];
+  const bearing = Math.atan2(13, 17.33);
+  const right = new THREE.Vector3(Math.cos(bearing), 0, -Math.sin(bearing));
+  const near = new THREE.Vector3(Math.sin(bearing), 0, Math.cos(bearing));
+  const positions = Object.fromEntries(order.map((id, i) => {
+    const angle = -Math.PI / 2 + i * TAU / order.length;
+    const p = right.clone().multiplyScalar(Math.cos(angle) * 6.1).addScaledVector(near, Math.sin(angle) * 6.1);
+    return [id, [p.x, 0.16, p.z]];
+  }));
   const land = kit.cylinder(10.5, 10.2, 0.4, earth, 0, -0.22, 0, group, 96);
   land.scale.z = 0.86;
   const under = kit.cylinder(10.2, 9.2, 0.45, dark, 0, -0.62, 0, group, 96);
@@ -358,27 +416,24 @@ function buildWoodland(group) {
     rim.scale.z = 0.85;
     attachStop(kit, stops, id, p, id === 'news' ? 3.8 : 2.5, glow);
   });
-  const trailRoutes = [
-    ['journey', 'journal', [-1.8, 0.085, 3.25]],
-    ['journey', 'work', [4.3, 0.085, 3.4]],
-    ['journal', 'research', [-5.45, 0.085, -1.6]],
-    ['research', 'news', [-0.1, 0.085, -6.1]],
-    ['news', 'work', [5.15, 0.085, -3.1]],
-  ];
-  const trailCurves = trailRoutes.map(([from, to, bend]) => {
-    const a = positions[from]; const b = positions[to];
-    return new THREE.CatmullRomCurve3([
-      new THREE.Vector3(a[0], 0.085, a[2]),
-      new THREE.Vector3(...bend),
-      new THREE.Vector3(b[0], 0.085, b[2]),
-    ]);
+  const travelPoints = order.map((id) => {
+    const p = positions[id];
+    return new THREE.Vector3(p[0] * 0.82, 1.18, p[2] * 0.82);
   });
-  trailCurves.forEach((curve) => {
-    const trail = kit.mesh(new THREE.TubeGeometry(curve, 32, 0.075, 6, false), path);
-    trail.scale.y = 0.18;
-    trail.position.y = 0.055;
-    trail.castShadow = false;
-  });
+  const routeCurve = new THREE.CatmullRomCurve3(travelPoints, true, 'centripetal');
+  const route = {
+    order,
+    point(phase) {
+      const wrapped = ((phase % order.length) + order.length) % order.length;
+      return routeCurve.getPoint(wrapped / order.length);
+    },
+  };
+  const trailCurve = new THREE.CatmullRomCurve3(travelPoints.map((p) => new THREE.Vector3(p.x, 0.07, p.z)), true, 'centripetal');
+  const trail = kit.mesh(new THREE.TubeGeometry(trailCurve, 160, 0.075, 6, true), path);
+  trail.scale.y = 0.18;
+  trail.position.y = 0.055;
+  trail.castShadow = false;
+  const trailSamples = trailCurve.getPoints(80);
   // Meandering narrow creek, drawn as a flat ribbon, with small stepping stones.
   const stream = new THREE.CatmullRomCurve3([
     new THREE.Vector3(-8, 0.06, 3.5), new THREE.Vector3(-5, 0.06, 3), new THREE.Vector3(-2, 0.06, 1.4),
@@ -406,7 +461,16 @@ function buildWoodland(group) {
     const radius = Math.sqrt(random()) * 9.0;
     const x = Math.cos(angle) * radius; const z = Math.sin(angle) * radius * 0.8;
     if (Object.values(positions).some((p) => Math.hypot(p[0] - x, p[2] - z) < 2.2)) continue;
-    if (trailCurves.some((curve) => curve.getPoints(12).some((p) => Math.hypot(p.x - x, p.z - z) < 0.75))) continue;
+    if (trailSamples.some((p) => Math.hypot(p.x - x, p.z - z) < 1.12)) continue;
+    // A clearing around a hut does not prevent a taller tree farther forward
+    // from hiding it. Keep slim sightlines open along the fixed camera bearing.
+    const obscuresLandmark = Object.values(positions).some((p) => {
+      const dx = x - p[0]; const dz = z - p[2];
+      const forward = dx * near.x + dz * near.z;
+      const lateral = Math.abs(dx * right.x + dz * right.z);
+      return forward > -0.6 && forward < 6.8 && lateral < 1.55;
+    });
+    if (obscuresLandmark) continue;
     if (z > 2 && Math.abs(x) < 5.5) continue; // Keep the reading foreground open.
     const scale = 0.65 + random() * 0.6;
     const trunk = kit.mesh(trunkGeometry, timber, x, 0.7 * scale, z);
@@ -472,8 +536,8 @@ function buildWoodland(group) {
   const halo = kit.sphere(0.24, kit.mat('#d6ed9d', { transparent: true, opacity: 0.035, depthWrite: false }), 0, 0, 0, traveler);
   group.add(traveler);
   return {
-    kit, stops, traveler, background: '#0c2427', fog: ['#0c2427', 24, 48], camera: [13, 13.5, 17.33], target: [0, 0.3, 0],
-    travelPoint(id) { const p = stops[id].position; return new THREE.Vector3(p.x, 1.18, p.z + 1.32); },
+    kit, stops, traveler, route, background: '#0c2427', fog: ['#0c2427', 24, 48], camera: [13, 13.5, 17.33], target: [0, 0.3, 0],
+    travelPoint(id) { return route.point(order.indexOf(id)); },
     animate(time) {
       wings.forEach((wing, i) => { wing.rotation.z = Math.sin(time * 15) * (i ? -0.2 : 0.2); });
       halo.scale.setScalar(0.9 + Math.sin(time * 2) * 0.08);
@@ -503,7 +567,7 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.12;
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.domElement.setAttribute('aria-hidden', 'true');
   renderer.domElement.className = 'world-canvas';
   renderer.domElement.style.cssText = 'display:block;width:100%;height:100%;position:absolute;inset:0;';
@@ -539,12 +603,20 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   let elapsed = 0;
   let previousTimestamp = 0;
   let transition = null;
+  let routePhase = 0;
   let width = 1;
   let height = 1;
   let lastArrowAt = -Infinity;
   const labelPosition = new THREE.Vector3();
   const canDraw = () => !destroyed && !contextLost && inView && !document.hidden && width > 1 && height > 1;
   const moving = () => motionRequested && !reducedMotion.matches;
+
+  function placeTraveler(phase, direction = 1) {
+    const position = world.route.point(phase);
+    const tangent = world.route.point(phase + direction * 0.001).sub(position);
+    world.traveler.position.copy(position);
+    if (tangent.lengthSq() > 0.00001) world.traveler.rotation.y = Math.atan2(tangent.x, tangent.z);
+  }
 
   function updateLabels() {
     labels.forEach(({ element, id }) => {
@@ -566,12 +638,11 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     if (moving()) {
       elapsed += dt;
       if (transition) {
-        transition.progress = Math.min(transition.progress + dt / 1.15, 1);
+        transition.progress = Math.min(transition.progress + dt / transition.duration, 1);
         const t = transition.progress;
         const ease = t * t * (3 - 2 * t);
-        world.traveler.position.copy(transition.from).lerp(transition.to, ease);
-        const direction = transition.to.clone().sub(transition.from);
-        if (direction.lengthSq() > 0.00001) world.traveler.rotation.y = Math.atan2(direction.x, direction.z);
+        routePhase = transition.from + (transition.to - transition.from) * ease;
+        placeTraveler(routePhase, Math.sign(transition.to - transition.from) || 1);
         if (t === 1) transition = null;
       }
       world.animate(elapsed);
@@ -624,23 +695,25 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     invalidate();
   }
 
-  function select(id) {
+  function select(id, direction = 0) {
     if (destroyed || !world?.stops[id]) return;
     if (selectedId === id && transition) return;
     selectedId = id;
-    const target = world.travelPoint(id);
-    if (moving() && canDraw()) transition = { from: world.traveler.position.clone(), to: target, progress: 0 };
-    else { world.traveler.position.copy(target); transition = null; }
+    const target = targetPhase(routePhase, world.route.order.indexOf(id), world.route.order.length, direction);
+    if (target === null) return;
+    if (moving() && canDraw() && Math.abs(target - routePhase) > 0.00001) {
+      transition = { from: routePhase, to: target, progress: 0, duration: Math.min(2.8, 1.15 * Math.max(1, Math.abs(target - routePhase))) };
+    } else { routePhase = target; placeTraveler(routePhase, direction || 1); transition = null; }
     invalidate();
   }
 
-  function activate(id, openReader = false) {
-    select(id);
+  function activate(id, openReader = false, direction = 0) {
+    select(id, direction);
     onVisit(id, { openReader });
   }
 
   function announce() {
-    onStatus({ ready: true, message: 'Click a landmark or the background to explore. Arrows follow the map; Enter reads the selected destination; Escape leaves the map.' });
+    onStatus({ ready: true, message: 'Click a landmark to explore. Right / Down follow the loop clockwise; Left / Up go back. Enter reads the selected stop; Escape leaves the map.' });
   }
 
   function setTheme(id) {
@@ -676,7 +749,8 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
       labels.push({ element, id: stop.id });
     });
     if (!world.stops[selectedId]) selectedId = destinations[0]?.id || 'work';
-    world.traveler.position.copy(world.travelPoint(selectedId));
+    routePhase = world.route.order.indexOf(selectedId);
+    placeTraveler(routePhase);
     world.animate(0);
     resize();
     announce();
@@ -711,19 +785,11 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     if (event.repeat && now - lastArrowAt < 180) return;
     lastArrowAt = now;
     const originId = focusedLabel?.dataset.destination || selectedId;
-    const points = labels.map(({ element, id }) => {
-      labelPosition.copy(world.stops[id].label).project(camera);
-      const x = (labelPosition.x * 0.5 + 0.5) * width;
-      const y = (-labelPosition.y * 0.5 + 0.5) * height;
-      return { id, x, y, visible: labelPosition.z > -1 && labelPosition.z < 1 && x >= 0 && x <= width && y >= 0 && y <= height && !element.hidden };
-    });
-    const next = directionalDestination(points, originId, event.key);
+    const order = world.route.order.filter(id => labels.some(label => label.id === id && !label.element.hidden));
+    const next = cyclicDestination(order, originId, event.key);
     if (next) {
-      activate(next);
+      activate(next, false, cycleDirection(event.key));
       if (focusedLabel) labels.find(label => label.id === next)?.element.focus({ preventScroll: true });
-    } else {
-      const direction = event.key.slice(5).toLowerCase();
-      onStatus({ ready: true, message: `No landmark farther ${direction}. Try another arrow, or press Enter to read this destination.` });
     }
   }
 
