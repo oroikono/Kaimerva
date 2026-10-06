@@ -9,7 +9,7 @@ const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 let selected = collections.some(item => item.id === location.hash.slice(1)) ? location.hash.slice(1) : 'work';
 history.replaceState({ ...history.state, destination: selected }, '');
 let snapshot = null;
-let paused = reducedMotion.matches;
+let paused = false;
 let request = 0;
 let sceneReady = false;
 
@@ -65,7 +65,7 @@ function activate(id, fromWorld = false) {
 }
 const world = createWorld({
   mount, themeId: 'sea', destinations: collections,
-  onVisit: (id, { openReader } = {}) => { activate(id, true); status.textContent = `${collections.find(item => item.id === id)?.label} is open in the readable index below. Travel is optional.`; if (openReader) focusReader(); },
+  onVisit: (id, { openReader } = {}) => { activate(id, true); const label = collections.find(item => item.id === id)?.label; status.textContent = openReader ? `${label} opened in the readable index.` : `${label} selected. Use the arrows to move across the map; press Enter to read.`; if (openReader) focusReader(); },
   onStatus: ({ ready, message }) => {
     sceneReady = ready;
     byId('explore').disabled = !ready;
@@ -78,15 +78,16 @@ const world = createWorld({
 });
 
 function syncMotion() {
-  world.setMotion(!paused);
+  const motionPaused = paused || reducedMotion.matches;
+  world.setMotion(!motionPaused);
   byId('motion').textContent = reducedMotion.matches ? 'Reduced motion' : paused ? 'Resume motion' : 'Pause motion';
   byId('motion').disabled = !sceneReady || reducedMotion.matches;
-  byId('motion').setAttribute('aria-pressed', String(paused));
+  byId('motion').setAttribute('aria-pressed', String(motionPaused));
 }
 syncMotion();
 byId('motion').addEventListener('click', () => { paused = !paused; syncMotion(); });
-reducedMotion.addEventListener('change', event => { paused = event.matches; syncMotion(); });
-byId('explore').addEventListener('click', () => { mount.focus({ preventScroll: true }); status.textContent = 'Arrow keys visit the next or previous destination. Enter opens it. Escape returns to this button.'; });
+reducedMotion.addEventListener('change', syncMotion);
+byId('explore').addEventListener('click', () => { mount.focus({ preventScroll: true }); status.textContent = 'Arrows move to a landmark in that direction on the map. Enter reads it. Escape returns to this button.'; });
 for (const button of document.querySelectorAll('[data-theme]')) {
   button.addEventListener('click', () => {
     const theme = themePresets.find(item => item.id === button.dataset.theme);
