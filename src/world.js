@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { getTheme } from './themes.js';
-import { cycleDirection, cyclicDestination, targetPhase } from './navigation.js';
+import { getTheme } from './themes.js?v=ce51c3b8040c';
+import { cycleDirection, cyclicDestination, targetPhase } from './navigation.js?v=ce51c3b8040c';
 
 // Authored geometry, materials, motion, and layout. The destinations are content slots,
 // arranged along a closed route; exploration follows its neighboring stops.

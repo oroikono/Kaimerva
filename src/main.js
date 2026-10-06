@@ -1,6 +1,6 @@
-import { collections, fetchContent, publishedItems } from './content.js';
-import { createWorld } from './world.js';
-import { themePresets } from './themes.js';
+import { collections, fetchContent, publishedItems } from './content.js?v=ce51c3b8040c';
+import { createWorld } from './world.js?v=ce51c3b8040c';
+import { themePresets } from './themes.js?v=ce51c3b8040c';
 
 const byId = id => document.getElementById(id);
 const mount = byId('world');
