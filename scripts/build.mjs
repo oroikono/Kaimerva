@@ -18,7 +18,17 @@ export async function build() {
   await mkdir(path.join(output, 'src'), { recursive: true });
   await mkdir(path.join(output, 'vendor'), { recursive: true });
   const files = ['index.html', 'LICENSE', 'src/main.js', 'src/content.js', 'src/world.js', 'src/navigation.js', 'src/themes.js', 'src/styles.css'];
-  for (const file of files) await copyFile(path.join(root, file), path.join(output, file));
+  // Pages/CDN caches may keep modules after the HTML updates. A content-derived
+  // version covers the entrypoint and every local import, keeping releases together.
+  const sources = await Promise.all(files.map(file => readFile(path.join(root, file), 'utf8')));
+  const version = sha(Buffer.from(sources.join('\n'))).slice(0, 12);
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    let source = sources[i];
+    if (file === 'index.html') source = source.replace(/\.\/src\/(main\.js|styles\.css)/g, match => `${match}?v=${version}`);
+    if (file.endsWith('.js')) source = source.replace(/from (['"])(\.\/[^'"]+\.js)\1/g, (_, quote, relative) => `from ${quote}${relative}?v=${version}${quote}`);
+    await writeFile(path.join(output, file), source);
+  }
   await writeFile(path.join(output, 'content.json'), JSON.stringify(publicSnapshot(snapshot), null, 2) + '\n');
   await copyFile(path.join(root, 'data/assets.json'), path.join(output, 'assets.json'));
   const vendor = [

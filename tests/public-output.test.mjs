@@ -33,10 +33,22 @@ test('real build and HTTP provider exclude drafts, preserve empty updates and re
     assert.equal(JSON.parse(built).items.length, 3);
     assert.equal(built.includes('PRIVATE_DRAFT_SENTINEL'), false);
     assert.equal(built.includes('MISSING_FLAG_SENTINEL'), false);
+    const html = await readFile(path.join(temporary, 'dist/index.html'), 'utf8');
+    const version = html.match(/src\/main\.js\?v=([a-f0-9]{12})/)?.[1];
+    assert.ok(version, 'The entrypoint must invalidate stale CDN modules.');
+    assert.ok(html.includes(`styles.css?v=${version}`));
+    for (const file of ['main.js', 'world.js']) {
+      const module = await readFile(path.join(temporary, 'dist/src', file), 'utf8');
+      const imports = [...module.matchAll(/from ['"]\.\/([^'"]+)['"]/g)];
+      assert.ok(imports.length);
+      assert.ok(imports.every(match => match[1].endsWith(`?v=${version}`)));
+    }
     assert.deepEqual(await readFile(path.join(temporary, 'dist/vendor/three-LICENSE.txt')), await readFile(path.join(root, 'node_modules/three/LICENSE')));
     await writeFile(path.join(temporary, 'dist/withdrawn.txt'), 'WITHDRAWN');
+    await writeFile(path.join(temporary, 'src/styles.css'), '/* A new visual release. */\n' + await readFile(path.join(temporary, 'src/styles.css'), 'utf8'));
     await run('scripts/build.mjs', temporary);
     await assert.rejects(readFile(path.join(temporary, 'dist/withdrawn.txt')), { code:'ENOENT' });
+    assert.ok(!(await readFile(path.join(temporary, 'dist/index.html'), 'utf8')).includes(`main.js?v=${version}`));
 
     server = spawn(process.execPath, ['scripts/serve.mjs'], { cwd:temporary, env:{ ...process.env, PORT:'0' }, stdio:['ignore','pipe','pipe'] });
     const url = await new Promise((resolve, reject) => {
@@ -54,6 +66,10 @@ test('real build and HTTP provider exclude drafts, preserve empty updates and re
     assert.equal(served.includes('PRIVATE_DRAFT_SENTINEL'), false);
     assert.equal(served.includes('MISSING_FLAG_SENTINEL'), false);
     assert.equal((await fetch(`${url}/.env`)).status, 404);
+    const servedHtml = await (await fetch(url)).text();
+    const entrypoint = servedHtml.match(/src="([^\"]+main\.js\?v=[a-f0-9]+)"/)?.[1];
+    assert.ok(entrypoint);
+    assert.equal((await fetch(new URL(entrypoint, url))).status, 200);
 
     await writeFile(path.join(temporary, 'data/site.json'), JSON.stringify({ ...input, items:[] }));
     assert.deepEqual((await (await fetch(`${url}/content.json`)).json()).items, []);
