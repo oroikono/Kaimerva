@@ -28,6 +28,7 @@ This record separates executable checks from design intentions and host compatib
 - In the browser, all four directions were used to visit all five sea destinations. An edge kept the selection unchanged. Tab-focused Research while Projects was selected, then Left and Enter, correctly visited Journal and focused its reader. Native Space opened a focused Projects entry correctly. Escape returned focus to Explore, and selection still worked while paused. A background click focused the map and the next arrow selected a destination.
 - Exact projected button rectangles were checked for all themes at 1166 × 614, 1120 × 580, 343 × 430 and 280 × 430. None overlap or escape the fitted frame; every stop is reachable from every start in at most two directional selections. The tightest orbital Projects/News phone gap was expanded to 13 pixels without shrinking the objects.
 - Browser checks at 390 × 844 and 320 × 844 showed bounded, nonoverlapping controls and no horizontal document overflow. Hold-repeat throttling and manual Pause preservation across OS preference changes were inspected in source; a physical held-key or OS-preference-cycle test was not performed.
+- The updated Pages build completed successfully. A reload of the public demo loaded the new map and controls; a right-edge press stayed in place, and Left selected Journey while retaining map focus. The sea screenshot was refreshed from that live deployment.
 
 ## Limits
 
