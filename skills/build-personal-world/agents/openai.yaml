@@ -1,0 +1,4 @@
+interface:
+  display_name: "Build Personal World"
+  short_description: "Turn a personal story into a usable 3D portfolio"
+  default_prompt: "Use $build-personal-world to turn my story into an original portfolio world with readable content and easy updates."

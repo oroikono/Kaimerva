@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "demo": true,
+  "identity": {
+    "name": "Your name",
+    "headline": "A world for a curious mind.",
+    "bio": "Show what you make, investigate, and notice. Replace this example identity with your own."
+  },
+  "items": [
+    {
+      "id": "example-project",
+      "collection": "work",
+      "kind": "project",
+      "title": "Ideas, made tangible.",
+      "summary": "Projects are things you have made. Give each one a clear question, an honest outcome, and a way to inspect the work.",
+      "body": "This is illustrative demo content. Replace it with a project you can explain in your own words. A useful entry says what you did, what changed, and where someone can see the result.",
+      "tags": ["Making", "Example"],
+      "published": true,
+      "links": []
+    },
+    {
+      "id": "example-research",
+      "collection": "research",
+      "kind": "paper",
+      "title": "Questions worth following.",
+      "summary": "Let readers see the research question before they see a wall of acronyms. Keep publication status and source links explicit.",
+      "body": "This is an example entry, not a real paper or publication claim. Replace it with your own authors, abstract, publication status, and source. A licensed main figure can help; record its reuse basis before serving it.",
+      "tags": ["Research", "Example"],
+      "status": "example",
+      "published": true,
+      "links": []
+    },
+    {
+      "id": "example-note",
+      "collection": "journal",
+      "kind": "note",
+      "title": "Notes from the edges.",
+      "summary": "There is room for trips, films, experiments, and observations that do not fit neatly into a professional label.",
+      "body": "Replace this example with an essay, a film, or a field note. The journal and the research collection share a content model, without pretending that every personal experiment is a paper.",
+      "tags": ["Field notes", "Example"],
+      "published": true,
+      "links": []
+    },
+    {
+      "id": "example-chapter",
+      "collection": "journey",
+      "kind": "chapter",
+      "title": "Start somewhere. Keep moving.",
+      "summary": "A timeline can read like a journey. Its chapters should still describe real milestones accurately.",
+      "body": "This symbolic journey does not represent real coordinates or travel history. Replace it with dated chapters from your own education, work, and interests. Use geographic routes only when their meaning is clear.",
+      "tags": ["Journey", "Example"],
+      "published": true,
+      "links": []
+    },
+    {
+      "id": "example-news",
+      "collection": "news",
+      "kind": "news",
+      "title": "Small signals, recent work.",
+      "summary": "Give visitors a quick sense of what is happening lately: a project release, a talk, a new film, or a research update.",
+      "body": "Replace this example with a dated update and a useful destination link. Do not manufacture achievements to fill an empty collection; an intentionally empty feed is valid.",
+      "tags": ["Updates", "Example"],
+      "published": true,
+      "links": []
+    }
+  ]
+}

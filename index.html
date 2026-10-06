@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Personal Worlds: a free agent skill and starter for building a portfolio that feels like your world.">
+  <meta name="theme-color" content="#f1f0e9">
+  <title>Personal Worlds — a portfolio with a sense of place</title>
+  <link rel="stylesheet" href="./src/styles.css">
+  <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
+  <script type="module" src="./src/main.js"></script>
+</head>
+<body>
+  <a class="skip" href="#content">Skip the world. Read the work.</a>
+  <header class="masthead">
+    <a class="brand" href="./" aria-label="Personal Worlds home"><span class="brand-mark" aria-hidden="true">pw.</span> <span>Personal<br>Worlds</span></a>
+    <p class="edition">An open-source field kit <span>/</span> 001</p>
+    <a href="#content" class="quiet-link">Browse the content <span aria-hidden="true">↗</span></a>
+  </header>
+  <main>
+    <section class="intro" aria-labelledby="intro-title">
+      <div class="intro-copy">
+        <p class="eyebrow"><span class="status-dot"></span> A portfolio with a sense of place</p>
+        <h1 id="intro-title">Make it<br><em>your world.</em></h1>
+        <p class="lede">Your work, ideas, and the places in between. One story. More than one way to explore it.</p>
+      </div>
+      <div class="theme-selector">
+        <p class="eyebrow">Choose a setting</p>
+        <div class="theme-options" role="group" aria-label="World setting">
+          <button data-theme="sea" aria-pressed="true"><span class="theme-number">01</span><span>Aegean coast<small>Limestone · light · open water</small></span><span aria-hidden="true">↗</span></button>
+          <button data-theme="orbital" aria-pressed="false"><span class="theme-number">02</span><span>Orbital field<small>Instruments · arcs · distant signals</small></span><span aria-hidden="true">↗</span></button>
+          <button data-theme="woodland" aria-pressed="false"><span class="theme-number">03</span><span>Woodland trail<small>Glasshouses · paths · quiet growth</small></span><span aria-hidden="true">↗</span></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="world-section" aria-labelledby="world-title">
+      <div class="world-bar"><div><span class="eyebrow" id="world-kicker">01 / Aegean coast</span><h2 id="world-title">Follow your curiosity.</h2></div><span class="world-tag">Procedural 3D / no downloaded models</span></div>
+      <div class="world-frame">
+        <div id="world" class="world" tabindex="0" role="group" aria-label="Interactive portfolio world. Focus here to use arrow keys to visit destinations, Enter to open, Escape to leave."></div>
+        <div class="world-caption"><span class="mini-compass" aria-hidden="true">N ↟</span><span id="world-description">A small archipelago, with room for a life beyond the work.</span></div>
+        <div class="world-controls"><button id="explore">Explore with arrows <span aria-hidden="true">↗</span></button><button id="motion" aria-pressed="false">Pause motion</button></div>
+      </div>
+      <p class="world-instructions" id="scene-status" role="status">Loading the world. Every destination is also available below.</p>
+    </section>
+
+    <section id="content" class="content-section" aria-labelledby="content-title">
+      <div class="content-heading"><div><p class="eyebrow">The readable index</p><h2 id="content-title">A world is only as good<br>as what you put into it.</h2></div><p class="content-note">Example content, ready to replace.<br>Your story lives in <code>data/site.json</code>.</p></div>
+      <div class="content-grid">
+        <div class="content-sidebar"><nav class="destinations" aria-label="Portfolio collections">
+          <a href="#work" data-destination="work"><span>01</span> Projects <span aria-hidden="true">↗</span></a>
+          <a href="#research" data-destination="research"><span>02</span> Research <span aria-hidden="true">↗</span></a>
+          <a href="#journal" data-destination="journal"><span>03</span> Journal <span aria-hidden="true">↗</span></a>
+          <a href="#journey" data-destination="journey"><span>04</span> Journey <span aria-hidden="true">↗</span></a>
+          <a href="#news" data-destination="news"><span>05</span> News <span aria-hidden="true">↗</span></a>
+        </nav><aside class="identity"><p class="eyebrow" id="identity-name">Your name</p><h3 id="identity-headline">A world for a curious mind.</h3><p id="identity-bio">Your identity is separate from the scenery.</p></aside></div>
+        <div class="reader"><div class="reader-toolbar"><h3 class="eyebrow" id="reader-label" tabindex="-1">01 / Projects</h3><button id="refresh" class="text-button">Refresh content ↻</button></div><div id="entries"><p>Loading example content…</p></div><p id="content-status" class="content-status" role="status"></p></div>
+      </div>
+      <noscript><p class="noscript-note">The interactive demo needs JavaScript. The <a href="./content.json">plain content JSON</a> remains available. A production portfolio should generate its readable pages on the server or during its build; this small starter does not include that renderer.</p></noscript>
+    </section>
+  </main>
+  <footer><p>Personal Worlds <span>·</span> Made by <a href="https://orestis-site.vercel.app" rel="noopener noreferrer">Orestis Oikonomou</a></p><div><a href="./LICENSE">MIT license</a><a href="./vendor/three-LICENSE.txt">Three.js notice</a><a href="./assets.json">Asset provenance</a></div></footer>
+</body>
+</html>
