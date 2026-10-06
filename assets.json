@@ -8,7 +8,7 @@
       "origin": "authored",
       "source": "repository source",
       "license": "MIT",
-      "changes": "Original procedural geometry, materials, scene arrangement, and animation authored for this starter. No third-party models, textures, portraits, or paper figures included."
+      "changes": "AI-assisted procedural geometry, locally generated sky/stone/wood/linen textures, materials, scene arrangement, motion, and planar reflection pass authored for this starter. No third-party models, textures, portraits, or paper figures included."
     },
     {
       "id": "starter-previews",
