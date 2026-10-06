@@ -2,7 +2,7 @@
 
 **A free agent skill and starter for turning a personal story into an interactive portfolio world.**
 
-Built by [Orestis Oikonomou](https://orestis-site.vercel.app), from the practical work of making a research, projects, and personal-life portfolio feel like a place.
+Built by [Orestis Oikonomou](https://orestis-site.vercel.app), with AI assistance, from the practical work of making a research, projects, and personal-life portfolio feel like a place.
 
 **[Try the live demo](https://oroikono.github.io/personal-worlds/)** · **[Use this template](https://github.com/oroikono/personal-worlds/generate)** · **[Read the skill](skills/build-personal-world/SKILL.md)**
 
@@ -94,6 +94,8 @@ The demo's content is rendered in the browser. For a production personal/researc
 The method connects **identity → content → objects → materials → motion → interaction**. It distinguishes a deliberate theme from a recolored template, reading selection from travel, local edits from public updates, and an asset credit from reuse permission.
 
 Other people have built excellent playable portfolios, creative 3D skills, and AI-customizable starters. This is not the first of those. Our focus is the practical combination of personal storytelling, optional exploration, maintainable content, and provenance. [Related work and boundaries](docs/prior-art.md).
+
+An independent bounded review distinguishes copied dependencies, conceptual references and project-authored work. [Provenance audit](docs/provenance-audit.md). It documents evidence and limitations, not legal clearance.
 
 ## Extend it
 

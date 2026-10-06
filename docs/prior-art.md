@@ -22,7 +22,7 @@ The existence of playable portfolios, reusable rendering starters, thematic 3D s
 
 The following focus is an inference from the comparison above, not proof that other projects lack these features:
 
-- **One content model, multiple views.** Canonical content drives both spatial discovery and readable, independently linkable pages.
+- **One content model, multiple views.** Canonical content drives both spatial discovery and readable collection views. This starter uses collection anchors; separately routed entry pages remain a production extension.
 - **Themes change behavior.** A new theme changes geography, objects, motion and navigation mechanics, as well as visual styling. Ocean routes, orbital stations and forest paths can serve different personal stories.
 - **Useful access paths.** Keyboard, touch, direct links, reduced motion and a WebGL fallback all provide access to the same content.
 - **Maintainable content.** Structured local content works without a paid platform; optional CMS integrations document caching and update behavior.
@@ -33,7 +33,7 @@ These are design and implementation goals. The current release's README and vali
 
 ## Independent implementation
 
-Personal Worlds is implemented independently from our portfolio work and newly authored starter code. We did not copy the implementations, skill instructions, models, textures or personal assets of the projects listed above. The links document context and established overlap; they are not bundled dependencies or endorsements.
+Personal Worlds was developed with AI assistance from our portfolio work and newly written starter code. The listed projects document design context and established overlap; the release inventory identifies Three.js as the copied third-party runtime. A bounded independent audit found no other bundled reference-project implementation or substantial verbatim skill passages in the sources compared. This is evidence about the inspected release, not proof of complete historical code provenance or global originality. [Audit scope and findings](provenance-audit.md).
 
 If a later contribution reuses upstream code or assets, record its exact source and license, preserve required notices, and revise this statement. An overall repository license does not replace an individual asset's terms.
 
@@ -44,7 +44,6 @@ The [Agent Skills specification](https://agentskills.io/specification) defines a
 A correctly structured skill does not prove compatibility with every agent. Record actual host invocation tests and rendering evidence rather than inferring them from a manifest or a successful file copy.
 
 No first-of-its-kind claim, guaranteed unique output or GitHub popularity prediction is made.
-
 
 ## Observatory art direction
 
