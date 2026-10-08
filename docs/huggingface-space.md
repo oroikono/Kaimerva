@@ -7,7 +7,7 @@ sdk: static
 app_file: index.html
 pinned: false
 license: mit
-short_description: An agent skill and Three.js starter for explorable portfolios
+short_description: An agent skill and starter for explorable portfolios
 tags:
   - agent-skills
   - threejs
