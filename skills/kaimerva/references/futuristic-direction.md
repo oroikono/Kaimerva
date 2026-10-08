@@ -53,6 +53,20 @@ Do not promise photorealism from a shader or a video edit. Favor a coherent visu
 language that looks deliberate at the available device budget. Use locally
 authored assets first when suitable; record licenses for anything reused.
 
+When approved key art sets the target, identify what actually creates its
+presence: silhouette, material wear, lighting direction, scale and camera height.
+Translate those into the interactive geometry. Keep a useful overview and add
+a deliberate lower approach where appropriate; the same model can read as a
+miniature from above and as architecture near the ground. Align the sky's light,
+water glint, reflections and fog instead of tuning each independently. Check
+the full body, footing and label against the camera, and the full moving vessel
+against the route. A branding image does not replace the navigable world.
+
+Give supplied paper/project imagery its own color-preserving path. In Three.js,
+an unlit white image material with `toneMapped: false` also needs `fog: false`
+when a cinematic scene uses haze. Verify actual supplied aspect and color-space
+handling; a distant phone camera can otherwise fade evidence into the atmosphere.
+
 ## Make the instrument about the work
 
 Choose one primary instrument from actual content: a figure inspection lens, a

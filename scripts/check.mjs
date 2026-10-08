@@ -3,16 +3,20 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { validateContent } from '../src/content.js';
+import { validateWorldConfig } from '../src/world-config.js';
+import { checkSkillBundle } from './package-skill.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const read = file => readFile(path.join(root, file), 'utf8');
 validateContent(JSON.parse(await read('data/site.json')));
+validateWorldConfig(JSON.parse(await read('data/world.json')));
 const assets = JSON.parse(await read('data/assets.json'));
 if (assets.schemaVersion !== 1 || !Array.isArray(assets.assets)) throw new Error('Invalid asset manifest.');
 for (const asset of assets.assets) if (!asset.creator || !asset.source || !asset.license || !['authored','dependency','licensed','permission'].includes(asset.origin)) throw new Error(`Incomplete provenance: ${asset.id}`);
 const skill = await read('skills/kaimerva/SKILL.md');
 if (!/^---\r?\nname: kaimerva\r?\n/.test(skill) || !/\r?\ndescription:/.test(skill)) throw new Error('Skill metadata missing.');
 for (const match of skill.matchAll(/\]\((references\/[^)]+)\)/g)) await stat(path.join(root, 'skills/kaimerva', match[1]));
+if (!(await readFile(path.join(root, 'src/figure-passage.js'))).equals(await readFile(path.join(root, 'skills/kaimerva/assets/instruments/figure-passage.js')))) throw new Error('Portable instrument differs from the tested starter source; review and synchronize it.');
 async function paths(dir = root) {
   const result = [];
   for (const item of await readdir(dir, { withFileTypes: true })) {
@@ -56,4 +60,5 @@ for (const file of files) {
   if (/\b(?:ntn|secret)_[A-Za-z0-9]{20,}\b|(?:-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----)|(?:github_pat_[A-Za-z0-9_]{20,})|(?:ghp_[A-Za-z0-9]{20,})/.test(text)) throw new Error(`Possible credential in ${relative}; remove and review.`);
   if (/\/Users\/|\/home\/[^/]+\//.test(text)) throw new Error(`Host-specific absolute path in ${relative}.`);
 }
-console.log(`PASS: content, provenance fields, skill references, and bounded ${files.length}-file source hygiene check. This does not prove legal clearance or detect every secret.`);
+const bundle = await checkSkillBundle();
+console.log(`PASS: content, settings, provenance, skill references, ${bundle.files}-file portable starter synchronization, and bounded ${files.length}-file source hygiene check. This does not prove legal clearance or detect every secret.`);

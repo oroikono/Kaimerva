@@ -34,7 +34,7 @@ test('real build and HTTP provider exclude drafts, preserve empty updates and re
   let server;
   try {
     for (const dir of ['src','scripts','data','figures','assets/brand']) await mkdir(path.join(temporary, dir), { recursive:true });
-    for (const file of ['package.json','index.html','LICENSE','src/main.js','src/content.js','src/world-config.js','src/world.js','src/figure-passage.js','src/figure-reader.js','src/navigation.js','src/themes.js','src/styles.css','scripts/build.mjs','scripts/serve.mjs','data/assets.json','data/world.json','figures/wave-sources.svg','figures/wave-propagation.svg','figures/wave-interference.svg']) await copyFile(path.join(root, file), path.join(temporary, file));
+    for (const file of ['package.json','index.html','LICENSE','src/main.js','src/content.js','src/world-config.js','src/world.js','src/realm-atmosphere.js','src/realm-portal.js','src/realm-surfaces.js','src/coastal-detail.js','src/voyage.js','src/voyage-clearance.js','src/exploration.js','src/exploration-beacons.js','src/figure-passage.js','src/figure-reader.js','src/navigation.js','src/themes.js','src/styles.css','scripts/build.mjs','scripts/serve.mjs','data/assets.json','data/world.json','figures/wave-sources.svg','figures/wave-propagation.svg','figures/wave-interference.svg','figures/project-overview.svg','figures/project-inspection.svg','figures/project-editing.svg']) await copyFile(path.join(root, file), path.join(temporary, file));
     await mkdir(path.join(temporary, '.local'));
     for (const file of ['assets/brand/kaimerva-icon.png','assets/brand/ATTRIBUTION.md']) await copyFile(path.join(root, file), path.join(temporary, file));
     await writeFile(path.join(temporary, '.local/history.json'), 'PRIVATE_SETTINGS_HISTORY');
@@ -147,6 +147,14 @@ test('real build and HTTP provider exclude drafts, preserve empty updates and re
     const entrypoint = servedHtml.match(/src="([^\"]+main\.js\?v=[a-f0-9]+)"/)?.[1];
     assert.ok(entrypoint);
     assert.equal((await fetch(new URL(entrypoint, url))).status, 200);
+    for (const file of ['realm-atmosphere.js', 'realm-portal.js', 'realm-surfaces.js', 'coastal-detail.js', 'voyage.js', 'voyage-clearance.js']) {
+      const imported = new URL(`./src/${file}`, url);
+      imported.search = new URL(entrypoint, url).search;
+      const moduleResponse = await fetch(imported);
+      assert.equal(moduleResponse.status, 200, `new scene import is served: ${file}`);
+      assert.match(moduleResponse.headers.get('content-type'), /javascript/);
+      assert.equal(await moduleResponse.text(), await readFile(path.join(temporary, 'dist/src', file), 'utf8'));
+    }
 
     await writeFile(path.join(temporary, 'data/site.json'), JSON.stringify({ ...input, items:[] }));
     assert.deepEqual((await (await fetch(`${url}/content.json`)).json()).items, []);

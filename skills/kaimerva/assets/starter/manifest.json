@@ -1,0 +1,161 @@
+{
+  "schemaVersion": 1,
+  "files": [
+    {
+      "path": ".gitignore",
+      "sha256": "a657df3ffb8158b643fc2fd31b965fb1b8cc35bf2993dc5b8b0b50954ebbaf61"
+    },
+    {
+      "path": "assets/brand/ATTRIBUTION.md",
+      "sha256": "3262951bb2385ec8469e6e49c3eacb5f28ff80180298778f044e85d08f93f4ee"
+    },
+    {
+      "path": "assets/brand/kaimerva-icon.png",
+      "sha256": "0232e81a490c235befb665e434d1be4ba9a29b9ec66bb88fb955c8581e077842"
+    },
+    {
+      "path": "data/assets.json",
+      "sha256": "08f54bef6e860116ca6342a5f1f0334851b9febf8303483fa37b4b9644eba916"
+    },
+    {
+      "path": "data/site.json",
+      "sha256": "50982107e258ee26f4c48705a3dc55685c818ca07129bc8ebb8e8b1559df3f11"
+    },
+    {
+      "path": "data/world.json",
+      "sha256": "80b0d6142748c984d8889dbdd27e33d7357f94644af8e56052d6b0ea0218d2ba"
+    },
+    {
+      "path": "figures/project-editing.svg",
+      "sha256": "54374524e7297954c5f8461ddda4921002e007c04334785bbfc2a423650c349a"
+    },
+    {
+      "path": "figures/project-inspection.svg",
+      "sha256": "7810509e2414403a7076d0deff9b9b7c3713748ae70e996ac1bba0f8f36eb8e5"
+    },
+    {
+      "path": "figures/project-overview.svg",
+      "sha256": "ac92f2b6fda291eba0e6af5361c6a988dcce0b78bb90a751b4ac2f9c81b11033"
+    },
+    {
+      "path": "figures/wave-interference.svg",
+      "sha256": "12c20aa51c3f0ee674070e13e44ac23c66ff80a38046844e926624eb32905d03"
+    },
+    {
+      "path": "figures/wave-propagation.svg",
+      "sha256": "16ae326e2fe4550f4cc97d2056109ccdb6548897379ea23db2841508fac02351"
+    },
+    {
+      "path": "figures/wave-sources.svg",
+      "sha256": "d96b9fa009deec8bdae1d23302d8ce1605f479286b454b5d983a3e19e948cd8b"
+    },
+    {
+      "path": "index.html",
+      "sha256": "03f87afb1506fcd051e348106bb8d8c77135df4bb314efd5f24e1b99ce595a09"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "394330c3923cff4caa758514bbe56c1acdf42adb19d6639c4081b33748d614c1"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "59a30739fe36b1a8cbc4973da295392ed241711bd9ace0151e349bc4316c20a2"
+    },
+    {
+      "path": "package.json",
+      "sha256": "37763333f70fc98567d648a44459150bc630f46ea3b4c4b006235ce3b264383b"
+    },
+    {
+      "path": "README.md",
+      "sha256": "757fd1a726ad52ed4b900aebe0a6435f083184a17a9f38bdc0a8dca513af706a"
+    },
+    {
+      "path": "scripts/build.mjs",
+      "sha256": "25177ef2f17c502447ce1ee6d96145d2fab5970fb643f57612426b576f8f643b"
+    },
+    {
+      "path": "scripts/check.mjs",
+      "sha256": "1f1860b610a4cdd9464d7cc6b486a9dac5845f5cb121e41cdc534a0ec95302c6"
+    },
+    {
+      "path": "scripts/serve.mjs",
+      "sha256": "62c22601c56570d695268a553c34ad44ed4dd832e658c388ca8c19c3c3bb6108"
+    },
+    {
+      "path": "scripts/world-edit.mjs",
+      "sha256": "f153b32d081841f59202c17c78fb40bd85438fa527662f90d42f41d968947ce5"
+    },
+    {
+      "path": "src/coastal-detail.js",
+      "sha256": "81cb9a534ea7d7ad2a34301220d5a069a38b3bf4ec98f5ea6f38564a77807fcf"
+    },
+    {
+      "path": "src/content.js",
+      "sha256": "a79cbc6b713eef4b29cb2bf0e3bd36cc729c1e9b4870505fc9b331c5dba98730"
+    },
+    {
+      "path": "src/exploration-beacons.js",
+      "sha256": "bf635ba627a9259981331398a1e47d9fc5c1bb65d76464ab8c1c1ba7a8f5ad48"
+    },
+    {
+      "path": "src/exploration.js",
+      "sha256": "4d537d23f03e4b761015ab4f2244974cb83f9f2510e5c64758f9ebe6788c19da"
+    },
+    {
+      "path": "src/figure-passage.js",
+      "sha256": "a866bdcf44a67a7e62cbcc1d58c548c870bd0f7d9fba2b6c967e809a6e09602a"
+    },
+    {
+      "path": "src/figure-reader.js",
+      "sha256": "06e3e1b13738de2799d62fd21f0c7eff86e7703b0da32a98d1914d2e54c78391"
+    },
+    {
+      "path": "src/main.js",
+      "sha256": "9000b38b4fd195771c3925d75b0a4cad3d866786578e17abf47d8e85661a3d98"
+    },
+    {
+      "path": "src/navigation.js",
+      "sha256": "b50c7429f6bc02e6e1b47c3d9cf993da4fb74e2f1d145c336ea5be312d01e6c7"
+    },
+    {
+      "path": "src/realm-atmosphere.js",
+      "sha256": "787bf2cbb4a500642e3658f6708b23d6f051a96c8086beff5d9c9b33af5b822a"
+    },
+    {
+      "path": "src/realm-portal.js",
+      "sha256": "5e6fa5f0b2e89bcc28f06362d35a5f3856bbbc96b364d61c079500fd10530703"
+    },
+    {
+      "path": "src/realm-surfaces.js",
+      "sha256": "0146a13441dbd668b2ccda68902a83a4749e63fd56a54352fb535b5fcd900b8b"
+    },
+    {
+      "path": "src/styles.css",
+      "sha256": "5e534197bbf8baa40f450eb0c658ac30eb76ccfb853108e0c89ece8a0640887a"
+    },
+    {
+      "path": "src/themes.js",
+      "sha256": "30350d81b4905f97c8f45036f9fc3b1151321419b203edc91507aaf766415a4e"
+    },
+    {
+      "path": "src/voyage-clearance.js",
+      "sha256": "19d7ca076e45ed0586c745202db881c4890bd9bc06628e04a0c660ccb874d5a6"
+    },
+    {
+      "path": "src/voyage.js",
+      "sha256": "1f78848aef474dadf6ca7537b649b10475d7ee8856353dcd2d42c4ef56b88419"
+    },
+    {
+      "path": "src/world-config.js",
+      "sha256": "4afd8c01783a3e75832a3c30b422bd2f6ec7634e100fd55aedd6af95bfa45f09"
+    },
+    {
+      "path": "src/world.js",
+      "sha256": "1862651b547fa7c748626c1c11e3489f76c071304581af77c698fc9c2f13ba04"
+    },
+    {
+      "path": "vercel.json",
+      "sha256": "628c91f314c528cfb27b8e63b54bf652baf84d036a0a652fd5545f7691326179"
+    }
+  ]
+}

@@ -20,11 +20,20 @@ Server-generated or build-generated HTML pages should be added before using the 
 
 ## Media
 
-The demo's three wave-study SVG plates are original illustrative artwork, not paper figures or research results. No third-party media is imported. If adding a portrait, figure, music, model or texture, record its creator, source, license/permission, processing changes and required notice in an asset ledger. Being pictured in a photo or credited on a paper does not itself establish every reuse right. Code's MIT license does not change a third-party media license.
+The demo's three wave-study SVG plates are original illustrative artwork, not paper figures or research results. Three additional supplied project diagrams explain Kaimerva itself. No third-party media is imported. If adding a portrait, figure, music, model or texture, record its creator, source, license/permission, processing changes and required notice in an asset ledger. Being pictured in a photo or credited on a paper does not itself establish every reuse right. Code's MIT license does not change a third-party media license.
 
 ## Figures and the inspection passage
 
 An item may omit `figure` entirely. To show a supplied figure, use one view by default: the main image is both the readable source and the first inspection view. Add up to three views only when you have meaningful supplied images and accurate descriptions for them.
+
+Projects use the same optional media format. The chooser lists all published
+entries with supplied images. A landmark opens the chosen entry in that
+collection, or its first inspectable entry when none has been chosen; the normal
+index keeps all records available. Setting switches inside inspection retain
+the selected work and view while replacing the physical housing. Stable
+collection IDs define placement. If an active record moves to another
+collection during refresh, inspection closes into that collection's ordinary
+index rather than retaining an obsolete scene anchor.
 
 ```json
 "figure": {

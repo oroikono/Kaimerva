@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Kaimerva starter: three authored worlds and one readable portfolio</title>
+  <desc id="desc">An original explanatory diagram of the starter. Sea, orbital and woodland settings share collection destinations and published content. Exploration is optional: a visitor can open the HTML reader immediately, including when WebGL is unavailable. The diagram represents architecture, not a screenshot or research result.</desc>
+  <defs>
+    <radialGradient id="bg" cx="70%" cy="20%" r="95%"><stop stop-color="#16303c"/><stop offset="1" stop-color="#08151d"/></radialGradient>
+    <linearGradient id="panel" x2="0" y2="1"><stop stop-color="#17303a"/><stop offset="1" stop-color="#0b1c25"/></linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#8fb2bf" stroke-opacity=".055"/></pattern>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5 0 9" fill="none" stroke="#6ddbdb" stroke-width="1.5"/></marker>
+    <style>text{font-family:Arial,Helvetica,sans-serif;fill:#f1eee3}.small{font-size:18px;letter-spacing:1.8px;fill:#b8cad0}.label{font-size:26px;font-weight:600}.body{font-size:22px;fill:#b8cad0}.mono{font-family:ui-monospace,monospace;font-size:19px;fill:#6ddbdb}.line{fill:none;stroke:#6ddbdb;stroke-width:2}.brass{fill:none;stroke:#dbbc7f;stroke-width:2}</style>
+  </defs>
+  <rect width="1200" height="720" fill="url(#bg)"/>
+  <rect width="1200" height="720" fill="url(#grid)"/>
+  <path d="M48 54H1152" stroke="#678592" stroke-opacity=".5"/>
+  <text x="48" y="35" class="small">KAIMERVA / 01</text>
+  <text x="1152" y="35" class="small" text-anchor="end">ORIGINAL STARTER ARCHITECTURE</text>
+  <text x="48" y="112" font-size="42" font-weight="600">Three worlds. One readable portfolio.</text>
+  <text x="48" y="151" class="body">Choose an authored setting. Keep the same collection destinations and work.</text>
+
+  <g transform="translate(48 190)">
+    <rect width="336" height="280" rx="9" fill="url(#panel)" stroke="#466574"/>
+    <text x="24" y="42" class="label">Sea</text><text x="312" y="39" class="mono" text-anchor="end">01</text>
+    <ellipse cx="168" cy="171" rx="111" ry="52" class="line" opacity=".42"/>
+    <path d="M61 170Q88 151 116 170T172 170T228 170T285 170M70 199Q98 183 126 199T182 199T238 199" class="line" opacity=".28"/>
+    <path d="M190 155L209 144 249 147 266 163 242 176 201 170Z" fill="#c8c2ab" stroke="#dbbc7f"/>
+    <path d="M218 146V109H247V149" fill="#243c46" stroke="#dbbc7f" stroke-width="2"/>
+    <path d="M212 109H253L246 103H220Z" fill="#d7ccb1"/>
+    <path d="M105 174L154 174 140 188H116Z" fill="#dbbc7f"/>
+    <path d="M132 109V173M136 115L136 164 164 164Z" fill="#e9e2ca" stroke="#dbbc7f" stroke-width="2"/>
+    <path d="M128 128L111 165H128Z" fill="#c7d7d6"/>
+    <circle cx="71" cy="151" r="7" fill="#6ddbdb"/>
+    <circle cx="275" cy="166" r="5" fill="#6ddbdb"/>
+    <text x="24" y="241" class="body">Islands · boat · instruments</text>
+    <text x="24" y="267" font-size="18" fill="#dbbc7f">Optional destination voyage</text>
+  </g>
+
+  <g transform="translate(432 190)">
+    <rect width="336" height="280" rx="9" fill="url(#panel)" stroke="#466574"/>
+    <text x="24" y="42" class="label">Orbital</text><text x="312" y="39" class="mono" text-anchor="end">02</text>
+    <ellipse cx="168" cy="153" rx="111" ry="55" class="line" opacity=".6"/>
+    <ellipse cx="168" cy="153" rx="47" ry="95" class="brass" opacity=".32" transform="rotate(-38 168 153)"/>
+    <path d="M115 151L168 121 222 151 168 181Z" fill="#18313c" stroke="#6ddbdb" stroke-width="2"/>
+    <path d="M142 146V118L168 105 195 118V148L168 161Z" fill="#b4c9cd" stroke="#dbbc7f" stroke-width="2"/>
+    <path d="M142 118L168 134 195 118M168 134V161" class="brass"/>
+    <circle cx="66" cy="132" r="14" fill="#c2d6d7"/>
+    <circle cx="264" cy="179" r="9" fill="#6ddbdb"/>
+    <path d="M232 112L252 99 263 107 243 120Z" fill="#dbbc7f"/>
+    <circle cx="98" cy="198" r="5" fill="#dbbc7f"/>
+    <text x="24" y="241" class="body">Stations · arcs · capsule</text>
+    <text x="24" y="267" font-size="18" fill="#dbbc7f">The same collection destinations</text>
+  </g>
+
+  <g transform="translate(816 190)">
+    <rect width="336" height="280" rx="9" fill="url(#panel)" stroke="#466574"/>
+    <text x="24" y="42" class="label">Woodland</text><text x="312" y="39" class="mono" text-anchor="end">03</text>
+    <path d="M63 185Q90 146 126 179T198 174T274 168" class="brass" stroke-width="3"/>
+    <ellipse cx="180" cy="183" rx="84" ry="26" fill="#183933" stroke="#466574"/>
+    <path d="M140 183V126L181 101 224 126V183Z" fill="#6ddbdb" fill-opacity=".08" stroke="#6ddbdb" stroke-width="2"/>
+    <path d="M140 126L181 147 224 126M181 101V183M140 183L181 159 224 183" class="line" opacity=".75"/>
+    <path d="M83 171V106M259 168V105" class="brass"/>
+    <path d="M83 95L58 152H107Z" fill="#3c6655" stroke="#b1c698"/>
+    <path d="M259 85L232 144H285Z" fill="#345a4d" stroke="#b1c698"/>
+    <circle cx="116" cy="172" r="5" fill="#dbbc7f"/>
+    <circle cx="246" cy="177" r="5" fill="#6ddbdb"/>
+    <text x="24" y="241" class="body">Paths · glasshouse · firefly</text>
+    <text x="24" y="267" font-size="18" fill="#dbbc7f">A third authored composition</text>
+  </g>
+
+  <path d="M216 471V495H600M984 471V495H600M600 471V527" class="line" opacity=".65" marker-end="url(#arrow)"/>
+  <rect x="390" y="481" width="420" height="31" fill="#0d202a"/>
+  <text x="600" y="503" class="mono" text-anchor="middle">Shared IDs and published records</text>
+  <rect x="48" y="536" width="1104" height="117" rx="9" fill="#102731" stroke="#6ddbdb" stroke-opacity=".75"/>
+  <text x="76" y="576" class="label">HTML reader</text>
+  <text x="76" y="611" class="body">Projects · Research · Journal · Journey · News</text>
+  <path d="M749 557V632" stroke="#466574"/>
+  <text x="778" y="577" font-size="24" fill="#f1eee3">Open the work immediately.</text>
+  <text x="778" y="612" font-size="21" fill="#b8cad0">Reading works without WebGL.</text>
+  <text x="48" y="689" font-size="19" fill="#b8cad0">Exploration is optional. These diagrams explain the starter; they are not app screenshots or research results.</text>
+</svg>

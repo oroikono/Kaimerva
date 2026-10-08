@@ -1,13 +1,14 @@
 # X launch post
 
-Attach `docs/assets/kaimerva-launch.mp4` to the main post.
+The interaction refinement is local and awaits rendered review. The existing
+film omits it. Hold this revised draft until the demo/source are updated and
+the attached recording actually shows the inspection sequence. Sign-in is
+also still required before publishing on X.
 
 ```text
-I wanted a portfolio that felt like a place to explore.
+I’m building Kaimerva: a free skill + starter for portfolios you can explore.
 
-So I built Kaimerva: a free agent skill + Three.js starter for projects, research and field notes.
-
-Three worlds to try. What would yours look like?
+Inspect the same project through a sea telescope, a space scanner or a specimen cabinet. Your work stays selected as its setting changes.
 
 Demo: https://huggingface.co/spaces/oroikono/kaimerva
 Code + skill: https://github.com/oroikono/Kaimerva
@@ -16,7 +17,7 @@ Code + skill: https://github.com/oroikono/Kaimerva
 Optional reply, with a real screenshot of the newer interaction:
 
 ```text
-It also has a figure passage: an optical iris opens around supplied figure views, with the explanation readable immediately.
+The copied skill includes the original Three.js instrument module and its integration guide. The starter connects it to published records and a native reader.
 
 The skill helps your coding agent build and revise the world from a brief. New settings still need implementation; it isn't an instant website generator.
 ```

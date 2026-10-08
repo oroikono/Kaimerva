@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "demo": true,
+  "identity": {
+    "name": "Your name",
+    "headline": "A world for a curious mind.",
+    "bio": "Show what you make, investigate, and notice. Replace this example identity with your own."
+  },
+  "items": [
+    {
+      "id": "example-project",
+      "collection": "work",
+      "kind": "project",
+      "title": "Kaimerva: a world around your work",
+      "summary": "A free agent skill and Three.js starter for explorable portfolios. Inspect its design through three original project views.",
+      "body": "This supplied example describes Kaimerva itself. Three authored settings share the same published records and an ordinary HTML reading path. A project or figure can be inspected through an optical iris at sea, a scanner gantry in space, or a glass specimen cabinet in nature. The selected entry and supplied view stay with the reader when its setting changes. Content and supported settings are separate JSON files; new mechanisms still require authored code. These diagrams explain the starter, rather than presenting research results or screenshots.",
+      "tags": [
+        "Creative coding",
+        "Agent skill",
+        "Three.js"
+      ],
+      "links": [
+        {
+          "label": "Source and skill",
+          "url": "https://github.com/oroikono/Kaimerva"
+        }
+      ],
+      "published": true,
+      "status": "starter project",
+      "figure": {
+        "src": "./figures/project-overview.svg",
+        "alt": "Three authored portfolio settings connect to one readable collection and content layer.",
+        "caption": "Original explanatory project diagrams for Kaimerva. These are supplied vector views, not screenshots, publication figures or scientific evidence.",
+        "stages": [
+          {
+            "id": "overview",
+            "label": "Explore the starter",
+            "src": "./figures/project-overview.svg",
+            "description": "Three authored settings share collection destinations and published records. Optional exploration sits beside an HTML reader that opens the work immediately and remains available without WebGL."
+          },
+          {
+            "id": "inspection",
+            "label": "Inspect the same work",
+            "src": "./figures/project-inspection.svg",
+            "description": "The selected entry and supplied view stay shared. The sea iris hinges open, the orbital shutter banks fold and retract, and the woodland cabinet doors swing open. The same source image and explanation remain readable."
+          },
+          {
+            "id": "editing",
+            "label": "Edit, then publish",
+            "src": "./figures/project-editing.svg",
+            "description": "Content and supported settings live in separate JSON files and can refresh the local preview. New mechanisms need authored code. Production builds a published-only static snapshot; local saves do not publish the deployed site."
+          }
+        ]
+      }
+    },
+    {
+      "id": "example-research",
+      "collection": "research",
+      "kind": "note",
+      "title": "Inside an interference field",
+      "summary": "An illustrative visual study: place two equal sources, read their radial contributions, then inspect their sum.",
+      "body": "This is original demo artwork, not a paper or a scientific result. Two sources sit at A = (−2.25, 0) and B = (+2.25, 0) in arbitrary coordinates. With k = 2π / 2.4, the final plate evaluates s(x, y) = cos(k rA) + cos(k rB) over x ∈ [−7, 7], y ∈ [−3.5, 3.5], where rA and rB are distances to the sources. Cyan shows positive values, brass negative values, and ink values near zero. The contribution plate shows constant-phase contours of the same two functions. This static scalar analogy does not model physical decay, time evolution, boundary conditions, or calibrated measurements.",
+      "tags": [
+        "Visualization",
+        "Illustrative study"
+      ],
+      "links": [],
+      "published": true,
+      "status": "illustrative example",
+      "figure": {
+        "src": "./figures/wave-interference.svg",
+        "alt": "Two radial cosine contributions sum into a cyan and brass scalar field. Sources A and B and zero-level contours remain visible.",
+        "caption": "Original illustrative plates, authored for this starter. The scalar construction is an analogy, not a physical propagation solver, publication figure, or research result.",
+        "stages": [
+          {
+            "id": "sources",
+            "label": "Place the sources",
+            "src": "./figures/wave-sources.svg",
+            "description": "A = (−2.25, 0) and B = (+2.25, 0) share one wavelength, 2.4 arbitrary units, and one phase. The source positions remain fixed throughout all three plates."
+          },
+          {
+            "id": "propagation",
+            "label": "Read each contribution",
+            "src": "./figures/wave-propagation.svg",
+            "description": "Each contribution is a radial cosine: a = cos(k rA), b = cos(k rB), with k = 2π / 2.4. Solid cyan and brass rings mark positive maxima; dashed rings mark negative minima. These are static constant-phase contours."
+          },
+          {
+            "id": "interference",
+            "label": "Inspect their sum",
+            "src": "./figures/wave-interference.svg",
+            "description": "The final plate directly samples s = a + b over the same domain. Cyan means positive, brass negative, and dark ink near zero. Thin contours trace 0 and ±1.2. No physical decay, time stepping, or calibration is implied."
+          }
+        ]
+      }
+    },
+    {
+      "id": "example-note",
+      "collection": "journal",
+      "kind": "note",
+      "title": "Notes from the edges.",
+      "summary": "There is room for trips, films, experiments, and observations that do not fit neatly into a professional label.",
+      "body": "Replace this example with an essay, a film, or a field note. The journal and the research collection share a content model, without pretending that every personal experiment is a paper.",
+      "tags": [
+        "Field notes",
+        "Example"
+      ],
+      "links": [],
+      "published": true
+    },
+    {
+      "id": "example-chapter",
+      "collection": "journey",
+      "kind": "chapter",
+      "title": "Start somewhere. Keep moving.",
+      "summary": "A timeline can read like a journey. Its chapters should still describe real milestones accurately.",
+      "body": "This symbolic journey does not represent real coordinates or travel history. Replace it with dated chapters from your own education, work, and interests. Use geographic routes only when their meaning is clear.",
+      "tags": [
+        "Journey",
+        "Example"
+      ],
+      "links": [],
+      "published": true
+    },
+    {
+      "id": "example-news",
+      "collection": "news",
+      "kind": "news",
+      "title": "Small signals, recent work.",
+      "summary": "Give visitors a quick sense of what is happening lately: a project release, a talk, a new film, or a research update.",
+      "body": "Replace this example with a dated update and a useful destination link. Do not manufacture achievements to fill an empty collection; an intentionally empty feed is valid.",
+      "tags": [
+        "Updates",
+        "Example"
+      ],
+      "links": [],
+      "published": true
+    }
+  ]
+}

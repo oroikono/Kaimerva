@@ -15,9 +15,7 @@ tags:
   - webgl
 ---
 
-# Kaimerva
-
-<img src="assets/brand/kaimerva-icon.png" width="180" alt="A weathered portal opening onto a moonlit sea">
+# <img src="assets/brand/kaimerva-icon.png" width="64" height="64" align="absmiddle" alt=""> Kaimerva <sub>kye-MER-vah</sub>
 
 **A free agent skill and Three.js starter for building a portfolio people can explore.**
 
@@ -27,9 +25,13 @@ I wanted a place for research, projects, trips and ideas that still felt like me
 
 ## Explore this demo
 
-Choose the Aegean observatory, orbital field or woodland trail. Click a landmark to open its collection. **Explore the loop** enables arrow-key destination navigation; Enter reads the selected collection and Escape returns focus to the page. **Pause motion** keeps reading and selection usable.
+Choose the Aegean observatory, orbital field or woodland trail. **Enter the world** opens the play session. Hold Right/D or Left/A to travel the authored route; release to brake. Approach a beacon, then use E, Space or **Chart this place** to mark it and open its work. Charted places connect into a constellation. Touch has held direction buttons and a nearby action. Progress lasts for the page session.
 
-In the sea setting, try **Voyage view** or **Reveal the field**. **Enter figure passage** opens a hinged optical instrument around three supplied figure views. The example field and figures are illustrative artwork, not a paper or a validated research result.
+Click a landmark or use **Read the selected work** to read immediately, including places you have not charted. **Pause motion** keeps reading and discrete destination navigation usable. **Escape / Leave world** returns to the portfolio; the ordinary index remains available.
+
+Choose a work above the map and click **Inspect in 3D**. In the sea setting, a mechanical iris opens and advances the supplied image. Switch its three views with buttons or left/right arrows, read immediately, or open the selected view full-size. **Return to world** restores the saved exploration view and focus in the same setting; changing settings returns to the new atlas. Space uses a scanning gantry and nature a specimen cabinet around the same work.
+
+In the sea setting, also try **Approach the portal**, **Sailing view** or **Reveal the field**. The example field and research figures are illustrative artwork, not a paper or a validated research result. Project figures explain Kaimerva; they are authored diagrams, not screenshots.
 
 The ordinary index stays available when 3D fails. JavaScript is required for this starter's content renderer; the [plain content JSON](content.json) is also available.
 

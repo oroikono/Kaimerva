@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Kaimerva editing boundary: local JSON refresh and static publication</title>
+  <desc id="desc">An original architecture diagram distinguishes local editing from public deployment. data/site.json supplies content and data/world.json supplies supported settings; validation and explicit refresh update the local preview. New geometry and game rules require authored code. A production build filters to published records, copies referenced figures, modules and license notices, and produces a static snapshot. Public changes require updated public files; no live CMS or browser AI editor is configured.</desc>
+  <defs>
+    <radialGradient id="bg" cx="65%" cy="20%" r="95%"><stop stop-color="#15333f"/><stop offset="1" stop-color="#08151d"/></radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#8fb2bf" stroke-opacity=".055"/></pattern>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5 0 9" fill="none" stroke="#6ddbdb" stroke-width="1.5"/></marker>
+    <style>text{font-family:Arial,Helvetica,sans-serif;fill:#f1eee3}.small{font-size:18px;letter-spacing:1.8px;fill:#b8cad0}.label{font-size:26px;font-weight:600}.body{font-size:22px;fill:#b8cad0}.mono{font-family:ui-monospace,monospace;font-size:23px;fill:#6ddbdb}.line{fill:none;stroke:#6ddbdb;stroke-width:2}.brass{fill:none;stroke:#dbbc7f;stroke-width:2}</style>
+  </defs>
+  <rect width="1200" height="720" fill="url(#bg)"/><rect width="1200" height="720" fill="url(#grid)"/>
+  <path d="M48 54H1152" stroke="#678592" stroke-opacity=".5"/>
+  <text x="48" y="35" class="small">KAIMERVA / 03</text><text x="1152" y="35" class="small" text-anchor="end">ORIGINAL STARTER ARCHITECTURE</text>
+  <text x="48" y="112" font-size="42" font-weight="600">Edit locally. Publish deliberately.</text>
+  <text x="48" y="151" class="body">Saved JSON can refresh the local preview. Public changes require updated public files.</text>
+
+  <rect x="48" y="190" width="609" height="406" rx="9" fill="#0f242e" stroke="#466574"/>
+  <text x="74" y="228" class="small">LOCAL PROJECT</text>
+  <g>
+    <rect x="74" y="249" width="267" height="113" rx="6" fill="#17333d" stroke="#466574"/>
+    <path d="M94 266H108L115 273V288H94Z" class="brass"/>
+    <text x="94" y="321" class="mono">data/site.json</text>
+    <text x="94" y="347" font-size="21" fill="#b8cad0">Identity + content</text>
+    <rect x="363" y="249" width="267" height="113" rx="6" fill="#17333d" stroke="#466574"/>
+    <path d="M383 266H397L404 273V288H383Z" class="brass"/>
+    <text x="383" y="321" class="mono">data/world.json</text>
+    <text x="383" y="347" font-size="21" fill="#b8cad0">Supported settings</text>
+  </g>
+  <path d="M208 363V382H353M496 363V382H353M353 382V439" class="line" marker-end="url(#arrow)"/>
+  <rect x="219" y="388" width="268" height="34" fill="#0f242e"/>
+  <text x="353" y="412" font-size="21" fill="#dbbc7f" text-anchor="middle">Validate + explicit refresh</text>
+  <rect x="74" y="450" width="556" height="71" rx="6" fill="#17333d" stroke="#6ddbdb" stroke-opacity=".8"/>
+  <text x="94" y="479" class="label">Local preview</text>
+  <text x="94" y="506" font-size="20" fill="#b8cad0">Valid edits update content or supported presentation.</text>
+  <text x="74" y="554" font-size="21" fill="#b8cad0">New geometry and game rules → authored code</text>
+  <text x="74" y="579" font-size="18" fill="#dbbc7f">The coding agent edits source; there is no browser AI chat.</text>
+
+  <path d="M657 486H724" class="line" marker-end="url(#arrow)"/>
+  <text x="692" y="462" font-size="19" fill="#dbbc7f" text-anchor="middle">Build</text>
+  <path d="M693 193V426M693 530V596" stroke="#678592" stroke-opacity=".5" stroke-dasharray="4 9"/>
+
+  <rect x="733" y="190" width="419" height="406" rx="9" fill="#142b31" stroke="#dbbc7f" stroke-opacity=".7"/>
+  <text x="759" y="228" class="small">PUBLIC DEPLOYMENT</text>
+  <text x="759" y="276" font-size="31" font-weight="600">Static snapshot</text>
+  <path d="M759 297H1126" stroke="#466574"/>
+  <g transform="translate(759 326)">
+    <path d="M0-13L7-6 18-19" class="line"/>
+    <text x="32" y="0" class="body">Published records only</text>
+    <path d="M0 28L7 35 18 22" class="line"/>
+    <text x="32" y="41" class="body">Referenced figure files</text>
+    <path d="M0 69L7 76 18 63" class="line"/>
+    <text x="32" y="82" class="body">Scene + reader modules</text>
+    <path d="M0 110L7 117 18 104" class="line"/>
+    <text x="32" y="123" class="body">Settings + license notices</text>
+  </g>
+  <rect x="759" y="475" width="367" height="84" rx="6" fill="#20383d" stroke="#466574"/>
+  <text x="780" y="510" font-size="23" fill="#f1eee3">Review → upload → publish</text>
+  <text x="780" y="541" font-size="20" fill="#b8cad0">Local saves do not publish themselves.</text>
+  <text x="759" y="581" font-size="18" fill="#dbbc7f">No hosted CMS is configured.</text>
+
+  <path d="M48 629H1152" stroke="#466574"/>
+  <text x="48" y="666" font-size="21" fill="#f1eee3">Content and scenery have separate edit surfaces. Public deployment is a separate action.</text>
+  <text x="48" y="698" font-size="18" fill="#b8cad0">Original explanatory diagram of this starter, not a research result or a promise of automatic world generation.</text>
+</svg>

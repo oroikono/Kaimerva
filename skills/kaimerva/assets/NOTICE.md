@@ -1,4 +1,19 @@
-# Kaimerva icon
+# Kaimerva portable assets
+
+`starter/` is a self-contained, generated copy of the original Kaimerva demo
+source, its explicit example content, six original SVG figure views, the approved
+portal icon and local build/edit tools. Its manifest records SHA-256 hashes for
+the approved payload files. It excludes launch media, research notes, private
+CMS records and portraits. `starter/LICENSE` retains the MIT notice below;
+`starter/data/assets.json` retains the runtime artwork ledger. Three.js is not
+embedded in the skill: the generated project's lockfile selects it, and its
+build copies the dependency's own MIT notice into the public output.
+
+`instruments/figure-passage.js` is original procedural Three.js code, authored
+by Orestis Oikonomou with AI-assisted implementation. It is copied unchanged
+from the starter's tested `src/figure-passage.js`. Its three housings and their
+movement use local meshes; no third-party models, textures or application code
+are embedded. The host must supply Three.js separately under its own MIT notice.
 
 `kaimerva-icon.png` is the approved cinematic portal artwork, copied unchanged
 from `kaimerva-portal-v3-cinematic.png`.
@@ -6,8 +21,8 @@ from `kaimerva-portal-v3-cinematic.png`.
 AI-assisted artwork: art direction and selection by **Orestis Oikonomou**;
 generated with OpenAI's built-in image-generation tool on **2026-10-08**.
 
-The icon is included under the repository's MIT license, reproduced below so
-copied skills retain the license and attribution. There is no additional
+The icon, instrument code and starter source are included under the repository's MIT license,
+reproduced below so copied skills retain the license and attribution. There is no additional
 requirement to display a visible credit in generated projects.
 
 ## MIT License

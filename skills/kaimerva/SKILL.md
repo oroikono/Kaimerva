@@ -36,6 +36,23 @@ asset work unless the change affects them. Apply the later guidance only to
 affected components; for a hover edit, check its rendered hover/focus behavior
 and applicable motion preferences rather than initiating a whole-world review.
 
+## Choose the implementation path
+
+For a new project that can use the bundled Three.js starter, read
+[create-and-deploy.md](references/create-and-deploy.md). Run the relocatable
+[scaffolder](scripts/create-world.mjs) from this skill's location into a new or
+empty project directory. The complete starter is bundled in `assets/starter/`;
+the original repository is not needed. Choose sea, orbital or woodland, then
+personalize the generated source from the brief, install its locked dependency,
+check and build it. A scaffolding command is a starting point, not completion
+of a requested portfolio.
+
+For an existing app, adapt its architecture instead. Do not scaffold over it or
+replace its stack and CMS merely to use the starter. The optional instrument
+below can also be integrated independently. New settings and mechanisms still
+require authored code; the three supplied settings are not a generator for
+arbitrary worlds.
+
 ## Find the design before the scenery
 
 Inspect the existing app, content and applicable repository instructions. Read
@@ -67,6 +84,19 @@ Choose objects for their meaning and silhouette. A new palette on unchanged
 objects is a color variant, not a newly authored thematic world. Do not promise
 that a design is unique merely because an AI generated it.
 
+When an interaction should transfer between settings, read
+[interaction-translation.md](references/interaction-translation.md). Carry the
+selected record, supplied view and reading/return behavior; author a different
+physical mechanism for the setting. A telescope that only decorates the scene
+does not implement project inspection.
+
+For a compatible Three.js app, the reference also documents the optional
+[instrument module](assets/instruments/figure-passage.js) bundled with this
+skill: three authored housings around one supplied image carrier. Keep the
+existing stack if it does not use Three.js; adapt the interaction instead of
+adding a renderer solely to import this asset. Read its integration contract
+before copying it; it contains no reader, camera, routes or CMS.
+
 ## Build a dual interface
 
 Keep content and selection independent of rendering. A stable ID should connect
@@ -81,6 +111,15 @@ without delaying reading.
 Keep reading selection, travel destination and traveler position separate.
 Back closes the reading view and returns focus without resetting exploration.
 Mouse picking and HTML activation should invoke the same selection operation.
+
+When the user asks for a playable world, build a coherent optional loop:
+enter → control the traveler → approach a meaningful object → act deliberately
+→ receive visible feedback → inspect the work → return to the same session.
+Give the player a clear objective and a native nearby action. Keep discoveries
+separate from remote reading; direct portfolio access must not award travel
+progress or require finishing the game. The bundled starter implements this
+with approach-distance charting and persistent beacon feedback. Customize its
+goal, objects and response for the person rather than merely adding a score.
 
 Make optional keyboard exploration an explicit focused mode. Capture movement
 keys only inside it, release input on Escape, blur or visibility loss, and leave
@@ -117,10 +156,10 @@ Keep credentials server-side. Distinguish an edited file, an acknowledged CMS
 save, refreshed public content and deployment. An outage fallback is not a
 last-known-good cache unless one is actually implemented.
 
-If the accompanying Kaimerva starter is present, read its README for
-actual commands and supported features. A copied skill works without that
-repository: adapt to the current project rather than assuming starter files,
-themes, dependencies or a hosted CMS exist.
+For a generated starter, read its README for actual commands and supported
+features. A copied skill carries the source bundle and needs no original
+repository. Existing apps need not use that bundle; inspect their capabilities
+instead of assuming its themes, dependencies or a hosted CMS are installed.
 
 ## Verify what visitors receive
 

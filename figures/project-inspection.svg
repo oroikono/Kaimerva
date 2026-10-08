@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Kaimerva per-entry inspection: one record, three instrument housings</title>
+  <desc id="desc">An original explanatory diagram of per-entry supplied-media inspection. Sea uses an optical iris, orbital uses a scanning gantry with retracting shutters, and woodland uses a glass specimen cabinet with hinged doors. The selected published record, supplied views, explanation and shared reader actions remain the same across the three housings. This is a diagram, not a screenshot, automatic apparatus generator or scientific result.</desc>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="34%" r="90%"><stop stop-color="#183440"/><stop offset="1" stop-color="#08151d"/></radialGradient>
+    <linearGradient id="glass" x2="1" y2="1"><stop stop-color="#6ddbdb" stop-opacity=".14"/><stop offset="1" stop-color="#6ddbdb" stop-opacity=".025"/></linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#8fb2bf" stroke-opacity=".055"/></pattern>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5 0 9" fill="none" stroke="#6ddbdb" stroke-width="1.5"/></marker>
+    <g id="plate"><rect x="-54" y="-36" width="108" height="72" rx="3" fill="#102731" stroke="#6ddbdb" stroke-width="2"/><path d="M-39 21V-19H38M-30 13L-13-2 4 8 20-17 34-7" fill="none" stroke="#dbbc7f" stroke-width="2"/><circle cx="-13" cy="-2" r="3" fill="#f1eee3"/><circle cx="20" cy="-17" r="3" fill="#f1eee3"/></g>
+    <style>text{font-family:Arial,Helvetica,sans-serif;fill:#f1eee3}.small{font-size:18px;letter-spacing:1.8px;fill:#b8cad0}.label{font-size:25px;font-weight:600}.body{font-size:22px;fill:#b8cad0}.mono{font-family:ui-monospace,monospace;font-size:19px;fill:#6ddbdb}.line{fill:none;stroke:#6ddbdb;stroke-width:2}.brass{fill:none;stroke:#dbbc7f;stroke-width:2}</style>
+  </defs>
+  <rect width="1200" height="720" fill="url(#bg)"/><rect width="1200" height="720" fill="url(#grid)"/>
+  <path d="M48 54H1152" stroke="#678592" stroke-opacity=".5"/>
+  <text x="48" y="35" class="small">KAIMERVA / 02</text><text x="1152" y="35" class="small" text-anchor="end">ORIGINAL STARTER ARCHITECTURE</text>
+  <text x="48" y="112" font-size="42" font-weight="600">Your work stays at the center.</text>
+  <text x="48" y="151" class="body">One selected record. Supplied images and text. Three different instrument housings.</text>
+
+  <g transform="translate(48 187)">
+    <rect width="336" height="275" rx="9" fill="#0e232d" stroke="#466574"/>
+    <text x="24" y="41" class="label">Sea / optical iris</text>
+    <circle cx="168" cy="149" r="89" class="brass"/>
+    <circle cx="168" cy="149" r="72" class="line" opacity=".7"/>
+    <g transform="translate(168 149)" fill="#30454b" stroke="#dbbc7f" stroke-width="1.5">
+      <path id="leaf" d="M75-42L86-10 66 32 59 1 31-20Z"/>
+      <use href="#leaf" transform="rotate(60)"/><use href="#leaf" transform="rotate(120)"/><use href="#leaf" transform="rotate(180)"/><use href="#leaf" transform="rotate(240)"/><use href="#leaf" transform="rotate(300)"/>
+      <use href="#plate"/>
+    </g>
+    <path d="M132 233H204M149 220V232M187 220V232" class="brass"/>
+    <text x="168" y="260" font-size="20" fill="#b8cad0" text-anchor="middle">Six hinged optical leaves</text>
+  </g>
+
+  <g transform="translate(432 187)">
+    <rect width="336" height="275" rx="9" fill="#0e232d" stroke="#466574"/>
+    <text x="24" y="41" class="label">Orbital / scan gantry</text>
+    <path d="M66 217V81H270V217M83 209V99H253V209" class="line"/>
+    <rect x="60" y="119" width="27" height="57" fill="#193944" stroke="#dbbc7f" stroke-width="2"/>
+    <rect x="249" y="119" width="27" height="57" fill="#193944" stroke="#dbbc7f" stroke-width="2"/>
+    <path d="M50 91L35 106 50 120M286 91L301 106 286 120" class="brass"/>
+    <path d="M36 106H84M252 106H300" class="brass"/>
+    <path d="M92 145H245" class="line" stroke-dasharray="3 8" opacity=".45"/>
+    <use href="#plate" transform="translate(168 151)"/>
+    <path d="M82 228H253M110 216V227M225 216V227" class="brass"/>
+    <text x="168" y="260" font-size="20" fill="#b8cad0" text-anchor="middle">Split retracting shutters</text>
+  </g>
+
+  <g transform="translate(816 187)">
+    <rect width="336" height="275" rx="9" fill="#0e232d" stroke="#466574"/>
+    <text x="24" y="41" class="label">Woodland / cabinet</text>
+    <path d="M93 221V82H243V221Z" fill="#17302e" stroke="#dbbc7f" stroke-width="2"/>
+    <path d="M93 96L56 79V203L93 220ZM243 96L280 79V203L243 220Z" fill="url(#glass)" stroke="#6ddbdb" stroke-width="2"/>
+    <path d="M93 83L112 72H224L243 83M81 220H255M103 226V237M235 226V237" class="brass"/>
+    <path d="M63 105L86 118M272 104L250 117" class="line" opacity=".5"/>
+    <use href="#plate" transform="translate(168 151)"/>
+    <text x="168" y="260" font-size="20" fill="#b8cad0" text-anchor="middle">Hinged glass doors</text>
+  </g>
+
+  <path d="M216 463V487H600M984 463V487H600M600 463V518" class="line" opacity=".65" marker-end="url(#arrow)"/>
+  <rect x="430" y="475" width="340" height="28" fill="#112933"/>
+  <text x="600" y="497" class="mono" text-anchor="middle">Same selected record + view</text>
+  <rect x="48" y="527" width="1104" height="122" rx="9" fill="#102731" stroke="#6ddbdb" stroke-opacity=".75"/>
+  <text x="76" y="568" class="label">Shared reader and actions</text>
+  <text x="76" y="606" class="body">Title · explanation · links</text>
+  <text x="76" y="632" font-size="18" fill="#dbbc7f">Images and descriptions supplied by the author</text>
+  <path d="M521 548V629" stroke="#466574"/>
+  <g fill="#193541" stroke="#466574">
+    <rect x="548" y="548" width="154" height="42" rx="5"/><rect x="718" y="548" width="125" height="42" rx="5"/><rect x="859" y="548" width="261" height="42" rx="5"/>
+  </g>
+  <text x="625" y="576" font-size="20" text-anchor="middle">1–3 views</text><text x="780" y="576" font-size="20" text-anchor="middle">Pause</text><text x="989" y="576" font-size="20" text-anchor="middle">Return to world</text>
+  <text x="550" y="625" font-size="20" fill="#b8cad0">Flat image fallback · keyboard access · restored focus</text>
+  <text x="48" y="689" font-size="19" fill="#b8cad0">Explanatory diagram, not an app capture. The mechanism presents supplied work; it does not generate research.</text>
+</svg>
