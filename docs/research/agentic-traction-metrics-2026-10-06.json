@@ -1,0 +1,66 @@
+{
+  "observed_at_utc": "2026-10-06T21:31:51.064160+00:00",
+  "purpose": "Public read-only snapshot; stars/forks indicate attention, not skill adoption.",
+  "repositories": [
+    {
+      "source": "https://api.github.com/repos/viettranx/3dviz-pro-max",
+      "full_name": "viettranx/3dviz-pro-max",
+      "stargazers_count": 674,
+      "forks_count": 86,
+      "subscribers_count": 5,
+      "created_at": "2026-09-10T01:42:59Z",
+      "updated_at": "2026-10-06T19:55:18Z",
+      "pushed_at": "2026-09-11T01:01:12Z"
+    },
+    {
+      "source": "https://api.github.com/repos/nextlevelbuilder/ui-ux-pro-max-skill",
+      "full_name": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "stargazers_count": 133579,
+      "forks_count": 14154,
+      "subscribers_count": 542,
+      "created_at": "2025-11-30T11:36:31Z",
+      "updated_at": "2026-10-06T21:25:05Z",
+      "pushed_at": "2026-10-03T16:05:26Z"
+    },
+    {
+      "source": "https://api.github.com/repos/HenrikBrehm/orbit",
+      "full_name": "HenrikBrehm/orbit",
+      "stargazers_count": 1,
+      "forks_count": 0,
+      "subscribers_count": 0,
+      "created_at": "2026-06-10T09:34:13Z",
+      "updated_at": "2026-06-20T10:19:34Z",
+      "pushed_at": "2026-06-10T09:37:41Z"
+    },
+    {
+      "source": "https://api.github.com/repos/bingran-you/bingran-you",
+      "full_name": "bingran-you/bingran-you",
+      "stargazers_count": 3,
+      "forks_count": 0,
+      "subscribers_count": 1,
+      "created_at": "2022-01-14T01:46:25Z",
+      "updated_at": "2026-10-06T12:54:30Z",
+      "pushed_at": "2026-10-06T12:54:23Z"
+    },
+    {
+      "source": "https://api.github.com/repos/oroikono/personal-worlds",
+      "full_name": "oroikono/personal-worlds",
+      "stargazers_count": 0,
+      "forks_count": 0,
+      "subscribers_count": 0,
+      "created_at": "2026-10-06T12:12:43Z",
+      "updated_at": "2026-10-06T14:06:08Z",
+      "pushed_at": "2026-10-06T14:06:04Z"
+    },
+    {
+      "source": "https://api.github.com/repos/anthropics/skills",
+      "full_name": "anthropics/skills",
+      "stargazers_count": 179901,
+      "forks_count": 21271,
+      "subscribers_count": 1116,
+      "created_at": "2025-09-22T15:53:31Z",
+      "updated_at": "2026-10-06T21:23:53Z",
+      "pushed_at": "2026-10-05T13:46:45Z"
+    }
+  ]
+}

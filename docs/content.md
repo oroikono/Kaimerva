@@ -20,4 +20,30 @@ Server-generated or build-generated HTML pages should be added before using the 
 
 ## Media
 
-The demo has no imported media. If adding a portrait, figure, music, model or texture, record its creator, source, license/permission, processing changes and required notice in an asset ledger. Being pictured in a photo or credited on a paper does not itself establish every reuse right. Code's MIT license does not change a third-party media license.
+The demo's three wave-study SVG plates are original illustrative artwork, not paper figures or research results. No third-party media is imported. If adding a portrait, figure, music, model or texture, record its creator, source, license/permission, processing changes and required notice in an asset ledger. Being pictured in a photo or credited on a paper does not itself establish every reuse right. Code's MIT license does not change a third-party media license.
+
+## Figures and the inspection passage
+
+An item may omit `figure` entirely. To show a supplied figure, use one view by default: the main image is both the readable source and the first inspection view. Add up to three views only when you have meaningful supplied images and accurate descriptions for them.
+
+```json
+"figure": {
+  "src": "./figures/main-figure.svg",
+  "alt": "Describe the figure's content and essential relationships.",
+  "caption": "The supplied caption, source and appropriate reuse notice.",
+  "stages": [
+    {
+      "id": "main",
+      "label": "Main figure",
+      "src": "./figures/main-figure.svg",
+      "description": "Explain what this supplied image shows, without inventing results."
+    }
+  ]
+}
+```
+
+Validation requires nonempty bounded text, one to three stage records, and unique lowercase stage IDs such as `main` or `method-detail`. Figure paths must be `./figures/` followed by a single lowercase filename starting with a letter or number and using letters, numbers, hyphens or underscores, with a `.svg`, `.png`, `.jpg`, `.jpeg` or `.webp` extension. Remote URLs, nested paths, traversal, query strings and fragments are rejected. A malformed figure rejects the incoming content snapshot; the browser keeps its last valid snapshot for that page session.
+
+To replace the illustrative study, place an authorized image in `figures/`, update the item's figure metadata, and replace its demo title, text, tags and status with accurate information. Record the image's reuse basis in `data/assets.json`; keep required third-party notices. Use static SVGs without scripts, foreign objects or external references. The build accepts regular local files up to 8 MiB and copies only figures referenced by published entries. Draft-only and unreferenced files are excluded.
+
+In the local preview, **Refresh content** applies metadata changes, including captions and view order, without a rebuild when their image files are already in `dist/`. Adding or replacing image files in `figures/` requires rebuilding; restarting `npm run dev` does this. Static publication still serves a built snapshot: publish updated JSON and image files together, or provide a validated server-side content adapter. The inspection passage displays supplied images; it does not generate new paper figures or arbitrary scenes from this metadata.

@@ -51,6 +51,12 @@ Possible next contributions to investigate are content-specific interactive inst
 
 After the audited snapshot above, the coastal graphics were expanded with AI-assisted project-authored stone/wood/linen DataTextures, an equirectangular sky/environment, deformed coastal geometry and a planar mirrored-camera reflection pass. No upstream Reflector implementation, downloaded texture, HDRI, model, font or additional dependency was bundled. The standard graphics techniques and Three.js APIs are established methods; this change does not establish a novel reflection algorithm or exclusive ownership of the visual ideas. The original audit/comparison results above remain scoped to their stated snapshot. The asset manifest records the expanded procedural inventory.
 
+## Brand artwork extension — 2026-10-08
+
+The source and portable skill now use the **Kaimerva** name. A selected AI-generated cinematic portal icon is included in `assets/brand/kaimerva-icon.png` and copied unchanged to `skills/kaimerva/assets/kaimerva-icon.png`. Art direction and selection are credited to Orestis Oikonomou; image creation is credited to OpenAI's built-in image-generation tool. The [brand record](branding.md) supplies the final generation prompt, date, file hash and name explanation. The manifest records both copies, and the source check verifies their bytes against the selected image's SHA-256. The copied skill includes its own attribution and full MIT notice.
+
+The icon was refined from earlier generated concepts, without supplied third-party reference imagery or game assets. This addition is separate from the October 6 audit above and does not extend that audit's comparisons or establish trademark clearance or exclusive copyright in AI output.
+
 ## Reuse and remaining limits
 
 [Swiss IPI guidance](https://www.ige.ch/en/protecting-your-ip/copyright/the-basics) distinguishes ideas and algorithms from protected expression such as source code, artwork and photographs. Newness or combining ideas does not establish permission for copied material. Record the exact source, license/permission, modifications and required notices for each future reused asset. Credit alone does not grant reuse rights.

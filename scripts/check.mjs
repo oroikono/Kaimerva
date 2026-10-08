@@ -1,6 +1,7 @@
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 import { validateContent } from '../src/content.js';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -9,9 +10,9 @@ validateContent(JSON.parse(await read('data/site.json')));
 const assets = JSON.parse(await read('data/assets.json'));
 if (assets.schemaVersion !== 1 || !Array.isArray(assets.assets)) throw new Error('Invalid asset manifest.');
 for (const asset of assets.assets) if (!asset.creator || !asset.source || !asset.license || !['authored','dependency','licensed','permission'].includes(asset.origin)) throw new Error(`Incomplete provenance: ${asset.id}`);
-const skill = await read('skills/build-personal-world/SKILL.md');
-if (!/^---\r?\nname: build-personal-world\r?\n/.test(skill) || !/\r?\ndescription:/.test(skill)) throw new Error('Skill metadata missing.');
-for (const match of skill.matchAll(/\]\((references\/[^)]+)\)/g)) await stat(path.join(root, 'skills/build-personal-world', match[1]));
+const skill = await read('skills/kaimerva/SKILL.md');
+if (!/^---\r?\nname: kaimerva\r?\n/.test(skill) || !/\r?\ndescription:/.test(skill)) throw new Error('Skill metadata missing.');
+for (const match of skill.matchAll(/\]\((references\/[^)]+)\)/g)) await stat(path.join(root, 'skills/kaimerva', match[1]));
 async function paths(dir = root) {
   const result = [];
   for (const item of await readdir(dir, { withFileTypes: true })) {
@@ -23,14 +24,31 @@ async function paths(dir = root) {
   return result;
 }
 const files = await paths();
-const proofImages = new Set(['docs/assets/sea.jpg', 'docs/assets/orbital.jpg', 'docs/assets/woodland.jpg']);
+const proofImages = new Set(['docs/assets/sea.jpg', 'docs/assets/orbital.jpg', 'docs/assets/woodland.jpg', 'docs/assets/personal-worlds-demo-poster.jpg', 'docs/assets/personal-worlds-futuristic-v2-poster.jpg', 'docs/assets/kaimerva-launch-poster.jpg']);
+const proofVideos = new Set(['docs/assets/personal-worlds-demo.mp4', 'docs/assets/personal-worlds-x-teaser.mp4', 'docs/assets/personal-worlds-futuristic-v2.mp4', 'docs/assets/personal-worlds-futuristic-v2-teaser.mp4', 'docs/assets/kaimerva-launch.mp4']);
+const proofAnimations = new Set(['docs/assets/personal-worlds-demo-preview.gif', 'docs/assets/personal-worlds-futuristic-v2-preview.gif']);
+const brand = assets.assets.find(asset => asset.id === 'kaimerva-brand-icon');
+if (!brand || !/^[a-f0-9]{64}$/.test(brand.sha256)) throw new Error('Brand artwork provenance missing.');
+const brandImages = new Set([brand.path, ...brand.copies]);
 const forbiddenNames = /(?:^|\/)(?:\.env(?:\..*)?|portrait[^/]*\.(?:jpe?g|png|webp)|.*\.pdf|.*\.glb|.*\.gltf|.*\.woff2?|.*\.zip)$/i;
 for (const file of files) {
   const relative = path.relative(root, file).split(path.sep).join('/');
   if (forbiddenNames.test(relative)) throw new Error(`Unexpected personal/binary/config asset: ${relative}`);
   const bytes = await readFile(file);
+  if (brandImages.has(relative)) {
+    if (!bytes.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10])) || createHash('sha256').update(bytes).digest('hex') !== brand.sha256) throw new Error(`Brand artwork differs from the reviewed PNG: ${relative}`);
+    continue;
+  }
   if (proofImages.has(relative)) {
     if (!bytes.subarray(0, 3).equals(Buffer.from([255,216,255]))) throw new Error(`Proof image is not JPEG: ${relative}`);
+    continue;
+  }
+  if (proofVideos.has(relative)) {
+    if (bytes.subarray(4, 8).toString('ascii') !== 'ftyp') throw new Error(`Proof video is not MP4: ${relative}`);
+    continue;
+  }
+  if (proofAnimations.has(relative)) {
+    if (!['GIF87a', 'GIF89a'].includes(bytes.subarray(0, 6).toString('ascii'))) throw new Error(`Proof animation is not GIF: ${relative}`);
     continue;
   }
   if (bytes.includes(0)) throw new Error(`Unreviewed binary file: ${relative}`);

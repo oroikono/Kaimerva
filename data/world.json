@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "environment": {
+    "theme": "sea",
+    "exposure": 1,
+    "keyLightMultiplier": 1
+  },
+  "interface": {
+    "reader": "inline",
+    "panel": "solid",
+    "buttonShape": "square"
+  },
+  "interaction": {
+    "startView": "atlas",
+    "fieldEnabled": false,
+    "fieldSpacing": 0.45
+  }
+}

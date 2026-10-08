@@ -1,0 +1,833 @@
+{
+  "research_date_local": "2026-10-07",
+  "timezone": "Europe/Zurich",
+  "assembled_at_utc": "2026-10-07T10:00:59.374164+00:00",
+  "method": "Purposive primary-source sample: public GitHub REST repository metadata and recursive trees, public README files, selected skill manifests, developer/contributor guides and licenses. Public reads only; no installation or execution of sampled skills.",
+  "limitations": [
+    "Not exhaustive GitHub coverage.",
+    "Repository metrics are attention signals, not active-use or quality measurements.",
+    "Collection metrics cannot be assigned to an individual skill.",
+    "No causal relationship between README patterns and stars was measured.",
+    "Package functionality and evaluation efficacy were not independently run.",
+    "Missing or unavailable metrics must be represented as null, not zero.",
+    "License observations describe inspected declarations and files, not a legal clearance."
+  ],
+  "repositories": [
+    {
+      "repository": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "repository_url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
+      "retrieved_at_utc": "2026-10-07T09:57:22.932275+00:00",
+      "metadata_source": "https://api.github.com/repos/nextlevelbuilder/ui-ux-pro-max-skill",
+      "stars": 133704,
+      "forks": 14168,
+      "watchers_subscribers": 542,
+      "archived": false,
+      "default_branch": "main",
+      "license_api_spdx": "MIT",
+      "tree_source": "https://api.github.com/repos/nextlevelbuilder/ui-ux-pro-max-skill/git/trees/main?recursive=1",
+      "tree_sha": "477bcb28c9812b385cb51a4605ddf30d7b2266e2",
+      "tree_entries": 812,
+      "tree_truncated": false,
+      "root_directories_or_files": [
+        ".claude",
+        ".claude-plugin",
+        ".gitattributes",
+        ".github",
+        ".gitignore",
+        ".releaserc.json",
+        "CLAUDE.md",
+        "CODE_OF_CONDUCT.md",
+        "CONTRIBUTING.md",
+        "LICENSE",
+        "README.id.md",
+        "README.ko.md",
+        "README.md",
+        "README.vi.md",
+        "README.zh.md",
+        "SECURITY.md",
+        "cli",
+        "docs",
+        "gallery",
+        "preview",
+        "projects",
+        "screenshots",
+        "scripts",
+        "skill.json",
+        "src",
+        "stack"
+      ],
+      "observations": {
+        "metric_scope": "design skill plus catalog, CLI and related repository contents",
+        "license_observation": "Root LICENSE declares MIT; README distinguishes free repository from an advertised premium product.",
+        "organization": [
+          "src/ui-ux-pro-max/data",
+          "src/ui-ux-pro-max/scripts",
+          "src/ui-ux-pro-max/templates",
+          "cli",
+          "docs",
+          "preview"
+        ],
+        "presentation_sequence": [
+          "language links and badges",
+          "short purpose and preview",
+          "related-product promotion",
+          "design-system explanation",
+          "features and premium distinction",
+          "installation",
+          "example prompts",
+          "architecture and contribution",
+          "troubleshooting"
+        ]
+      },
+      "read_sources": [
+        {
+          "path": "README.md",
+          "url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/README.md"
+        },
+        {
+          "path": "file tree",
+          "url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/tree/main"
+        },
+        {
+          "path": "CONTRIBUTING.md",
+          "url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/CONTRIBUTING.md"
+        },
+        {
+          "path": "LICENSE",
+          "url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/LICENSE"
+        },
+        {
+          "path": "src/ui-ux-pro-max/templates/base/skill-content.md",
+          "url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/src/ui-ux-pro-max/templates/base/skill-content.md",
+          "raw_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/src/ui-ux-pro-max/templates/base/skill-content.md",
+          "retrieved_at_utc": "2026-10-07T09:58:31.279054+00:00"
+        },
+        {
+          "path": "src/ui-ux-pro-max/data/data-provenance.json",
+          "url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/src/ui-ux-pro-max/data/data-provenance.json",
+          "raw_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/src/ui-ux-pro-max/data/data-provenance.json",
+          "retrieved_at_utc": "2026-10-07T09:58:31.279186+00:00"
+        },
+        {
+          "path": "scripts/evaluate-relevance.py",
+          "url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/scripts/evaluate-relevance.py",
+          "raw_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/scripts/evaluate-relevance.py",
+          "retrieved_at_utc": "2026-10-07T09:58:31.279300+00:00"
+        }
+      ]
+    },
+    {
+      "repository": "anthropics/skills",
+      "repository_url": "https://github.com/anthropics/skills",
+      "retrieved_at_utc": "2026-10-07T09:57:22.932784+00:00",
+      "metadata_source": "https://api.github.com/repos/anthropics/skills",
+      "stars": 179983,
+      "forks": 21287,
+      "watchers_subscribers": 1118,
+      "archived": false,
+      "default_branch": "main",
+      "license_api_spdx": null,
+      "tree_source": "https://api.github.com/repos/anthropics/skills/git/trees/main?recursive=1",
+      "tree_sha": "683bc88e56f3e09ba94f7055977f3d3aa499f202",
+      "tree_entries": 537,
+      "tree_truncated": false,
+      "root_directories_or_files": [
+        ".claude-plugin",
+        ".gitignore",
+        "README.md",
+        "THIRD_PARTY_NOTICES.md",
+        "skills",
+        "spec",
+        "template"
+      ],
+      "observations": {
+        "metric_scope": "entire collection; not frontend-design-specific",
+        "license_observation": "No root license detected. Selected frontend-design/LICENSE.txt is Apache-2.0; parent README describes mixed licensing.",
+        "organization": [
+          "skills/frontend-design/SKILL.md",
+          "skills/frontend-design/LICENSE.txt",
+          "skills",
+          "spec",
+          "template",
+          ".claude-plugin"
+        ],
+        "presentation_sequence": [
+          "skill definition",
+          "information links",
+          "self-contained folder explanation",
+          "demonstration disclaimer",
+          "skill sets",
+          "Claude-specific entry paths",
+          "basic skill template"
+        ]
+      },
+      "read_sources": [
+        {
+          "path": "README.md",
+          "url": "https://github.com/anthropics/skills/blob/main/README.md"
+        },
+        {
+          "path": "file tree",
+          "url": "https://github.com/anthropics/skills/tree/main"
+        },
+        {
+          "path": "skills/frontend-design/SKILL.md",
+          "url": "https://github.com/anthropics/skills/blob/main/skills/frontend-design/SKILL.md",
+          "raw_url": "https://raw.githubusercontent.com/anthropics/skills/main/skills/frontend-design/SKILL.md",
+          "retrieved_at_utc": "2026-10-07T09:58:31.278455+00:00"
+        },
+        {
+          "path": "skills/frontend-design/LICENSE.txt",
+          "url": "https://github.com/anthropics/skills/blob/main/skills/frontend-design/LICENSE.txt",
+          "raw_url": "https://raw.githubusercontent.com/anthropics/skills/main/skills/frontend-design/LICENSE.txt",
+          "retrieved_at_utc": "2026-10-07T09:58:31.278905+00:00"
+        }
+      ]
+    },
+    {
+      "repository": "obra/superpowers",
+      "repository_url": "https://github.com/obra/superpowers",
+      "retrieved_at_utc": "2026-10-07T09:57:22.932925+00:00",
+      "metadata_source": "https://api.github.com/repos/obra/superpowers",
+      "stars": 296161,
+      "forks": 26437,
+      "watchers_subscribers": 1095,
+      "archived": false,
+      "default_branch": "main",
+      "license_api_spdx": "MIT",
+      "tree_source": "https://api.github.com/repos/obra/superpowers/git/trees/main?recursive=1",
+      "tree_sha": "8ca22dba9a94f28898bbce59f2537ff4d87c747d",
+      "tree_entries": 296,
+      "tree_truncated": false,
+      "root_directories_or_files": [
+        ".agents",
+        ".claude-plugin",
+        ".codex-plugin",
+        ".cursor-plugin",
+        ".devin-plugin",
+        ".gitattributes",
+        ".github",
+        ".gitignore",
+        ".hermes-plugin",
+        ".kimi-plugin",
+        ".muse-plugin",
+        ".opencode",
+        ".pi",
+        ".pre-commit-config.yaml",
+        ".version-bump.json",
+        "AGENTS.md",
+        "CODE_OF_CONDUCT.md",
+        "GEMINI.md",
+        "LICENSE",
+        "README.md",
+        "RELEASE-NOTES.md",
+        "assets",
+        "docs",
+        "gemini-extension.json",
+        "hooks",
+        "index.js",
+        "package.json",
+        "scripts",
+        "skills",
+        "tests"
+      ],
+      "observations": {
+        "metric_scope": "development methodology and composable skill framework",
+        "license_observation": "Root LICENSE declares MIT.",
+        "organization": [
+          "skills",
+          "hooks",
+          "docs",
+          "tests",
+          "scripts",
+          "harness plugin manifests"
+        ],
+        "presentation_sequence": [
+          "methodology promise",
+          "table of contents",
+          "workflow explanation",
+          "harness-specific installation",
+          "basic workflow",
+          "recovery",
+          "library and philosophy",
+          "contribution and update",
+          "license and telemetry"
+        ]
+      },
+      "read_sources": [
+        {
+          "path": "README.md",
+          "url": "https://github.com/obra/superpowers/blob/main/README.md"
+        },
+        {
+          "path": "file tree",
+          "url": "https://github.com/obra/superpowers/tree/main"
+        },
+        {
+          "path": "LICENSE",
+          "url": "https://github.com/obra/superpowers/blob/main/LICENSE"
+        },
+        {
+          "path": "skills/writing-skills/SKILL.md",
+          "url": "https://github.com/obra/superpowers/blob/main/skills/writing-skills/SKILL.md",
+          "raw_url": "https://raw.githubusercontent.com/obra/superpowers/main/skills/writing-skills/SKILL.md",
+          "retrieved_at_utc": "2026-10-07T09:58:31.502262+00:00"
+        },
+        {
+          "path": "skills/using-superpowers/SKILL.md",
+          "url": "https://github.com/obra/superpowers/blob/main/skills/using-superpowers/SKILL.md",
+          "raw_url": "https://raw.githubusercontent.com/obra/superpowers/main/skills/using-superpowers/SKILL.md",
+          "retrieved_at_utc": "2026-10-07T09:58:31.514676+00:00"
+        }
+      ]
+    },
+    {
+      "repository": "pbakaus/impeccable",
+      "repository_url": "https://github.com/pbakaus/impeccable",
+      "retrieved_at_utc": "2026-10-07T09:57:58.766422+00:00",
+      "metadata_source": "https://api.github.com/repos/pbakaus/impeccable",
+      "stars": 78001,
+      "forks": 4636,
+      "watchers_subscribers": 207,
+      "archived": false,
+      "default_branch": "main",
+      "license_api_spdx": "Apache-2.0",
+      "tree_source": "https://api.github.com/repos/pbakaus/impeccable/git/trees/main?recursive=1",
+      "tree_sha": "bbcb29d9dee6c94915d760bcfc36818ad5be66ad",
+      "tree_entries": 4470,
+      "tree_truncated": false,
+      "root_directories_or_files": [
+        ".agent",
+        ".agents",
+        ".bun-version",
+        ".cargo",
+        ".claude",
+        ".claude-plugin",
+        ".codex",
+        ".cursor",
+        ".cursor-plugin",
+        ".dsh",
+        ".gemini",
+        ".gitattributes",
+        ".github",
+        ".gitignore",
+        ".grok",
+        ".hermes",
+        ".impeccable",
+        ".kiro",
+        ".opencode",
+        ".pi",
+        ".qoder",
+        ".rovodev",
+        ".trae",
+        ".trae-cn",
+        ".veto",
+        ".vibe",
+        "AGENTS.md",
+        "CLAUDE.md",
+        "Cargo.lock",
+        "Cargo.toml",
+        "DESIGN.md",
+        "ENGINE_VERSION",
+        "LICENSE",
+        "NOTICE.md",
+        "PRODUCT.md",
+        "README.md",
+        "README.npm.md",
+        "biome.json",
+        "browser-bundle",
+        "bun.lock",
+        "cli",
+        "crates",
+        "cursor-plugin",
+        "demos",
+        "docs",
+        "extension",
+        "package.json",
+        "plugin",
+        "rust-toolchain.toml",
+        "scripts",
+        "skill",
+        "skills-lock.json",
+        "tests",
+        "ui",
+        "vscode"
+      ],
+      "observations": {
+        "metric_scope": "design skill, command system, detectors and runtime tooling",
+        "license_observation": "Root LICENSE is Apache-2.0. NOTICE.md records an MIT platform-reference derivation.",
+        "organization": [
+          "skill/SKILL.src.md",
+          "skill/reference",
+          "skill/agents",
+          "skill/scripts",
+          "crates",
+          "cli",
+          "browser-bundle",
+          "demos",
+          "tests",
+          "docs"
+        ],
+        "presentation_sequence": [
+          "purpose and quickstart",
+          "problem",
+          "command vocabulary",
+          "usage examples",
+          "anti-patterns",
+          "before/after case study",
+          "install options",
+          "live-mode and detector limits",
+          "community and contribution"
+        ]
+      },
+      "read_sources": [
+        {
+          "path": "README.md",
+          "url": "https://github.com/pbakaus/impeccable/blob/main/README.md"
+        },
+        {
+          "path": "file tree",
+          "url": "https://github.com/pbakaus/impeccable/tree/main"
+        },
+        {
+          "path": "LICENSE",
+          "url": "https://github.com/pbakaus/impeccable/blob/main/LICENSE"
+        },
+        {
+          "path": "NOTICE.md",
+          "url": "https://github.com/pbakaus/impeccable/blob/main/NOTICE.md"
+        },
+        {
+          "path": "skill/SKILL.src.md",
+          "url": "https://github.com/pbakaus/impeccable/blob/main/skill/SKILL.src.md",
+          "raw_url": "https://raw.githubusercontent.com/pbakaus/impeccable/main/skill/SKILL.src.md",
+          "retrieved_at_utc": "2026-10-07T09:58:31.702983+00:00"
+        },
+        {
+          "path": "skill/reference/craft.md",
+          "url": "https://github.com/pbakaus/impeccable/blob/main/skill/reference/craft.md",
+          "raw_url": "https://raw.githubusercontent.com/pbakaus/impeccable/main/skill/reference/craft.md",
+          "retrieved_at_utc": "2026-10-07T09:58:31.747213+00:00"
+        },
+        {
+          "path": "NOTICE.md",
+          "url": "https://github.com/pbakaus/impeccable/blob/main/NOTICE.md",
+          "raw_url": "https://raw.githubusercontent.com/pbakaus/impeccable/main/NOTICE.md",
+          "retrieved_at_utc": "2026-10-07T09:58:31.772775+00:00"
+        },
+        {
+          "path": "docs/DEVELOP.md",
+          "url": "https://github.com/pbakaus/impeccable/blob/main/docs/DEVELOP.md"
+        }
+      ]
+    },
+    {
+      "repository": "vercel-labs/agent-skills",
+      "repository_url": "https://github.com/vercel-labs/agent-skills",
+      "retrieved_at_utc": "2026-10-07T09:57:24.523290+00:00",
+      "metadata_source": "https://api.github.com/repos/vercel-labs/agent-skills",
+      "stars": 32020,
+      "forks": 2807,
+      "watchers_subscribers": 130,
+      "archived": false,
+      "default_branch": "main",
+      "license_api_spdx": null,
+      "tree_source": "https://api.github.com/repos/vercel-labs/agent-skills/git/trees/main?recursive=1",
+      "tree_sha": "063bee94c3f4df8453406c830b0a7df0f2860278",
+      "tree_entries": 481,
+      "tree_truncated": false,
+      "root_directories_or_files": [
+        ".github",
+        ".gitignore",
+        "AGENTS.md",
+        "CLAUDE.md",
+        "README.md",
+        "package-lock.json",
+        "package.json",
+        "packages",
+        "scripts",
+        "skills",
+        "skills.sh.json"
+      ],
+      "observations": {
+        "metric_scope": "entire collection; not one specific skill",
+        "license_observation": "Root README and inspected react-best-practices SKILL.md declare MIT. API detected no root license; no root LICENSE found in the fetched full tree.",
+        "organization": [
+          "skills",
+          "skills/react-best-practices/rules",
+          "skills/react-best-practices/AGENTS.md",
+          "packages/react-best-practices-build",
+          "scripts",
+          "skills.sh.json"
+        ],
+        "presentation_sequence": [
+          "skill definition",
+          "available skills and triggers",
+          "installation",
+          "natural-language usage",
+          "discovery artifacts",
+          "folder structure",
+          "license declaration"
+        ]
+      },
+      "read_sources": [
+        {
+          "path": "README.md",
+          "url": "https://github.com/vercel-labs/agent-skills/blob/main/README.md"
+        },
+        {
+          "path": "file tree",
+          "url": "https://github.com/vercel-labs/agent-skills/tree/main"
+        },
+        {
+          "path": "skills/react-best-practices/SKILL.md",
+          "url": "https://github.com/vercel-labs/agent-skills/blob/main/skills/react-best-practices/SKILL.md",
+          "raw_url": "https://raw.githubusercontent.com/vercel-labs/agent-skills/main/skills/react-best-practices/SKILL.md",
+          "retrieved_at_utc": "2026-10-07T09:58:31.542030+00:00"
+        },
+        {
+          "path": "skills/react-best-practices/README.md",
+          "url": "https://github.com/vercel-labs/agent-skills/blob/main/skills/react-best-practices/README.md",
+          "raw_url": "https://raw.githubusercontent.com/vercel-labs/agent-skills/main/skills/react-best-practices/README.md",
+          "retrieved_at_utc": "2026-10-07T09:58:31.546026+00:00"
+        },
+        {
+          "path": "skills/web-design-guidelines/SKILL.md",
+          "url": "https://github.com/vercel-labs/agent-skills/blob/main/skills/web-design-guidelines/SKILL.md",
+          "raw_url": "https://raw.githubusercontent.com/vercel-labs/agent-skills/main/skills/web-design-guidelines/SKILL.md",
+          "retrieved_at_utc": "2026-10-07T09:58:31.597248+00:00"
+        },
+        {
+          "path": "scripts/build-discovery-index.mjs",
+          "url": "https://github.com/vercel-labs/agent-skills/blob/main/scripts/build-discovery-index.mjs",
+          "raw_url": "https://raw.githubusercontent.com/vercel-labs/agent-skills/main/scripts/build-discovery-index.mjs",
+          "retrieved_at_utc": "2026-10-07T09:58:31.689114+00:00"
+        }
+      ]
+    },
+    {
+      "repository": "vercel-labs/skills",
+      "repository_url": "https://github.com/vercel-labs/skills",
+      "retrieved_at_utc": "2026-10-07T09:57:24.812034+00:00",
+      "metadata_source": "https://api.github.com/repos/vercel-labs/skills",
+      "stars": 33311,
+      "forks": 2849,
+      "watchers_subscribers": 109,
+      "archived": false,
+      "default_branch": "main",
+      "license_api_spdx": "MIT",
+      "tree_source": "https://api.github.com/repos/vercel-labs/skills/git/trees/main?recursive=1",
+      "tree_sha": "48dc9e8eb8aa19040e91cb90ba0b642c9cbad57e",
+      "tree_entries": 151,
+      "tree_truncated": false,
+      "root_directories_or_files": [
+        ".factory",
+        ".github",
+        ".gitignore",
+        ".husky",
+        ".prettierrc",
+        "AGENTS.md",
+        "LICENSE",
+        "README.md",
+        "ThirdPartyNoticeText.txt",
+        "bin",
+        "build.config.mjs",
+        "package.json",
+        "pnpm-lock.yaml",
+        "scripts",
+        "skills",
+        "src",
+        "tests",
+        "tsconfig.json"
+      ],
+      "observations": {
+        "metric_scope": "distribution and discovery CLI, not a portfolio-design skill",
+        "license_observation": "Root LICENSE declares MIT; README documents telemetry and opt-outs.",
+        "organization": [
+          "src",
+          "tests",
+          "bin",
+          "scripts",
+          "skills/find-skills/SKILL.md"
+        ],
+        "presentation_sequence": [
+          "ecosystem purpose and agents",
+          "installation",
+          "temporary skill use",
+          "source formats and options",
+          "scope and lifecycle commands",
+          "format and discovery",
+          "compatibility and troubleshooting",
+          "telemetry and license"
+        ]
+      },
+      "read_sources": [
+        {
+          "path": "README.md",
+          "url": "https://github.com/vercel-labs/skills/blob/main/README.md"
+        },
+        {
+          "path": "file tree",
+          "url": "https://github.com/vercel-labs/skills/tree/main"
+        },
+        {
+          "path": "LICENSE",
+          "url": "https://github.com/vercel-labs/skills/blob/main/LICENSE"
+        }
+      ]
+    },
+    {
+      "repository": "gsd-build/get-shit-done",
+      "repository_url": "https://github.com/gsd-build/get-shit-done",
+      "retrieved_at_utc": "2026-10-07T09:57:22.933060+00:00",
+      "metadata_source": "https://api.github.com/repos/gsd-build/get-shit-done",
+      "stars": 64361,
+      "forks": 5431,
+      "watchers_subscribers": 277,
+      "archived": true,
+      "default_branch": "main",
+      "license_api_spdx": "MIT",
+      "tree_source": "https://api.github.com/repos/gsd-build/get-shit-done/git/trees/main?recursive=1",
+      "tree_sha": "bdcaab2c752d9a33a1a1ca9acf3a3c81fb991815",
+      "tree_entries": 1941,
+      "tree_truncated": false,
+      "root_directories_or_files": [
+        ".base64scanignore",
+        ".changeset",
+        ".clinerules",
+        ".coderabbit.yaml",
+        ".githooks",
+        ".github",
+        ".gitignore",
+        ".out-of-scope",
+        ".plans",
+        ".release-monitor.sh",
+        ".secretscanignore",
+        "AGENTS.md",
+        "CHANGELOG.md",
+        "CONTEXT.md",
+        "CONTRIBUTING.md",
+        "LICENSE",
+        "QUICK-WINS-CONFIRMED-BUGS.md",
+        "README.ja-JP.md",
+        "README.ko-KR.md",
+        "README.md",
+        "README.pt-BR.md",
+        "README.zh-CN.md",
+        "SECURITY.md",
+        "TEST-EXAMPLES.md",
+        "VERSIONING.md",
+        "agents",
+        "assets",
+        "bin",
+        "commands",
+        "docs",
+        "get-shit-done",
+        "hooks",
+        "package-lock.json",
+        "package.json",
+        "scripts",
+        "sdk",
+        "tests",
+        "tsconfig.json",
+        "vitest.config.ts"
+      ],
+      "observations": {
+        "metric_scope": "archived former GSD repository; stars are not current GSD Core stars",
+        "license_observation": "Root LICENSE declares MIT.",
+        "organization": [
+          "agents",
+          "commands",
+          "get-shit-done",
+          "bin",
+          "sdk",
+          "tests",
+          "docs"
+        ],
+        "presentation_sequence": [
+          "relocation notice",
+          "new active repository URL"
+        ]
+      },
+      "read_sources": [
+        {
+          "path": "README.md",
+          "url": "https://github.com/gsd-build/get-shit-done/blob/main/README.md"
+        },
+        {
+          "path": "file tree",
+          "url": "https://github.com/gsd-build/get-shit-done/tree/main"
+        },
+        {
+          "path": "CONTRIBUTING.md",
+          "url": "https://github.com/gsd-build/get-shit-done/blob/main/CONTRIBUTING.md"
+        },
+        {
+          "path": "LICENSE",
+          "url": "https://github.com/gsd-build/get-shit-done/blob/main/LICENSE"
+        }
+      ]
+    },
+    {
+      "repository": "open-gsd/gsd-core",
+      "repository_url": "https://github.com/open-gsd/gsd-core",
+      "retrieved_at_utc": "2026-10-07T09:57:58.772046+00:00",
+      "metadata_source": "https://api.github.com/repos/open-gsd/gsd-core",
+      "stars": 10257,
+      "forks": 739,
+      "watchers_subscribers": 42,
+      "archived": false,
+      "default_branch": "next",
+      "license_api_spdx": "MIT",
+      "tree_source": "https://api.github.com/repos/open-gsd/gsd-core/git/trees/next?recursive=1",
+      "tree_sha": "83aba44627ba43aff77588894f7b81a9a7437e75",
+      "tree_entries": 4303,
+      "tree_truncated": false,
+      "root_directories_or_files": [
+        ".base64scanignore",
+        ".changeset",
+        ".claude-plugin",
+        ".clinerules",
+        ".coderabbit.yaml",
+        ".editorconfig",
+        ".gitattributes",
+        ".githooks",
+        ".github",
+        ".gitignore",
+        ".gsd",
+        ".kilo",
+        ".nvmrc",
+        ".opencode",
+        ".out-of-scope",
+        ".plans",
+        ".release-monitor.sh",
+        ".secretscanignore",
+        "CHANGELOG.md",
+        "CONTEXT.md",
+        "CONTRIBUTING.md",
+        "GEMINI.md",
+        "LICENSE",
+        "README.ja-JP.md",
+        "README.ko-KR.md",
+        "README.md",
+        "README.pt-BR.md",
+        "README.zh-CN.md",
+        "SECURITY.md",
+        "TEST-EXAMPLES.md",
+        "TESTING-STANDARDS.md",
+        "VERSIONING.md",
+        "agents",
+        "assets",
+        "bin",
+        "capabilities",
+        "commands",
+        "docs",
+        "eslint-rules",
+        "eslint.config.mjs",
+        "examples",
+        "gsd-core",
+        "hooks",
+        "package-lock.json",
+        "package.json",
+        "pi",
+        "scripts",
+        "skills",
+        "src",
+        "stryker.config.mjs",
+        "tests",
+        "tsconfig.build.json",
+        "tsconfig.json",
+        "vscode"
+      ],
+      "observations": {
+        "metric_scope": "active GSD continuation; distinct repository from archived home",
+        "license_observation": "Root LICENSE declares MIT.",
+        "organization": [
+          "agents",
+          "commands",
+          "skills",
+          "gsd-core",
+          "capabilities",
+          "src",
+          "bin",
+          "hooks",
+          "docs",
+          "tests",
+          "examples"
+        ],
+        "presentation_sequence": [
+          "name, tagline and badges",
+          "problem",
+          "five-stage loop",
+          "quickstart",
+          "first-project and onboarding tutorials",
+          "audience/task-oriented documentation",
+          "reasoning",
+          "community",
+          "license"
+        ]
+      },
+      "read_sources": [
+        {
+          "path": "README.md",
+          "url": "https://github.com/open-gsd/gsd-core/blob/next/README.md"
+        },
+        {
+          "path": "file tree",
+          "url": "https://github.com/open-gsd/gsd-core/tree/next"
+        },
+        {
+          "path": "CONTRIBUTING.md",
+          "url": "https://github.com/open-gsd/gsd-core/blob/next/CONTRIBUTING.md"
+        },
+        {
+          "path": "LICENSE",
+          "url": "https://github.com/open-gsd/gsd-core/blob/next/LICENSE"
+        },
+        {
+          "path": "docs/README.md",
+          "url": "https://github.com/open-gsd/gsd-core/blob/next/docs/README.md",
+          "raw_url": "https://raw.githubusercontent.com/open-gsd/gsd-core/next/docs/README.md",
+          "retrieved_at_utc": "2026-10-07T09:58:31.906738+00:00"
+        },
+        {
+          "path": "TESTING-STANDARDS.md",
+          "url": "https://github.com/open-gsd/gsd-core/blob/next/TESTING-STANDARDS.md",
+          "raw_url": "https://raw.githubusercontent.com/open-gsd/gsd-core/next/TESTING-STANDARDS.md",
+          "retrieved_at_utc": "2026-10-07T09:58:31.935478+00:00"
+        },
+        {
+          "path": "docs/ARCHITECTURE.md",
+          "url": "https://github.com/open-gsd/gsd-core/blob/next/docs/ARCHITECTURE.md",
+          "raw_url": "https://raw.githubusercontent.com/open-gsd/gsd-core/next/docs/ARCHITECTURE.md",
+          "retrieved_at_utc": "2026-10-07T09:58:31.959516+00:00"
+        }
+      ]
+    }
+  ],
+  "screened_not_profiled": [
+    {
+      "repository": "github/spec-kit",
+      "repository_url": "https://github.com/github/spec-kit",
+      "metadata_source": "https://api.github.com/repos/github/spec-kit",
+      "retrieved_at_utc": "2026-10-07T09:57:24.570547+00:00",
+      "stars": 140464,
+      "forks": 12567,
+      "reason": "Adjacent general spec/workflow toolkit; excluded from detailed profiles to emphasize design and agent first-use patterns."
+    }
+  ],
+  "unavailable_selected_sources": [
+    {
+      "repository": "obra/superpowers",
+      "path": "docs/README.codex.md",
+      "url": "https://raw.githubusercontent.com/obra/superpowers/main/docs/README.codex.md",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "repository": "pbakaus/impeccable",
+      "path": "docs/CONTRIBUTING.md",
+      "url": "https://raw.githubusercontent.com/pbakaus/impeccable/main/docs/CONTRIBUTING.md",
+      "error": "HTTP Error 404: Not Found"
+    }
+  ]
+}

@@ -21,14 +21,39 @@
     {
       "id": "example-research",
       "collection": "research",
-      "kind": "paper",
-      "title": "Questions worth following.",
-      "summary": "Let readers see the research question before they see a wall of acronyms. Keep publication status and source links explicit.",
-      "body": "This is an example entry, not a real paper or publication claim. Replace it with your own authors, abstract, publication status, and source. A licensed main figure can help; record its reuse basis before serving it.",
-      "tags": ["Research", "Example"],
-      "status": "example",
+      "kind": "note",
+      "title": "Inside an interference field",
+      "summary": "An illustrative visual study: place two equal sources, read their radial contributions, then inspect their sum.",
+      "body": "This is original demo artwork, not a paper or a scientific result. Two sources sit at A = (−2.25, 0) and B = (+2.25, 0) in arbitrary coordinates. With k = 2π / 2.4, the final plate evaluates s(x, y) = cos(k rA) + cos(k rB) over x ∈ [−7, 7], y ∈ [−3.5, 3.5], where rA and rB are distances to the sources. Cyan shows positive values, brass negative values, and ink values near zero. The contribution plate shows constant-phase contours of the same two functions. This static scalar analogy does not model physical decay, time evolution, boundary conditions, or calibrated measurements.",
+      "tags": ["Visualization", "Illustrative study"],
+      "status": "illustrative example",
       "published": true,
-      "links": []
+      "links": [],
+      "figure": {
+        "src": "./figures/wave-interference.svg",
+        "alt": "Two radial cosine contributions sum into a cyan and brass scalar field. Sources A and B and zero-level contours remain visible.",
+        "caption": "Original illustrative plates, authored for this starter. The scalar construction is an analogy, not a physical propagation solver, publication figure, or research result.",
+        "stages": [
+          {
+            "id": "sources",
+            "label": "Place the sources",
+            "src": "./figures/wave-sources.svg",
+            "description": "A = (−2.25, 0) and B = (+2.25, 0) share one wavelength, 2.4 arbitrary units, and one phase. The source positions remain fixed throughout all three plates."
+          },
+          {
+            "id": "propagation",
+            "label": "Read each contribution",
+            "src": "./figures/wave-propagation.svg",
+            "description": "Each contribution is a radial cosine: a = cos(k rA), b = cos(k rB), with k = 2π / 2.4. Solid cyan and brass rings mark positive maxima; dashed rings mark negative minima. These are static constant-phase contours."
+          },
+          {
+            "id": "interference",
+            "label": "Inspect their sum",
+            "src": "./figures/wave-interference.svg",
+            "description": "The final plate directly samples s = a + b over the same domain. Cyan means positive, brass negative, and dark ink near zero. Thin contours trace 0 and ±1.2. No physical decay, time stepping, or calibration is implied."
+          }
+        ]
+      }
     },
     {
       "id": "example-note",

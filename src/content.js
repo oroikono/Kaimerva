@@ -19,6 +19,29 @@ export function safeLink(value) {
   } catch { return null; }
 }
 
+/** This starter ships an explicit set of local figure files, never remote URLs. */
+export function safeFigureSource(value) {
+  return typeof value === 'string' && value === value.trim() && value.length <= 180 && /^\.\/figures\/[a-z0-9][a-z0-9_-]*\.(?:svg|png|jpe?g|webp)$/.test(value) ? value : null;
+}
+function figureRecord(value, label, keys) {
+  if (!value || typeof value !== 'object' || Array.isArray(value) || Object.keys(value).some(key => !keys.includes(key))) throw new Error(`${label} contains invalid figure metadata.`);
+  return value;
+}
+function validateFigure(input, id) {
+  const figure = figureRecord(input, `${id}.figure`, ['src', 'alt', 'caption', 'stages']);
+  if (!safeFigureSource(figure.src)) throw new Error(`${id}.figure.src must be a safe local figure URL.`);
+  if (!Array.isArray(figure.stages) || figure.stages.length < 1 || figure.stages.length > 3) throw new Error(`${id}.figure.stages requires one to three stages.`);
+  const seen = new Set();
+  const stages = figure.stages.map((inputStage, index) => {
+    const stage = figureRecord(inputStage, `${id}.figure.stages[${index}]`, ['id', 'label', 'src', 'description']);
+    if (typeof stage.id !== 'string' || stage.id.length > 48 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(stage.id) || seen.has(stage.id)) throw new Error(`${id}.figure.stages has an invalid or duplicate stage id.`);
+    seen.add(stage.id);
+    if (!safeFigureSource(stage.src)) throw new Error(`${id}.figure.stages[${index}].src must be a safe local figure URL.`);
+    return { id: stage.id, label: text(stage.label, `${id}.figure.stages.label`, 80), src: stage.src, description: text(stage.description, `${id}.figure.stages.description`, 2000) };
+  });
+  return { src: figure.src, alt: text(figure.alt, `${id}.figure.alt`, 400), caption: text(figure.caption, `${id}.figure.caption`, 2000), stages };
+}
+
 /** Provider boundary: unknown or malformed content never replaces a valid snapshot. */
 export function validateContent(input) {
   if (!input || input.schemaVersion !== 1 || !input.identity || !Array.isArray(input.items)) throw new Error('Expected schemaVersion 1, identity, and an items array.');
@@ -50,6 +73,7 @@ export function validateContent(input) {
       published: item.published === true,
       ...(item.status ? { status: text(item.status, `${item.id}.status`, 80) } : {}),
       ...(item.date ? { date: validateDate(item.date, item.id) } : {}),
+      ...(item.figure !== undefined ? { figure: validateFigure(item.figure, item.id) } : {}),
     };
   });
   return { schemaVersion: 1, demo: input.demo, identity, items };

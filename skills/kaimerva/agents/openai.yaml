@@ -1,0 +1,5 @@
+interface:
+  display_name: "Kaimerva"
+  short_description: "Build and customize an explorable portfolio world"
+  icon_large: "./assets/kaimerva-icon.png"
+  default_prompt: "Use $kaimerva to build or customize my explorable portfolio from this brief, preserving my content and routes, and show the reviewed result."

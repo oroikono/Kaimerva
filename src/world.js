@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { getTheme } from './themes.js';
 import { cycleDirection, cyclicDestination, targetPhase } from './navigation.js';
+import { createFigurePassage } from './figure-passage.js';
 
 // Authored geometry, materials, motion, and layout. The destinations are content slots,
 // arranged along a closed route; exploration follows its neighboring stops.
@@ -1001,7 +1002,7 @@ function seaReflection(surface, renderer) {
  * select() mirrors external content selection silently. Actual world interactions
  * invoke onVisit immediately; travel is visual and never gates access to content.
  */
-export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit = () => {}, onStatus = () => {}, onExit = () => {}, onFieldChange = () => {}, onViewChange = () => {} } = {}) {
+export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit = () => {}, onStatus = () => {}, onExit = () => {}, onFieldChange = () => {}, onViewChange = () => {}, onInspectionChange = () => {}, onInspectionImage = () => {} } = {}) {
   if (!mount) throw new TypeError('createWorld requires a mount element.');
   const noop = () => {};
   let renderer;
@@ -1009,7 +1010,7 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'low-power' });
   } catch {
     onStatus({ ready: false, message: 'The 3D view is unavailable here. Every destination is still available in the reading view.' });
-    return { select: noop, setTheme: noop, setMotion: noop, setField: noop, setView: noop, destroy: noop };
+    return { select: noop, setTheme: noop, setAppearance: noop, setMotion: noop, setField: noop, setView: noop, setInspection: noop, setInspectionStage: noop, destroy: noop };
   }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -1063,6 +1064,12 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   let fieldEnabled = false;
   let fieldSpacing = 0.45;
   let fieldDrag = null;
+  let exposureMultiplier = 1;
+  let keyLightMultiplier = 1;
+  let themeExposure = 1;
+  let themeKeyIntensity = 3;
+  let inspection = null;
+  let restoredPose = null;
   const instrumentRay = new THREE.Raycaster();
   const pointerPosition = new THREE.Vector2();
   const labelPosition = new THREE.Vector3();
@@ -1075,6 +1082,135 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   let lastHeading = 0;
   const canDraw = () => !destroyed && !contextLost && inView && !document.hidden && width > 1 && height > 1;
   const moving = () => motionRequested && !reducedMotion.matches;
+
+  function inspectionPose() {
+    // Match the host's stacked-reader breakpoint, including short windows.
+    const phone = width <= 600;
+    const distance = Math.max(phone ? 30 : 12.3, 7.65 / (2 * Math.tan(camera.fov * Math.PI / 360) * camera.aspect) * 1.11);
+    const viewportHeight = 2 * distance * Math.tan(camera.fov * Math.PI / 360);
+    const viewportWidth = viewportHeight * camera.aspect;
+    const right = new THREE.Vector3(Math.cos(inspection.bearing), 0, -Math.sin(inspection.bearing));
+    const forward = new THREE.Vector3(Math.sin(inspection.bearing), 0, Math.cos(inspection.bearing));
+    // Leave the right 40% to the reader. On a phone the apparatus occupies the
+    // upper portion, with the native reader below; no rolled/orbiting horizon.
+    desiredTarget.copy(inspection.anchor).addScaledVector(right, phone ? 0 : viewportWidth * 0.2);
+    if (phone) desiredTarget.y -= viewportHeight * 0.265;
+    desiredPosition.copy(desiredTarget).addScaledVector(forward, distance);
+  }
+
+  function applyInspectionCamera(amount, closing = false) {
+    if (!inspection) return;
+    inspectionPose();
+    if (closing) {
+      camera.position.copy(inspection.exitPosition).lerp(inspection.saved.cameraPosition, amount);
+      cameraAim.copy(inspection.exitAim).lerp(inspection.saved.cameraAim, amount);
+    } else {
+      camera.position.copy(inspection.saved.cameraPosition).lerp(desiredPosition, amount);
+      cameraAim.copy(inspection.saved.cameraAim).lerp(desiredTarget, amount);
+    }
+    camera.lookAt(cameraAim);
+    camera.updateMatrixWorld();
+  }
+
+  function settleInspectionOpening() {
+    if (!inspection || inspection.phase !== 'opening') return;
+    inspection.progress = 1;
+    inspection.open = 1;
+    inspection.phase = 'open';
+    inspection.rig.update(0, 1, true);
+    applyInspectionCamera(1);
+    if (!destroyed) onInspectionChange({ phase: 'open' });
+  }
+
+  function finishInspection(notify = true) {
+    if (!inspection) return;
+    const saved = inspection.saved;
+    inspection.rig.dispose();
+    inspection = null;
+    camera.position.copy(saved.cameraPosition);
+    cameraAim.copy(saved.cameraAim);
+    atlasPosition.copy(saved.atlasPosition);
+    atlasTarget.copy(saved.atlasTarget);
+    camera.lookAt(cameraAim);
+    camera.updateMatrixWorld();
+    routePhase = saved.routePhase;
+    transition = saved.transition;
+    world.traveler.position.copy(saved.travelerPosition);
+    world.traveler.quaternion.copy(saved.travelerQuaternion);
+    lastTravelerPosition.copy(saved.lastTravelerPosition);
+    lastHeading = saved.lastHeading;
+    // The host restores its inline layout after 'closed'. That resize should
+    // not snap a voyage camera which was partway through a selected transition.
+    restoredPose = saved;
+    // Projected buttons were hidden during the passage. Restore their actual
+    // exploration visibility before the host tests the invoking focus target;
+    // projecting the saved pose in a still-fullscreen aspect would be wrong.
+    labels.forEach(({ element, id }) => { element.hidden = saved.labelVisibility.get(id) ?? true; });
+    renderer.domElement.style.touchAction = fieldEnabled ? 'pan-y' : 'auto';
+    renderer.domElement.style.cursor = fieldEnabled ? 'ew-resize' : 'default';
+    renderer.shadowMap.needsUpdate = true;
+    invalidate();
+    if (notify && !destroyed) {
+      onInspectionChange({ phase: 'closed' });
+      // A synchronous host layout restoration can be fitted before the next
+      // paint, avoiding a fullscreen canvas squeezed into its inline slot.
+      if (!contextLost) { resize(); updateLabels(); }
+    }
+  }
+
+  function setInspection({ active = false, imageUrl, stage = 0 } = {}) {
+    if (destroyed || contextLost || !world) return;
+    if (!active) {
+      if (!inspection || inspection.phase === 'closing') return;
+      if (!moving() || !canDraw()) { finishInspection(); return; }
+      inspection.phase = 'closing';
+      inspection.progress = 0;
+      inspection.exitPosition = camera.position.clone();
+      inspection.exitAim = cameraAim.clone();
+      inspection.exitOpen = inspection.open;
+      onInspectionChange({ phase: 'closing' });
+      invalidate();
+      return;
+    }
+    if (inspection) {
+      if (inspection.phase === 'closing') finishInspection();
+      else { setInspectionStage({ imageUrl, stage }); return; }
+    }
+    if (!Number.isInteger(stage) || stage < 0 || stage > 2) throw new RangeError('Figure passage stage must be 0, 1 or 2.');
+    cancelFieldDrag();
+    restoredPose = null;
+    const anchor = (world.stops.research?.position || atlasTarget).clone();
+    anchor.y += 4.82;
+    const bearing = Math.atan2(world.camera[0], world.camera[2]);
+    const saved = {
+      cameraPosition: camera.position.clone(), cameraAim: cameraAim.clone(),
+      atlasPosition: atlasPosition.clone(), atlasTarget: atlasTarget.clone(),
+      routePhase, transition: transition ? { ...transition } : null,
+      travelerPosition: world.traveler.position.clone(), travelerQuaternion: world.traveler.quaternion.clone(),
+      lastTravelerPosition: lastTravelerPosition.clone(), lastHeading, width, height,
+      labelVisibility: new Map(labels.map(({ id, element }) => [id, element.hidden])),
+    };
+    const rig = createFigurePassage({ anchor, bearing, onInvalidate: invalidate, onImage: state => {
+      if (!destroyed && !contextLost && inspection?.rig === rig) onInspectionImage({ ...state, error: Boolean(state.error) });
+    } });
+    inspection = { phase: 'opening', progress: 0, open: 0, rig, saved, anchor, bearing };
+    scene.add(rig.group);
+    renderer.domElement.style.touchAction = 'auto';
+    renderer.domElement.style.cursor = 'default';
+    labels.forEach(({ element }) => { element.hidden = true; });
+    rig.setStage(stage, imageUrl, true);
+    renderer.shadowMap.needsUpdate = true;
+    onInspectionChange({ phase: 'opening' });
+    if (!moving() || !canDraw()) settleInspectionOpening();
+    invalidate();
+  }
+
+  function setInspectionStage({ imageUrl, stage = 0 } = {}) {
+    if (destroyed || contextLost || !inspection || inspection.phase === 'closing') return;
+    inspection.rig.setStage(stage, imageUrl, !moving());
+    if (!moving()) inspection.rig.update(0, inspection.open, true);
+    invalidate();
+  }
 
   function placeTraveler(phase, direction = 1) {
     const position = world.route.point(phase);
@@ -1107,6 +1243,10 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   }
 
   function updateLabels() {
+    if (inspection) {
+      labels.forEach(({ element }) => { element.hidden = true; });
+      return;
+    }
     labels.forEach(({ element, id, boxWidth, boxHeight }) => {
       labelPosition.copy(world.stops[id].label).project(camera);
       const x = (labelPosition.x * 0.5 + 0.5) * width;
@@ -1130,7 +1270,31 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     if (!canDraw()) { previousTimestamp = 0; return; }
     const dt = previousTimestamp ? Math.min((timestamp - previousTimestamp) / 1000, 0.06) : 0;
     previousTimestamp = timestamp;
-    if (moving()) {
+    let passageMoving = false;
+    if (inspection) {
+      if (moving()) {
+        if (inspection.phase === 'opening') {
+          inspection.progress = Math.min(1, inspection.progress + dt / 0.95);
+          const t = inspection.progress;
+          const ease = t * t * (3 - 2 * t);
+          inspection.open = ease;
+          applyInspectionCamera(ease);
+          if (t === 1) {
+            inspection.phase = 'open';
+            onInspectionChange({ phase: 'open' });
+          } else passageMoving = true;
+        } else if (inspection.phase === 'closing') {
+          inspection.progress = Math.min(1, inspection.progress + dt / 0.7);
+          const t = inspection.progress;
+          const ease = t * t * (3 - 2 * t);
+          inspection.open = inspection.exitOpen * (1 - ease);
+          applyInspectionCamera(ease, true);
+          if (t === 1) finishInspection();
+          else passageMoving = true;
+        }
+      }
+      if (inspection) passageMoving = inspection.rig.update(moving() ? dt : 0, inspection.open) || passageMoving;
+    } else if (moving()) {
       elapsed += dt;
       if (transition) {
         transition.progress = Math.min(transition.progress + dt / transition.duration, 1);
@@ -1154,8 +1318,11 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     renderer.render(scene, camera);
     updateLabels();
     invalidated = false;
-    if (moving()) frame = requestAnimationFrame(draw);
-    else previousTimestamp = 0;
+    if (moving() && (!inspection || passageMoving)) {
+      // A lifecycle callback can invalidate while this draw is executing;
+      // keep one RAF chain rather than scheduling a second perpetual loop.
+      if (!frame) frame = requestAnimationFrame(draw);
+    } else if (!frame) previousTimestamp = 0;
   }
 
   function invalidate() {
@@ -1176,6 +1343,27 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     if (!width || !height || !world) return;
     renderer.setSize(width, height, false);
     camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    if (inspection) {
+      // Fullscreen and orientation changes reframe the apparatus, never the
+      // exploration snapshot or the underlying boat route.
+      applyInspectionCamera(inspection.phase === 'closing' ? inspection.progress * inspection.progress * (3 - 2 * inspection.progress) : inspection.open,
+        inspection.phase === 'closing');
+      invalidate();
+      return;
+    }
+    if (restoredPose && width === restoredPose.width && height === restoredPose.height) {
+      camera.position.copy(restoredPose.cameraPosition);
+      cameraAim.copy(restoredPose.cameraAim);
+      atlasPosition.copy(restoredPose.atlasPosition);
+      atlasTarget.copy(restoredPose.atlasTarget);
+      camera.lookAt(cameraAim);
+      camera.updateMatrixWorld();
+      restoredPose = null;
+      invalidate();
+      return;
+    }
+    restoredPose = null;
     // Hidden voyage labels still have to participate in the atlas fit.
     labels.forEach(label => {
       label.element.hidden = false;
@@ -1211,7 +1399,7 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   }
 
   function select(id, direction = 0) {
-    if (destroyed || !world?.stops[id]) return;
+    if (destroyed || inspection || !world?.stops[id]) return;
     if (selectedId === id && transition) return;
     selectedId = id;
     const target = targetPhase(routePhase, world.route.order.indexOf(id), world.route.order.length, direction);
@@ -1227,9 +1415,10 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     invalidate();
   }
 
-  function activate(id, openReader = false, direction = 0) {
+  function activate(id, openReader = false, direction = 0, trigger = 'route', invoker = document.activeElement) {
+    if (inspection) return;
     select(id, direction);
-    onVisit(id, { openReader });
+    onVisit(id, { openReader, trigger, invoker });
   }
 
   function announce() {
@@ -1238,6 +1427,7 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
 
   function setTheme(id) {
     if (destroyed || contextLost) return;
+    if (inspection) finishInspection();
     suspend();
     cancelFieldDrag();
     transition = null;
@@ -1272,11 +1462,13 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
       scene.environment = null;
       scene.backgroundIntensity = 1;
     }
-    renderer.toneMappingExposure = theme.id === 'sea' ? 0.95 : 1.12;
+    themeExposure = theme.id === 'sea' ? 0.95 : 1.12;
+    renderer.toneMappingExposure = themeExposure * exposureMultiplier;
     hemisphere.color.set(theme.id === 'orbital' ? '#b8c7ff' : theme.id === 'woodland' ? '#c9e5c2' : '#badce7');
     hemisphere.intensity = theme.id === 'sea' ? 0.8 : 2.2;
     keyLight.color.set(theme.id === 'sea' ? '#fff1d5' : '#fff2d8');
-    keyLight.intensity = theme.id === 'sea' ? 3.6 : 3.0;
+    themeKeyIntensity = theme.id === 'sea' ? 3.6 : 3.0;
+    keyLight.intensity = themeKeyIntensity * keyLightMultiplier;
     fillLight.color.set(theme.id === 'sea' ? '#93bed2' : '#7dabbf');
     fillLight.intensity = theme.id === 'sea' ? 0.45 : 1.3;
     destinations.filter((stop) => world.stops[stop.id]).forEach((stop) => {
@@ -1287,11 +1479,13 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
       element.dataset.destination = stop.id;
       element.setAttribute('aria-label', `Visit ${stop.label}`);
       element.addEventListener('click', event => {
-        // Native keyboard activation opens the reader. A pointer visit stays in
-        // the map so the next arrow keeps exploration going.
+        // Native keyboard activation reads; a pointer visit lets the host
+        // choose whether to read immediately or continue in the map.
         const openReader = event.detail === 0;
-        activate(stop.id, openReader);
+        // Focus the map before dispatch, so a configured dialog can own focus
+        // without this handler stealing it back after showModal().
         if (!openReader) mount.focus({ preventScroll: true });
+        activate(stop.id, openReader, 0, openReader ? 'keyboard' : 'pointer', element);
       });
       mount.append(element);
       labels.push({ element, id: stop.id });
@@ -1310,16 +1504,34 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     announce();
   }
 
+  function setAppearance({ exposure = exposureMultiplier, keyLightMultiplier: key = keyLightMultiplier } = {}) {
+    if (destroyed || contextLost) return;
+    if (!Number.isFinite(exposure) || exposure < 0.5 || exposure > 1.6 || !Number.isFinite(key) || key < 0.2 || key > 1.6) throw new RangeError('World appearance is outside its supported range.');
+    exposureMultiplier = exposure;
+    keyLightMultiplier = key;
+    renderer.toneMappingExposure = themeExposure * exposureMultiplier;
+    keyLight.intensity = themeKeyIntensity * keyLightMultiplier;
+    renderer.shadowMap.needsUpdate = true;
+    // One requested frame refreshes the sea reflection too, even while paused.
+    invalidate();
+  }
+
   function setMotion(enabled) {
     if (destroyed) return;
     motionRequested = Boolean(enabled);
     suspend();
+    if (!moving()) {
+      // Static interaction must not leave the host locked in a half-closed
+      // fullscreen passage. Opening resolves to its deliberate reading pose.
+      if (inspection?.phase === 'closing') finishInspection();
+      else settleInspectionOpening();
+    }
     // Pause freezes ambient geometry and an in-flight traveler at their current pose.
     invalidate();
   }
 
   function setField(enabled, spacing = fieldSpacing) {
-    if (destroyed || contextLost || !world?.setField) return;
+    if (destroyed || contextLost || inspection || !world?.setField) return;
     fieldEnabled = Boolean(enabled);
     if (!fieldEnabled) cancelFieldDrag();
     if (Number.isFinite(spacing)) fieldSpacing = Math.max(0, Math.min(1, spacing));
@@ -1332,7 +1544,7 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   }
 
   function setView(view) {
-    if (destroyed || contextLost || !world) return;
+    if (destroyed || contextLost || inspection || !world) return;
     sceneView = view === 'voyage' ? 'voyage' : 'atlas';
     onViewChange({ view: sceneView });
     updateCamera(0, !moving());
@@ -1340,7 +1552,7 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   }
 
   function handleKey(event) {
-    if (destroyed || contextLost || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    if (destroyed || contextLost || inspection || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
     const focusedLabel = event.target.closest?.('.world-label');
     if (!mount.contains(document.activeElement) || (event.target !== mount && !focusedLabel)) return;
     if (event.key === 'Escape') {
@@ -1351,7 +1563,7 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     }
     if (event.key === 'Enter' && event.target === mount) {
       event.preventDefault();
-      if (!event.repeat) activate(selectedId, true);
+      if (!event.repeat) activate(selectedId, true, 0, 'keyboard');
       return;
     }
     const shortcut = event.key.toLowerCase();
@@ -1381,7 +1593,7 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   }
 
   function handleBackgroundPointer(event) {
-    if (destroyed || contextLost || event.target !== renderer.domElement || event.button !== 0) return;
+    if (destroyed || contextLost || inspection || event.target !== renderer.domElement || event.button !== 0) return;
     mount.focus({ preventScroll: true });
     if (hitsInstrument(event)) {
       setField(!fieldEnabled);
@@ -1407,7 +1619,7 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   }
 
   function handleFieldPointerMove(event) {
-    if (destroyed || contextLost || event.target !== renderer.domElement) return;
+    if (destroyed || contextLost || inspection || event.target !== renderer.domElement) return;
     if (fieldDrag && event.pointerId === fieldDrag.id && fieldEnabled) {
       const dx = event.clientX - fieldDrag.x;
       if (Math.abs(dx) > 5 && Math.abs(dx) > Math.abs(event.clientY - fieldDrag.y)) {
@@ -1428,15 +1640,27 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     if (document.hidden) { suspend(); cancelFieldDrag(); }
     else if (invalidated || moving()) invalidate();
   }
-  function handleReducedMotion() { suspend(); invalidate(); }
+  function handleReducedMotion() {
+    suspend();
+    if (!moving()) {
+      if (inspection?.phase === 'closing') finishInspection();
+      else settleInspectionOpening();
+    }
+    invalidate();
+  }
   function handleContextLost(event) {
     event.preventDefault();
     contextLost = true;
+    const passagePhase = inspection?.phase;
+    if (inspection) finishInspection(false);
     cancelFieldDrag();
     suspend();
     renderer.domElement.hidden = true;
     renderer.domElement.style.display = 'none';
     labels.forEach(({ element }) => { element.hidden = true; });
+    // Loss of graphics does not discard a readable paper. An already-closing
+    // passage can return normally; an open reader switches to its HTML plate.
+    if (passagePhase) onInspectionChange({ phase: passagePhase === 'closing' ? 'closed' : 'unavailable' });
     onStatus({ ready: false, message: 'The 3D view stopped because its graphics context was lost. The reading view still contains every destination. Reload to retry the world.' });
   }
   function handleWindowBlur() { previousTimestamp = 0; cancelFieldDrag(); }
@@ -1464,6 +1688,7 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   function destroy() {
     if (destroyed) return;
     destroyed = true;
+    if (inspection) finishInspection(false);
     cancelFieldDrag();
     suspend();
     resizeObserver.disconnect();
@@ -1491,5 +1716,5 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     scene.clear();
   }
 
-  return { select, setTheme, setMotion, setField, setView, destroy };
+  return { select, setTheme, setAppearance, setMotion, setField, setView, setInspection, setInspectionStage, destroy };
 }

@@ -1,0 +1,681 @@
+{
+  "review_date_local": "2026-10-07",
+  "timezone": "Europe/Zurich",
+  "scope": "Eight purposeful primary-source examples: three nearby agent/portfolio skills, three playable portfolio repositories, and two architectural libraries. Not an exhaustive census or a causal analysis of popularity.",
+  "method": "Read public GitHub metadata/API, complete recursive trees, README, license, contribution and selected implementation files. No installs, runtime benchmarks, rendered live-site comparison, external posts, copied code or downloaded media.",
+  "attention_limit": "Stars and forks are repository snapshots, not active users, successful skill invocations, code quality or explanations of popularity. Memory Palace counts refer to its larger host repository. Architecture-library counts are not portfolio-skill demand.",
+  "repositories": [
+    {
+      "repository": "viettranx/3dviz-pro-max",
+      "role": "closest-creative-agent-skill",
+      "url": "https://github.com/viettranx/3dviz-pro-max",
+      "observed_at_utc": "2026-10-07T09:57:36.703636+00:00",
+      "stars": 679,
+      "forks": 87,
+      "watchers": 5,
+      "created_at_utc": "2026-09-10T01:42:59Z",
+      "default_branch": "main",
+      "api_detected_license": "MIT",
+      "license_scope_note": "MIT authored repository content; third-party media and assets retain separate terms.",
+      "root_paths": [
+        ".claude-plugin",
+        ".codex-plugin",
+        ".github",
+        ".gitignore",
+        "AGENTS.md",
+        "CHANGELOG.md",
+        "CONTRIBUTING.md",
+        "LICENSE",
+        "README.md",
+        "SECURITY.md",
+        "docs",
+        "evals",
+        "evidence",
+        "examples",
+        "schemas",
+        "scripts",
+        "site",
+        "skills",
+        "tests"
+      ],
+      "sources": [
+        {
+          "kind": "github-repository-metadata",
+          "url": "https://api.github.com/repos/viettranx/3dviz-pro-max"
+        },
+        {
+          "kind": "complete-recursive-source-tree",
+          "url": "https://api.github.com/repos/viettranx/3dviz-pro-max/git/trees/main?recursive=1",
+          "truncated": false,
+          "path_count": 2719
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "README.md",
+          "url": "https://github.com/viettranx/3dviz-pro-max/blob/main/README.md",
+          "raw_url": "https://raw.githubusercontent.com/viettranx/3dviz-pro-max/main/README.md",
+          "bytes_read": 20600
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "LICENSE",
+          "url": "https://github.com/viettranx/3dviz-pro-max/blob/main/LICENSE",
+          "raw_url": "https://raw.githubusercontent.com/viettranx/3dviz-pro-max/main/LICENSE",
+          "bytes_read": 1066
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "CONTRIBUTING.md",
+          "url": "https://github.com/viettranx/3dviz-pro-max/blob/main/CONTRIBUTING.md",
+          "raw_url": "https://raw.githubusercontent.com/viettranx/3dviz-pro-max/main/CONTRIBUTING.md",
+          "bytes_read": 4816
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "skills/3dviz-pro-max/SKILL.md",
+          "url": "https://github.com/viettranx/3dviz-pro-max/blob/main/skills/3dviz-pro-max/SKILL.md",
+          "raw_url": "https://raw.githubusercontent.com/viettranx/3dviz-pro-max/main/skills/3dviz-pro-max/SKILL.md",
+          "bytes_read": 11025
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "docs/compatibility.md",
+          "url": "https://github.com/viettranx/3dviz-pro-max/blob/main/docs/compatibility.md",
+          "raw_url": "https://raw.githubusercontent.com/viettranx/3dviz-pro-max/main/docs/compatibility.md",
+          "bytes_read": 4549
+        }
+      ],
+      "executed_or_visually_rendered": false
+    },
+    {
+      "repository": "HenrikBrehm/orbit",
+      "role": "quiet-nearby-portfolio-skill",
+      "url": "https://github.com/HenrikBrehm/orbit",
+      "observed_at_utc": "2026-10-07T09:57:36.270545+00:00",
+      "stars": 1,
+      "forks": 0,
+      "watchers": 0,
+      "created_at_utc": "2026-06-10T09:34:13Z",
+      "default_branch": "main",
+      "api_detected_license": "NOASSERTION",
+      "license_scope_note": "Commercial license requires purchase. Template redistribution and extraction of scene, recipes or skill are prohibited; price not verified.",
+      "root_paths": [
+        ".claude",
+        ".env.example",
+        ".gitattributes",
+        ".gitignore",
+        ".prettierignore",
+        ".prettierrc.json",
+        "CLAUDE.md",
+        "LICENSE",
+        "PLAN.md",
+        "PROGRESS.md",
+        "PROMPT.md",
+        "README.md",
+        "SETUP.md",
+        "app",
+        "components",
+        "config",
+        "docs",
+        "eslint.config.mjs",
+        "lib",
+        "next-env.d.ts",
+        "next.config.ts",
+        "package-lock.json",
+        "package.json",
+        "postcss.config.mjs",
+        "public",
+        "sales-assets",
+        "scripts",
+        "skill",
+        "tsconfig.json"
+      ],
+      "sources": [
+        {
+          "kind": "github-repository-metadata",
+          "url": "https://api.github.com/repos/HenrikBrehm/orbit"
+        },
+        {
+          "kind": "complete-recursive-source-tree",
+          "url": "https://api.github.com/repos/HenrikBrehm/orbit/git/trees/main?recursive=1",
+          "truncated": false,
+          "path_count": 110
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "README.md",
+          "url": "https://github.com/HenrikBrehm/orbit/blob/main/README.md",
+          "raw_url": "https://raw.githubusercontent.com/HenrikBrehm/orbit/main/README.md",
+          "bytes_read": 5690
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "LICENSE",
+          "url": "https://github.com/HenrikBrehm/orbit/blob/main/LICENSE",
+          "raw_url": "https://raw.githubusercontent.com/HenrikBrehm/orbit/main/LICENSE",
+          "bytes_read": 4340
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "SETUP.md",
+          "url": "https://github.com/HenrikBrehm/orbit/blob/main/SETUP.md",
+          "raw_url": "https://raw.githubusercontent.com/HenrikBrehm/orbit/main/SETUP.md",
+          "bytes_read": 3573
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "config/schema.ts",
+          "url": "https://github.com/HenrikBrehm/orbit/blob/main/config/schema.ts",
+          "raw_url": "https://raw.githubusercontent.com/HenrikBrehm/orbit/main/config/schema.ts",
+          "bytes_read": 10602
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "config/site.config.ts",
+          "url": "https://github.com/HenrikBrehm/orbit/blob/main/config/site.config.ts",
+          "raw_url": "https://raw.githubusercontent.com/HenrikBrehm/orbit/main/config/site.config.ts",
+          "bytes_read": 9362
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "skill/SKILL.md",
+          "url": "https://github.com/HenrikBrehm/orbit/blob/main/skill/SKILL.md",
+          "raw_url": "https://raw.githubusercontent.com/HenrikBrehm/orbit/main/skill/SKILL.md",
+          "bytes_read": 2545
+        }
+      ],
+      "executed_or_visually_rendered": false
+    },
+    {
+      "repository": "bingran-you/bingran-you",
+      "role": "quiet-nearby-portfolio-skill-in-larger-workspace",
+      "url": "https://github.com/bingran-you/bingran-you",
+      "observed_at_utc": "2026-10-07T09:57:37.292432+00:00",
+      "stars": 3,
+      "forks": 0,
+      "watchers": 1,
+      "created_at_utc": "2022-01-14T01:46:25Z",
+      "default_branch": "main",
+      "api_detected_license": "GPL-3.0",
+      "license_scope_note": "Memory Palace skill declares MIT; parent repository is GPL-3.0. Its required upstream outer app is MIT; inner app has no upstream license and requires separate permission. No reuse clearance inferred.",
+      "root_paths": [
+        ".agents",
+        ".claude",
+        ".codex",
+        ".gitattributes",
+        ".github",
+        ".gitignore",
+        ".gitmodules",
+        ".openclaw",
+        "AGENTS.md",
+        "CLAUDE.md",
+        "HEARTBEAT.md",
+        "IDENTITY.md",
+        "LICENSE",
+        "MEMORY.md",
+        "Makefile",
+        "README.md",
+        "SOUL.md",
+        "TOOLS.md",
+        "USER.md",
+        "bingran-you-private",
+        "current-projects",
+        "memory",
+        "papers",
+        "personal-site",
+        "reading",
+        "repo-skills",
+        "scripts",
+        "social-media",
+        "trusted-external-repos"
+      ],
+      "sources": [
+        {
+          "kind": "github-repository-metadata",
+          "url": "https://api.github.com/repos/bingran-you/bingran-you"
+        },
+        {
+          "kind": "complete-recursive-source-tree",
+          "url": "https://api.github.com/repos/bingran-you/bingran-you/git/trees/main?recursive=1",
+          "truncated": false,
+          "path_count": 4589
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "README.md",
+          "url": "https://github.com/bingran-you/bingran-you/blob/main/README.md",
+          "raw_url": "https://raw.githubusercontent.com/bingran-you/bingran-you/main/README.md",
+          "bytes_read": 7589
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "LICENSE",
+          "url": "https://github.com/bingran-you/bingran-you/blob/main/LICENSE",
+          "raw_url": "https://raw.githubusercontent.com/bingran-you/bingran-you/main/LICENSE",
+          "bytes_read": 35149
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "repo-skills/memory-palace/SKILL.md",
+          "url": "https://github.com/bingran-you/bingran-you/blob/main/repo-skills/memory-palace/SKILL.md",
+          "raw_url": "https://raw.githubusercontent.com/bingran-you/bingran-you/main/repo-skills/memory-palace/SKILL.md",
+          "bytes_read": 14365
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "repo-skills/memory-palace/assets/reference/README.md",
+          "url": "https://github.com/bingran-you/bingran-you/blob/main/repo-skills/memory-palace/assets/reference/README.md",
+          "raw_url": "https://raw.githubusercontent.com/bingran-you/bingran-you/main/repo-skills/memory-palace/assets/reference/README.md",
+          "bytes_read": 1846
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "repo-skills/memory-palace/assets/notice/NOTICE.outer.template.md",
+          "url": "https://github.com/bingran-you/bingran-you/blob/main/repo-skills/memory-palace/assets/notice/NOTICE.outer.template.md",
+          "raw_url": "https://raw.githubusercontent.com/bingran-you/bingran-you/main/repo-skills/memory-palace/assets/notice/NOTICE.outer.template.md",
+          "bytes_read": 2331
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "repo-skills/memory-palace/assets/notice/NOTICE.inner.template.md",
+          "url": "https://github.com/bingran-you/bingran-you/blob/main/repo-skills/memory-palace/assets/notice/NOTICE.inner.template.md",
+          "raw_url": "https://raw.githubusercontent.com/bingran-you/bingran-you/main/repo-skills/memory-palace/assets/notice/NOTICE.inner.template.md",
+          "bytes_read": 2814
+        }
+      ],
+      "executed_or_visually_rendered": false
+    },
+    {
+      "repository": "brunosimon/folio-2019",
+      "role": "established-playable-personal-portfolio",
+      "url": "https://github.com/brunosimon/folio-2019",
+      "observed_at_utc": "2026-10-07T09:57:36.240121+00:00",
+      "stars": 4750,
+      "forks": 1028,
+      "watchers": 58,
+      "created_at_utc": "2019-07-13T19:57:24Z",
+      "default_branch": "master",
+      "api_detected_license": "MIT",
+      "license_scope_note": "Root MIT; no complete asset/dependency provenance clearance attempted.",
+      "root_paths": [
+        ".gitignore",
+        "license.md",
+        "package-lock.json",
+        "package.json",
+        "readme.md",
+        "resources",
+        "src",
+        "static",
+        "vite.config.js"
+      ],
+      "sources": [
+        {
+          "kind": "github-repository-metadata",
+          "url": "https://api.github.com/repos/brunosimon/folio-2019"
+        },
+        {
+          "kind": "complete-recursive-source-tree",
+          "url": "https://api.github.com/repos/brunosimon/folio-2019/git/trees/master?recursive=1",
+          "truncated": false,
+          "path_count": 503
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "readme.md",
+          "url": "https://github.com/brunosimon/folio-2019/blob/master/readme.md",
+          "raw_url": "https://raw.githubusercontent.com/brunosimon/folio-2019/master/readme.md",
+          "bytes_read": 254
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "license.md",
+          "url": "https://github.com/brunosimon/folio-2019/blob/master/license.md",
+          "raw_url": "https://raw.githubusercontent.com/brunosimon/folio-2019/master/license.md",
+          "bytes_read": 1068
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "package.json",
+          "url": "https://github.com/brunosimon/folio-2019/blob/master/package.json",
+          "raw_url": "https://raw.githubusercontent.com/brunosimon/folio-2019/master/package.json",
+          "bytes_read": 412
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "src/javascript/World/Controls.js",
+          "url": "https://github.com/brunosimon/folio-2019/blob/master/src/javascript/World/Controls.js",
+          "raw_url": "https://raw.githubusercontent.com/brunosimon/folio-2019/master/src/javascript/World/Controls.js",
+          "bytes_read": 25167
+        }
+      ],
+      "executed_or_visually_rendered": false
+    },
+    {
+      "repository": "brunosimon/folio-2025",
+      "role": "established-playable-personal-portfolio",
+      "url": "https://github.com/brunosimon/folio-2025",
+      "observed_at_utc": "2026-10-07T09:57:36.842823+00:00",
+      "stars": 1911,
+      "forks": 333,
+      "watchers": 12,
+      "created_at_utc": "2024-10-12T07:25:49Z",
+      "default_branch": "main",
+      "api_detected_license": "MIT",
+      "license_scope_note": "Root MIT differs from ISC package metadata. Music subfolder includes CC0 text; no blanket clearance of all models, sounds or third-party assets inferred.",
+      "root_paths": [
+        ".env.example",
+        ".gitignore",
+        "license.md",
+        "package-lock.json",
+        "package.json",
+        "readme.md",
+        "resources",
+        "scripts",
+        "sources",
+        "static",
+        "vite.config.js"
+      ],
+      "sources": [
+        {
+          "kind": "github-repository-metadata",
+          "url": "https://api.github.com/repos/brunosimon/folio-2025"
+        },
+        {
+          "kind": "complete-recursive-source-tree",
+          "url": "https://api.github.com/repos/brunosimon/folio-2025/git/trees/main?recursive=1",
+          "truncated": false,
+          "path_count": 1374
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "readme.md",
+          "url": "https://github.com/brunosimon/folio-2025/blob/main/readme.md",
+          "raw_url": "https://raw.githubusercontent.com/brunosimon/folio-2025/main/readme.md",
+          "bytes_read": 2893
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "license.md",
+          "url": "https://github.com/brunosimon/folio-2025/blob/main/license.md",
+          "raw_url": "https://raw.githubusercontent.com/brunosimon/folio-2025/main/license.md",
+          "bytes_read": 1067
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "package.json",
+          "url": "https://github.com/brunosimon/folio-2025/blob/main/package.json",
+          "raw_url": "https://raw.githubusercontent.com/brunosimon/folio-2025/main/package.json",
+          "bytes_read": 1284
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "sources/Game/Physics/PhysicsVehicle.js",
+          "url": "https://github.com/brunosimon/folio-2025/blob/main/sources/Game/Physics/PhysicsVehicle.js",
+          "raw_url": "https://raw.githubusercontent.com/brunosimon/folio-2025/main/sources/Game/Physics/PhysicsVehicle.js",
+          "bytes_read": 22235
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "static/sounds/musics/license.md",
+          "url": "https://github.com/brunosimon/folio-2025/blob/main/static/sounds/musics/license.md",
+          "raw_url": "https://raw.githubusercontent.com/brunosimon/folio-2025/main/static/sounds/musics/license.md",
+          "bytes_read": 7047
+        }
+      ],
+      "executed_or_visually_rendered": false
+    },
+    {
+      "repository": "adrianhajdin/3D_portfolio",
+      "role": "educational-floating-island-portfolio",
+      "url": "https://github.com/adrianhajdin/3D_portfolio",
+      "observed_at_utc": "2026-10-07T09:57:36.206489+00:00",
+      "stars": 1350,
+      "forks": 313,
+      "watchers": 9,
+      "created_at_utc": "2023-10-05T12:54:51Z",
+      "default_branch": "main",
+      "api_detected_license": null,
+      "license_scope_note": "API detects no license, and complete recursive tree contains no LICENSE/NOTICE file. No code or asset reuse proposed; paid education/hosting links are promotions rather than verified runtime requirements.",
+      "root_paths": [
+        ".env",
+        ".gitignore",
+        "README.md",
+        "index.html",
+        "package-lock.json",
+        "package.json",
+        "postcss.config.js",
+        "public",
+        "src",
+        "tailwind.config.js",
+        "vercel.json",
+        "vite.config.js"
+      ],
+      "sources": [
+        {
+          "kind": "github-repository-metadata",
+          "url": "https://api.github.com/repos/adrianhajdin/3D_portfolio"
+        },
+        {
+          "kind": "complete-recursive-source-tree",
+          "url": "https://api.github.com/repos/adrianhajdin/3D_portfolio/git/trees/main?recursive=1",
+          "truncated": false,
+          "path_count": 89
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "README.md",
+          "url": "https://github.com/adrianhajdin/3D_portfolio/blob/main/README.md",
+          "raw_url": "https://raw.githubusercontent.com/adrianhajdin/3D_portfolio/main/README.md",
+          "bytes_read": 512
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "package.json",
+          "url": "https://github.com/adrianhajdin/3D_portfolio/blob/main/package.json",
+          "raw_url": "https://raw.githubusercontent.com/adrianhajdin/3D_portfolio/main/package.json",
+          "bytes_read": 999
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "src/pages/Home.jsx",
+          "url": "https://github.com/adrianhajdin/3D_portfolio/blob/main/src/pages/Home.jsx",
+          "raw_url": "https://raw.githubusercontent.com/adrianhajdin/3D_portfolio/main/src/pages/Home.jsx",
+          "bytes_read": 3441
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "src/models/Island.jsx",
+          "url": "https://github.com/adrianhajdin/3D_portfolio/blob/main/src/models/Island.jsx",
+          "raw_url": "https://raw.githubusercontent.com/adrianhajdin/3D_portfolio/main/src/models/Island.jsx",
+          "bytes_read": 8926
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "src/components/HomeInfo.jsx",
+          "url": "https://github.com/adrianhajdin/3D_portfolio/blob/main/src/components/HomeInfo.jsx",
+          "raw_url": "https://raw.githubusercontent.com/adrianhajdin/3D_portfolio/main/src/components/HomeInfo.jsx",
+          "bytes_read": 1820
+        }
+      ],
+      "executed_or_visually_rendered": false
+    },
+    {
+      "repository": "pmndrs/react-three-fiber",
+      "role": "architectural-comparator-not-portfolio-demand",
+      "url": "https://github.com/pmndrs/react-three-fiber",
+      "observed_at_utc": "2026-10-07T09:57:36.174054+00:00",
+      "stars": 32770,
+      "forks": 2008,
+      "watchers": 215,
+      "created_at_utc": "2019-02-25T14:31:51Z",
+      "default_branch": "master",
+      "api_detected_license": "MIT",
+      "license_scope_note": "MIT library; optional learning links and donations do not establish mandatory paid runtime services.",
+      "root_paths": [
+        ".changeset",
+        ".eslintignore",
+        ".eslintrc.json",
+        ".github",
+        ".gitignore",
+        ".husky",
+        ".prettierignore",
+        ".prettierrc",
+        "CONTRIBUTING.md",
+        "LICENSE",
+        "babel.config.js",
+        "docs",
+        "example",
+        "jest.config.js",
+        "package.json",
+        "packages",
+        "readme.md",
+        "tsconfig.json",
+        "vite.config.ts",
+        "yarn.lock"
+      ],
+      "sources": [
+        {
+          "kind": "github-repository-metadata",
+          "url": "https://api.github.com/repos/pmndrs/react-three-fiber"
+        },
+        {
+          "kind": "complete-recursive-source-tree",
+          "url": "https://api.github.com/repos/pmndrs/react-three-fiber/git/trees/master?recursive=1",
+          "truncated": false,
+          "path_count": 272
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "readme.md",
+          "url": "https://github.com/pmndrs/react-three-fiber/blob/master/readme.md",
+          "raw_url": "https://raw.githubusercontent.com/pmndrs/react-three-fiber/master/readme.md",
+          "bytes_read": 14301
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "LICENSE",
+          "url": "https://github.com/pmndrs/react-three-fiber/blob/master/LICENSE",
+          "raw_url": "https://raw.githubusercontent.com/pmndrs/react-three-fiber/master/LICENSE",
+          "bytes_read": 1072
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "CONTRIBUTING.md",
+          "url": "https://github.com/pmndrs/react-three-fiber/blob/master/CONTRIBUTING.md",
+          "raw_url": "https://raw.githubusercontent.com/pmndrs/react-three-fiber/master/CONTRIBUTING.md",
+          "bytes_read": 2771
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "packages/fiber/src/web/Canvas.tsx",
+          "url": "https://github.com/pmndrs/react-three-fiber/blob/master/packages/fiber/src/web/Canvas.tsx",
+          "raw_url": "https://raw.githubusercontent.com/pmndrs/react-three-fiber/master/packages/fiber/src/web/Canvas.tsx",
+          "bytes_read": 6915
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "packages/fiber/src/core/events.ts",
+          "url": "https://github.com/pmndrs/react-three-fiber/blob/master/packages/fiber/src/core/events.ts",
+          "raw_url": "https://raw.githubusercontent.com/pmndrs/react-three-fiber/master/packages/fiber/src/core/events.ts",
+          "bytes_read": 23538
+        }
+      ],
+      "executed_or_visually_rendered": false
+    },
+    {
+      "repository": "pmndrs/drei",
+      "role": "architectural-comparator-not-portfolio-demand",
+      "url": "https://github.com/pmndrs/drei",
+      "observed_at_utc": "2026-10-07T09:57:36.372330+00:00",
+      "stars": 9915,
+      "forks": 844,
+      "watchers": 55,
+      "created_at_utc": "2020-04-26T19:38:41Z",
+      "default_branch": "master",
+      "api_detected_license": "MIT",
+      "license_scope_note": "MIT library; individual helper assets and integrations require separate review when adopted.",
+      "root_paths": [
+        ".devcontainer",
+        ".github",
+        ".gitignore",
+        ".husky",
+        ".npmignore",
+        ".nvmrc",
+        ".prettierignore",
+        ".prettierrc",
+        ".storybook",
+        ".yarnrc.yml",
+        "CODE_OF_CONDUCT.md",
+        "CONTRIBUTING.md",
+        "LICENSE",
+        "README.md",
+        "chromatic.config.json",
+        "docs",
+        "eslint.config.mjs",
+        "package.json",
+        "release.config.js",
+        "rollup.config.js",
+        "sandboxes",
+        "src",
+        "test",
+        "tsconfig.json",
+        "vite.config.ts",
+        "yarn.lock"
+      ],
+      "sources": [
+        {
+          "kind": "github-repository-metadata",
+          "url": "https://api.github.com/repos/pmndrs/drei"
+        },
+        {
+          "kind": "complete-recursive-source-tree",
+          "url": "https://api.github.com/repos/pmndrs/drei/git/trees/master?recursive=1",
+          "truncated": false,
+          "path_count": 648
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "README.md",
+          "url": "https://github.com/pmndrs/drei/blob/master/README.md",
+          "raw_url": "https://raw.githubusercontent.com/pmndrs/drei/master/README.md",
+          "bytes_read": 27833
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "LICENSE",
+          "url": "https://github.com/pmndrs/drei/blob/master/LICENSE",
+          "raw_url": "https://raw.githubusercontent.com/pmndrs/drei/master/LICENSE",
+          "bytes_read": 1069
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "CONTRIBUTING.md",
+          "url": "https://github.com/pmndrs/drei/blob/master/CONTRIBUTING.md",
+          "raw_url": "https://raw.githubusercontent.com/pmndrs/drei/master/CONTRIBUTING.md",
+          "bytes_read": 2326
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "docs/controls/keyboard-controls.mdx",
+          "url": "https://github.com/pmndrs/drei/blob/master/docs/controls/keyboard-controls.mdx",
+          "raw_url": "https://raw.githubusercontent.com/pmndrs/drei/master/docs/controls/keyboard-controls.mdx",
+          "bytes_read": 2517
+        },
+        {
+          "kind": "primary-text-file",
+          "path": "src/web/KeyboardControls.tsx",
+          "url": "https://github.com/pmndrs/drei/blob/master/src/web/KeyboardControls.tsx",
+          "raw_url": "https://raw.githubusercontent.com/pmndrs/drei/master/src/web/KeyboardControls.tsx",
+          "bytes_read": 4777
+        }
+      ],
+      "executed_or_visually_rendered": false
+    }
+  ],
+  "failed_fetches": [
+    {
+      "url": "https://raw.githubusercontent.com/viettranx/3dviz-pro-max/main/docs/demos/media-provenance.md",
+      "reason": "404; README and compatibility file provide inspected media-provenance boundary."
+    }
+  ]
+}

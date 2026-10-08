@@ -1,106 +1,144 @@
-# Personal Worlds
+# Kaimerva
 
-**A free agent skill and starter for turning a personal story into an interactive portfolio world.**
+<p><img src="assets/brand/kaimerva-icon.png" width="240" height="240" alt="Kaimerva: a weathered stone portal opening onto a moonlit sea"></p>
 
-Built by [Orestis Oikonomou](https://orestis-site.vercel.app), with AI assistance, from the practical work of making a research, projects, and personal-life portfolio feel like a place.
+**Summon your world.**
 
-**[Try the live demo](https://oroikono.github.io/personal-worlds/)** · **[Use this template](https://github.com/oroikono/personal-worlds/generate)** · **[Read the skill](skills/build-personal-world/SKILL.md)**
+A free agent skill and Three.js starter for making your portfolio a place people can explore. Bring your research, projects, notes or personal story. Give them a setting that feels like you, with useful interactions and work that stays easy to read.
 
-![The archipelago starter](docs/assets/sea.jpg)
+Built by [Orestis Oikonomou](https://orestis-site.vercel.app), with AI assistance, while exploring what his own research and creative portfolio could become.
 
-Your setting could be a coast, a station in orbit, a forest, a desert observatory, or something else entirely. Its objects, materials, motion, and navigation should express your story. The readable work and updates remain separate from the scenery.
+**[Try the demo](https://huggingface.co/spaces/oroikono/kaimerva)** · **[Read the skill](skills/kaimerva/SKILL.md)** · **[Use the starter](https://github.com/oroikono/personal-worlds/generate)**
 
-This repository contains two useful pieces:
+**Pronounced:** kye-MER-vah · **Spelled:** K-A-I-M-E-R-V-A · **Codex skill:** `$kaimerva`
 
-- **[The portable skill](skills/build-personal-world/SKILL.md)** helps an agent study references, derive a personal metaphor, build coherent interactions, preserve readable content, and track asset rights. Use it in an existing app; no particular framework or theme is mandatory.
-- **A working procedural Three.js starter** demonstrates three different settings, immediate content selection, optional arrow-key destination navigation, motion controls, local JSON updates, and a graphics fallback. One runtime dependency. No downloaded models, images, fonts, accounts, or paid service required.
+Kaimerva is a blend of [kami](https://d-museum.kokugakuin.ac.jp/eos/detail/?id=9958) and [Minerva](https://www.metmuseum.org/art/collection/search/206339). [Naming and artwork credits](docs/branding.md).
 
-| Orbital field | Woodland trail |
-| --- | --- |
-| ![The orbital starter](docs/assets/orbital.jpg) | ![The woodland starter](docs/assets/woodland.jpg) |
+[![Build your own world — Kaimerva](docs/assets/kaimerva-launch-poster.jpg)](docs/assets/kaimerva-launch.mp4)
 
-## Try the starter
+**[Watch the 24-second launch film](docs/assets/kaimerva-launch.mp4)**
 
-Requires Node.js 22 or newer.
+The film combines earlier real starter footage with new Kaimerva branding, motion graphics and original sound. It shows exploration, three settings and a local content refresh. The current demo also includes a figure passage, and the source includes a typed world-settings editor. Neither is shown in the film. No agent execution is staged. [Video sources and limits](docs/launch-video.md).
+
+## Two ways to use it
+
+**Use the skill in your own app.** It guides your agent through the brief, art direction, implementation and review. Keep your stack, routes, content source and branding. A coast, mountain observatory, orbital station, city or forest can each have its own objects and interactions.
+
+**Start with the working demo.** The procedural Three.js starter ships a coast, an orbital field and a woodland trail. It includes readable collections, keyboard exploration, Pause, local content updates and a figure-inspection passage. It uses one runtime dependency and needs no paid asset service or account.
+
+The skill is portable guidance. The starter is working code. New settings and interactions still need implementation; changing a theme name does not generate a new world.
+
+## Give your agent a brief
+
+After installing the skill, start with something like this:
+
+```text
+Use $kaimerva in my existing app.
+
+I’m a researcher who also makes films and writes field notes.
+Build a Mediterranean harbor with a few orbital instruments:
+pale stone, brushed metal, warm glass and a calm sea.
+
+Let people explore, inspect my supplied figures through a lens,
+and open each project’s readable page immediately.
+Keep my CMS and routes, mobile reading, keyboard access and Pause.
+Use no paid services. Implement it and show the rendered result.
+```
+
+Make the brief yours: who you are, what visitors should find, how it should feel, one interesting action and what must be preserved. One rich prompt starts the workflow; the agent still builds, checks and revises the result.
+
+## Install the skill
+
+From this repository's root, copy the **whole folder** into your target project. Replace `../my-portfolio` with its path:
+
+```sh
+mkdir -p ../my-portfolio/.agents/skills
+cp -R skills/kaimerva ../my-portfolio/.agents/skills/
+```
+
+Open Codex in the target project and invoke **`$kaimerva`**. The skill itself needs no npm install. If you already have a copy there, review it before replacing it.
+
+For Claude Code, use `.claude/skills` in the destination and invoke `/kaimerva`:
+
+```sh
+mkdir -p ../my-portfolio/.claude/skills
+cp -R skills/kaimerva ../my-portfolio/.claude/skills/
+```
+
+Fresh-project copying and actual Codex discovery passed with CLI 0.160.0 on 8 October 2026. The Claude Code folder and file format passed portability checks; its runtime loading has not been tested. [Install evidence](docs/research/skill-install-test-2026-10-08.md) · [Independent creation trial](docs/research/skill-forward-test-2026-10-07.md).
+
+## Run the starter
+
+Requires **Node.js 22 or newer**. From this repository's root:
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Open **http://127.0.0.1:4310**. Switch between the coast, orbital field, and woodland trail. Click a landmark or the background to explore, or use the readable index. **Explore the loop** also focuses the world: Right/Down move clockwise to the adjacent stop, Left/Up go counterclockwise, Enter opens the selected entry, and Escape returns to the page. The last stop connects back to the first. The traveler follows the visible curved route; pointer visits take its shortest arc. Holding an arrow repeats at a bounded pace; keyboard Enter/Space on a landmark opens its entry directly. This starter uses destination navigation; it does not include free steering or a collision simulation.
+Open **http://127.0.0.1:4310**. Click a landmark to read its collection, or use the ordinary index. Reading opens immediately; you do not have to wait for the traveler.
 
-The **Aegean observatory** adds a sunlit sea, weathered coastlines, a sailor aboard a responsive boat, and a luminous wake. Its water reflects the actual scene through a bounded planar pass; a locally generated sky supplies environment lighting. Stone, wood and linen surfaces use small authored procedural textures, with no external asset downloads. Click the central lens or **Reveal the field** to inspect an illustrative wave-interference field. Drag horizontally across the water or use **Wave spacing** to change the separation between its sources. **Voyage view** follows the traveler with a closer camera; **Atlas view** restores the full circular map. While the world has focus, **F** toggles the field and **V** switches the view. Pause freezes motion while keeping field and content controls usable. The field is an authored analytic visual study, not a paper result, a fluid solver, or a validated research experiment.
+Choose **Explore the loop** for keyboard travel. Right/Down move clockwise, Left/Up move counterclockwise, Enter opens the selected stop and Escape leaves exploration. The route closes back on itself. This is destination navigation, not free steering.
+
+In the coast setting, **Voyage view** follows the boat and **Atlas view** restores the overview. **Reveal the field** shows an illustrative wave-interference study; dragging the water or changing **Wave spacing** adjusts its source separation. The water uses scene reflections and locally generated environment lighting. It is an authored visual scene, not a fluid simulation.
+
+| Orbital field | Woodland trail |
+| --- | --- |
+| ![Orbital starter](docs/assets/orbital.jpg) | ![Woodland starter](docs/assets/woodland.jpg) |
+
+## Give the interaction a purpose
+
+The research stop opens a hinged optical iris and brings a supplied figure into view. Visitors can switch between up to three supplied images, read their explanations, or open the flat main figure. **Return to world** reverses the passage and restores exploration and focus.
+
+The included wave plates are illustrative artwork, not paper results. Replace them with an authorized figure and accurate descriptions. The scene displays what you supply; it does not invent scientific results or generate an apparatus for every new paper. [Figure format](docs/content.md#figures-and-the-inspection-passage).
+
+**Pause** freezes ambient motion and the camera while keeping reading usable. Reduced motion uses static states or deliberate navigation. On phones, the figure sits above its reader. If WebGL is unavailable, the HTML reader and supplied image remain accessible.
+
+## Keep it easy to change
+
+| What you want to change | Where to start |
+| --- | --- |
+| Identity, projects, papers, notes, journey and news | [`data/site.json`](data/site.json) |
+| Supported theme, lighting, reader and button settings | [`data/world.json`](data/world.json) |
+| Objects and authored layouts | [`src/world.js`](src/world.js) |
+| Typography, spacing and reading layout | [`src/styles.css`](src/styles.css) |
+| Asset sources and reuse records | [`data/assets.json`](data/assets.json) |
+
+For **local content edits**, save `data/site.json` and press **Refresh content**. Only entries with `published: true` appear. The preview validates incoming content and keeps the last valid snapshot for the current page session if a refresh fails. Adding or replacing figure image files requires restarting the preview.
+
+For **supported world settings**, ask your agent for a change or edit `data/world.json`, then press **Refresh world settings**. A small configuration editor also supports reviewed patches and undo:
 
 ```sh
-npm test         # Content validation and real build/server publication checks
-npm run check    # Bounded source/provenance/skill checks
-npm run build    # Static output in dist/ with dependency notices
+node scripts/world-edit.mjs show
+node scripts/world-edit.mjs apply my-patch.json
+node scripts/world-edit.mjs undo
+```
+
+The editor handles existing themes, lighting, inline/dialog readers, solid/glass panels and square/pill buttons. New geometry, layouts and game rules need code. It uses your coding agent; there is no embedded browser AI chat. [Prompt editing guide](skills/kaimerva/references/prompt-world-editing.md).
+
+The production build is a **static snapshot**. Updating a deployed site without rebuilding requires replacing public JSON or adding a runtime content provider. No hosted CMS or live Notion adapter is configured. For a production portfolio, also add rendered entry pages, canonical URLs, identity metadata and a sitemap in your chosen stack. [Content and CMS notes](docs/content.md) · [Hosting](docs/hosting.md).
+
+## Check and build
+
+```sh
+npm test         # Content, build and HTTP publication checks
+npm run check    # Bounded source, provenance and skill checks
+npm run build    # Static site in dist/
 npm run preview  # Preview the built snapshot
 ```
 
-The three settings change geometry, layout, materials, lighting, and ambient movement. They share the same destination controls. The skill can design a different interaction grammar for another person's theme.
+`dist/` is replaced on each build. Keep your source content and assets outside it. [What was actually verified](docs/verification.md).
 
-`dist/` is generated output and is replaced on each build. Keep source content and added assets outside it.
+## Where this fits
 
-| Edit | Location |
-| --- | --- |
-| Identity, projects, papers, notes, chapters, updates | `data/site.json` |
-| World names and descriptions | `src/themes.js` |
-| Procedural objects and authored layouts | `src/world.js` |
-| Type, spacing, colors and responsive reading layout | `src/styles.css` |
-| Reused asset evidence | `data/assets.json` |
+Kaimerva connects **identity → content → objects → materials → motion → interaction**. The aim is a setting that expresses the person and helps visitors understand their work.
 
-## Use the skill
+Playable portfolios, 3D design skills and prompt-driven website tools already exist. Kaimerva brings personal storytelling, optional exploration, readable content and an editing workflow together; we do not claim to have invented those ideas. [Related work](docs/prior-art.md) · [Current comparison](docs/research/uniqueness-recheck-2026-10-08.md) · [Provenance audit](docs/provenance-audit.md).
 
-The canonical folder is `skills/build-personal-world/`. Copy that whole folder to the skill directory supported by your agent; its references travel with it. The standard `SKILL.md` is the portable part; `agents/openai.yaml` supplies optional Codex UI metadata.
+If you build a different world, show us. Original settings, tested content adapters and clearer first-use flows are useful contributions. Include what you tested on desktop and phone, how people reach the content without WebGL, and the reuse basis for any added assets.
 
-For a project in Codex:
+## License and credits
 
-```sh
-mkdir -p .agents/skills
-cp -R skills/build-personal-world .agents/skills/
-```
+The project's code, procedural demo artwork and included AI-generated portal icon are distributed under [MIT](LICENSE). [The artwork record](docs/branding.md#artwork-attribution) identifies the icon's art direction and generation process. Three.js keeps its own [MIT notice](https://github.com/mrdoob/three.js/blob/r186/LICENSE), included in every build.
 
-For a project in Claude Code:
-
-```sh
-mkdir -p .claude/skills
-cp -R skills/build-personal-world .claude/skills/
-```
-
-Then ask your agent, for example:
-
-```text
-Use build-personal-world to make an architect's quiet desert-observatory
-portfolio in Astro, with project case studies, photo essays and news.
-Use conventional navigation, no game controls, and no paid service.
-```
-
-In Codex, explicitly invoke `$build-personal-world`; in Claude Code use `/build-personal-world` or name the skill in the request. See the current [Codex instructions](https://developers.openai.com/codex/skills/), [Claude Code instructions](https://code.claude.com/docs/en/skills), and [Agent Skills format](https://agentskills.io/specification) for discovery/install behavior. Format checks and an independent forward-test passed; a real Claude Code loading test has not been run. [Verification details](docs/verification.md).
-
-## Keep content easy to update
-
-In the local preview, edit `data/site.json` and press **Refresh content**. The server validates the file on each request, so content edits need no rebuild. A successful empty collection stays empty; only an explicit `published: true` entry is displayed. The demo tells you when it is showing example content or a prior validated snapshot after a failed refresh.
-
-The production build is a **static snapshot**, not a hosted CMS. To update a deployed site without rebuilding it, replace its public content JSON or implement a runtime endpoint/provider. The skill includes a provider-neutral workflow; no live CMS account or Notion adapter is configured. [Content and CMS notes](docs/content.md).
-
-The public demo is hosted free on GitHub Pages from the separate `codex/demo` branch. Paths are relative so the build also works under a project subdirectory. [Hosting notes](docs/hosting.md).
-
-The demo's content is rendered in the browser. For a production personal/research website, add server/build-rendered entry pages, real identity metadata, canonical URLs, feeds and a sitemap in your chosen stack. The existing collection anchors are not a complete SEO or routing system.
-
-## What makes this useful
-
-The method connects **identity → content → objects → materials → motion → interaction**. It distinguishes a deliberate theme from a recolored template, reading selection from travel, local edits from public updates, and an asset credit from reuse permission.
-
-Other people have built excellent playable portfolios, creative 3D skills, and AI-customizable starters. This is not the first of those. Our focus is the practical combination of personal storytelling, optional exploration, maintainable content, and provenance. [Related work and boundaries](docs/prior-art.md).
-
-An independent bounded review distinguishes copied dependencies, conceptual references and project-authored work. [Provenance audit](docs/provenance-audit.md). It documents evidence and limitations, not legal clearance.
-
-## Extend it
-
-Contributions that make this easier to use are welcome: new original settings, a server-rendered content adapter, or a real tested CMS provider. A useful new theme changes objects and spatial logic, demonstrates a desktop and phone composition, and keeps the same content reachable without WebGL. Include asset/license evidence and say which behavior you actually tested.
-
-The illustrative identity, entries and geometry are released with the repository under **MIT**. Three.js retains its own [MIT notice](https://github.com/mrdoob/three.js/blob/r186/LICENSE), copied into every build. No source-site portraits, paper figures, private CMS records, reference screenshots, or chat/session archives are included. Added third-party media needs its own reuse basis; this project's license does not grant it.
-
-Make the identity, branding, and visible footer your own. Retain the required license notices when redistributing code; a permanent visible author credit is not required by MIT.
+Make the identity, branding and footer your own. Keep the required license notices when redistributing covered material; a permanent visible author credit is not required. Any third-party media you add needs its own reuse basis. The starter includes no private CMS records, source-site portraits or third-party paper figures.

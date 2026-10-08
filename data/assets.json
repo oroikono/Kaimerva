@@ -20,6 +20,24 @@
       "changes": "Unedited sea, orbital, and woodland preview captures. No reference-site imagery is included."
     },
     {
+      "id": "starter-demo-video",
+      "path": "docs/assets/personal-worlds-demo.mp4",
+      "creator": "Orestis Oikonomou",
+      "origin": "authored",
+      "source": "Actual browser captures of this repository's procedural starter, recorded locally on 2026-10-06",
+      "license": "MIT",
+      "changes": "AI-assisted edit with original title cards and captions. Silent; no stock footage, music, downloaded models, private research, or third-party reference imagery. The poster, GIF preview and 15-second personal-worlds-x-teaser.mp4 are derived from this edit. Caption glyphs use installed system fonts; no font files are distributed. See docs/demo-video.md for capture boundaries."
+    },
+    {
+      "id": "futuristic-demo-film-v2",
+      "path": "docs/assets/personal-worlds-futuristic-v2.mp4",
+      "creator": "Orestis Oikonomou",
+      "origin": "authored",
+      "source": "Actual browser captures of this repository's procedural starter, recorded locally on 2026-10-06",
+      "license": "MIT",
+      "changes": "AI-assisted full-frame edit with original animated typography, editorial skill-method orbit, reframing and code-generated harmonic pulse audio. New close-voyage and illuminated-field captures accompany the existing actual theme and local-refresh footage. The teaser, poster and GIF preview with the same futuristic-v2 filename prefix are derived from this edit. No stock footage, downloaded music/samples, third-party models, private research or reference-site imagery. Captions use installed system fonts without distributing font software. The method illustration and example brief do not depict an agent execution or new app features. See docs/demo-video.md."
+    },
+    {
       "id": "three-renderer",
       "path": "vendor/three.module.js",
       "creator": "Three.js authors",
@@ -29,6 +47,43 @@
       "notice": "vendor/three-LICENSE.txt",
       "version": "0.186.1",
       "changes": "Unmodified ES modules copied from the installed package during build; three.core.js is included too."
+    },
+    {
+      "id": "signature-wave-plates",
+      "path": "figures/",
+      "creator": "Orestis Oikonomou",
+      "origin": "authored",
+      "source": "Original vector artwork and deterministic scalar evaluation authored for this repository",
+      "license": "MIT",
+      "changes": "AI-assisted original SVG plates: wave-sources.svg, wave-propagation.svg and wave-interference.svg. Fixed sources A = (−2.25, 0), B = (+2.25, 0); domain x ∈ [−7, 7], y ∈ [−3.5, 3.5]; k = 2π / 2.4. Final color cells and level contours directly evaluate cos(k rA) + cos(k rB). This is an illustrative static scalar construction, not a physical solver or publication claim. No third-party figures, fonts, scripts, foreign objects, or remote image references are distributed."
+    },
+    {
+      "id": "kaimerva-brand-icon",
+      "path": "assets/brand/kaimerva-icon.png",
+      "copies": [
+        "skills/kaimerva/assets/kaimerva-icon.png"
+      ],
+      "creator": "AI-generated artwork; art direction and selection by Orestis Oikonomou",
+      "origin": "authored",
+      "source": "OpenAI built-in image-generation tool, 2026-10-08; revised from earlier AI-generated Kaimerva concepts in the same authoring session",
+      "license": "MIT",
+      "notice": "assets/brand/ATTRIBUTION.md",
+      "sha256": "0232e81a490c235befb665e434d1be4ba9a29b9ec66bb88fb955c8581e077842",
+      "changes": "Selected cinematic portal revision 3, copied unchanged into the repository and portable skill. Weathered stone, inset gold keystone, violet night sky and moonlit sea. No external reference artwork or franchise assets were supplied to the generation tool. Full final prompt, process and attribution are documented in docs/branding.md. AI generation does not establish exclusive copyright or trademark clearance."
+    },
+    {
+      "id": "kaimerva-launch-film",
+      "path": "docs/assets/kaimerva-launch.mp4",
+      "copies": [
+        "docs/assets/kaimerva-launch-poster.jpg"
+      ],
+      "creator": "Orestis Oikonomou, with AI-assisted editing",
+      "origin": "authored",
+      "source": "Earlier original browser recordings from 2026-10-06 and the approved Kaimerva portal icon; edited on 2026-10-08",
+      "license": "MIT",
+      "notice": "docs/launch-video.md",
+      "sha256": "da4fdb4a3071f1248b44dbddc87c4b49804fc4f968e99c6eadc504cef42ea879",
+      "changes": "24-second cinematic edit with original typography, restrained motion graphics, scene reframing and synthesized stereo sound. Shows actual earlier sea/field/reader/orbital/woodland footage. Does not show newer figure-passage or world-setting editing, or agent execution. No downloaded footage, music, samples or font software are distributed. Source footage and portal PNG remain unchanged. See the notice for exact crops, sources, output checksums and limits."
     }
   ]
 }
