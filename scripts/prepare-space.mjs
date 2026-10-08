@@ -4,7 +4,10 @@ import { build, root, output } from './build.mjs';
 
 // Create a fresh, bounded upload folder; never upload the checkout itself.
 // The CLI prints its path. Add the reviewed skill ZIP before publishing.
-await readFile(path.join(root, 'docs/huggingface-space.md'));
+const card = await readFile(path.join(root, 'docs/huggingface-space.md'), 'utf8');
+const description = card.match(/^short_description: (.+)$/m)?.[1];
+if (!description || [...description].length > 60) throw new Error('Space short_description must be one line of at most 60 characters.');
+if (!/^sdk: static$/m.test(card) || !/^app_file: index.html$/m.test(card)) throw new Error('This upload folder requires sdk: static and app_file: index.html.');
 for (const file of ['kaimerva-launch.mp4', 'kaimerva-launch-poster.jpg']) {
   await readFile(path.join(root, 'docs/assets', file));
 }

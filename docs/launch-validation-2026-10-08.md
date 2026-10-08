@@ -13,4 +13,12 @@ Reviewed on **8 October 2026**. This is a bounded release check, not a legal cle
 
 Current browser rendering and performance were not newly measured in this pass. Existing rendered evidence is documented in [verification.md](verification.md). Static build, file and decoded-film checks remain distinct from browser verification.
 
-Publication status must be checked against the actual Hub/repository results; preparing this package does not publish it.
+## Publication results
+
+The current source and skill were pushed to the existing public GitHub repository. The free public [Hugging Face Space](https://huggingface.co/spaces/oroikono/kaimerva) reports `sdk: static` and `RUNNING`; its reviewed package was published in commit `e6e0e94c88a78bcd19cb75f85ac0615daebb1541`.
+
+Seventeen public HTTP responses were checked: app entrypoint/modules, content/settings, supplied figure, Three.js files/notice, approved icon, complete skill ZIP and launch film. They match the reviewed package bytes, except for Hugging Face's documented `window.huggingface.variables` script added to the HTML head. This verifies publication and file delivery, not browser rendering or interaction performance.
+
+The initial upload was rejected because the card description exceeded Hugging Face's 60-character limit. It was shortened to 52 characters before the successful upload; the preparation script now checks that bound. The Hub also creates repository metadata and an unused default template stylesheet outside the 38 reviewed uploaded files.
+
+The X post remains a prepared draft: the available browser session is not signed in. No social post is claimed. Sign-in is needed to complete the requested X publication.
