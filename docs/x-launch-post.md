@@ -10,7 +10,7 @@ So I built Kaimerva: a free agent skill + Three.js starter for projects, researc
 Three worlds to try. What would yours look like?
 
 Demo: https://huggingface.co/spaces/oroikono/kaimerva
-Code + skill: https://github.com/oroikono/personal-worlds
+Code + skill: https://github.com/oroikono/Kaimerva
 ```
 
 Optional reply, with a real screenshot of the newer interaction:

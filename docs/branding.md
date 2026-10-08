@@ -16,11 +16,11 @@
 
 ## Why this name
 
-Kaimerva is a blend of [kami](https://d-museum.kokugakuin.ac.jp/eos/detail/?id=9958) and [Minerva](https://www.metmuseum.org/art/collection/search/206339).
+It started as an Aegean portfolio: a boat, islands and instruments for exploring the work. The name combines [kami](https://d-museum.kokugakuin.ac.jp/eos/detail/?id=9958), Shinto spirits and deities, with [Minerva](https://www.metmuseum.org/art/collection/search/206339), associated with wisdom and the arts.
 
 The portal is the project's icon. The skill can create other settings and use the user's own branding.
 
-The existing GitHub repository and demo URLs use `personal-worlds`. They remain valid links. Older recordings and dated research documents retain the previous Personal Worlds name so their historical evidence stays accurate.
+The GitHub repository is [oroikono/Kaimerva](https://github.com/oroikono/Kaimerva). The current demo remains [oroikono/kaimerva on Hugging Face](https://huggingface.co/spaces/oroikono/kaimerva), and the earlier Pages demo now uses [the Kaimerva path](https://oroikono.github.io/Kaimerva/). Older recordings and dated research documents retain the previous Personal Worlds name so their historical evidence stays accurate.
 
 ## Artwork attribution
 

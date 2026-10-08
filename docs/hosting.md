@@ -1,6 +1,6 @@
 # Hosting
 
-The [current Kaimerva demo](https://huggingface.co/spaces/oroikono/kaimerva) is a free static Hugging Face Space. The [earlier starter demo](https://oroikono.github.io/personal-worlds/) remains on GitHub Pages. The repository's default branch contains source and the portable skill; the separate `codex/demo` branch contains an earlier reviewed build and dependency notices.
+The [current Kaimerva demo](https://huggingface.co/spaces/oroikono/kaimerva) is a free static Hugging Face Space. The [earlier starter demo](https://oroikono.github.io/Kaimerva/) remains on GitHub Pages. The repository's default branch contains source and the portable skill; the separate `codex/demo` branch contains an earlier reviewed build and dependency notices.
 
 To host your own copy, run `npm ci`, `npm test`, `npm run check`, and `npm run build`. Publish the **contents** of `dist/`, including `LICENSE` and `vendor/three-LICENSE.txt`. For GitHub Pages branch publishing, include an empty `.nojekyll` file with that output and select the deployment branch as the Pages source. See the [official Pages source instructions](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site).
 

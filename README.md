@@ -1,4 +1,4 @@
-# Kaimerva
+# Kaimerva · kye-MER-vah
 
 <p><img src="assets/brand/kaimerva-icon.png" width="240" height="240" alt="Kaimerva: a weathered stone portal opening onto a moonlit sea"></p>
 
@@ -8,11 +8,11 @@ A free agent skill and Three.js starter for making your portfolio a place people
 
 Built by [Orestis Oikonomou](https://orestis-site.vercel.app), with AI assistance, while exploring what his own research and creative portfolio could become.
 
-**[Try the demo](https://huggingface.co/spaces/oroikono/kaimerva)** · **[Read the skill](skills/kaimerva/SKILL.md)** · **[Use the starter](https://github.com/oroikono/personal-worlds/generate)**
+**[Try the demo](https://huggingface.co/spaces/oroikono/kaimerva)** · **[Read the skill](skills/kaimerva/SKILL.md)** · **[Use the starter](https://github.com/oroikono/Kaimerva/generate)**
 
-**Pronounced:** kye-MER-vah · **Spelled:** K-A-I-M-E-R-V-A · **Codex skill:** `$kaimerva`
+**Spelled:** K-A-I-M-E-R-V-A · **Codex skill:** `$kaimerva`
 
-Kaimerva is a blend of [kami](https://d-museum.kokugakuin.ac.jp/eos/detail/?id=9958) and [Minerva](https://www.metmuseum.org/art/collection/search/206339). [Naming and artwork credits](docs/branding.md).
+It started as an Aegean portfolio: a boat, islands and instruments for exploring the work. The name combines [kami](https://d-museum.kokugakuin.ac.jp/eos/detail/?id=9958), Shinto spirits and deities, with [Minerva](https://www.metmuseum.org/art/collection/search/206339), associated with wisdom and the arts. [Naming and artwork credits](docs/branding.md).
 
 [![Build your own world — Kaimerva](docs/assets/kaimerva-launch-poster.jpg)](docs/assets/kaimerva-launch.mp4)
 

@@ -22,5 +22,5 @@ await mkdir(path.join(destination, 'launch'));
 for (const file of ['kaimerva-launch.mp4', 'kaimerva-launch-poster.jpg']) {
   await cp(path.join(root, 'docs/assets', file), path.join(destination, 'launch', file));
 }
-await writeFile(path.join(destination, 'launch/NOTICE.md'), '# Launch film\n\nEdited from original starter browser footage recorded on 6 October 2026. New Kaimerva typography, motion graphics and synthesized audio; the approved portal is AI-generated artwork. No new app features or agent execution are represented by the edit. Distributed with this package under MIT. Full provenance: https://github.com/oroikono/personal-worlds/blob/codex/personal-worlds/docs/launch-video.md\n');
+await writeFile(path.join(destination, 'launch/NOTICE.md'), '# Launch film\n\nEdited from original starter browser footage recorded on 6 October 2026. New Kaimerva typography, motion graphics and synthesized audio; the approved portal is AI-generated artwork. No new app features or agent execution are represented by the edit. Distributed with this package under MIT. Full provenance: https://github.com/oroikono/Kaimerva/blob/codex/personal-worlds/docs/launch-video.md\n');
 console.log(destination);
