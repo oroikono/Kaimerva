@@ -1,6 +1,15 @@
 import * as THREE from 'three';
-import { getTheme } from './themes.js?v=8ae8eefc8fb7';
-import { cycleDirection, cyclicDestination, targetPhase } from './navigation.js?v=8ae8eefc8fb7';
+import { getTheme } from './themes.js?v=39a02493892c';
+import { cycleDirection, cyclicDestination, targetPhase } from './navigation.js?v=39a02493892c';
+import { createFigurePassage } from './figure-passage.js?v=39a02493892c';
+import { createRealmAtmosphere } from './realm-atmosphere.js?v=39a02493892c';
+import { createRealmPortal } from './realm-portal.js?v=39a02493892c';
+import { createRealmSurface } from './realm-surfaces.js?v=39a02493892c';
+import { createVoyageMotion } from './voyage.js?v=39a02493892c';
+import { createVoyageCamera } from './voyage-clearance.js?v=39a02493892c';
+import { createCoastalDetail } from './coastal-detail.js?v=39a02493892c';
+import { createExploration } from './exploration.js?v=39a02493892c';
+import { createExplorationBeacons } from './exploration-beacons.js?v=39a02493892c';
 
 // Authored geometry, materials, motion, and layout. The destinations are content slots,
 // arranged along a closed route; exploration follows its neighboring stops.
@@ -87,6 +96,101 @@ function attachStop(kit, stops, id, position, labelHeight, accent) {
   return marker;
 }
 
+/** Register only an authored landmark's roots, excluding terrain and scenery. */
+export function bindLandmarkTargets(stop, objects) {
+  stop.hitObjects = objects.filter(Boolean);
+  const sphere = new THREE.Sphere(stop.position.clone(), 0);
+  for (const root of stop.hitObjects) {
+    root.updateWorldMatrix(true, true);
+    root.traverse(object => {
+      if (!object.isMesh || !object.geometry) return;
+      if (!object.geometry.boundingSphere) object.geometry.computeBoundingSphere();
+      const bound = object.geometry.boundingSphere.clone().applyMatrix4(object.matrixWorld);
+      sphere.radius = Math.max(sphere.radius, sphere.center.distanceTo(bound.center) + bound.radius);
+    });
+  }
+  // Geometry spheres include the full sweep of rotating parts around these
+  // fixed stops. This broad phase avoids raycasting unrelated landmark meshes.
+  sphere.radius += 0.025;
+  stop.hitSphere = sphere;
+}
+
+/** Pick the nearest visible hit among explicitly registered destinations. */
+export function pickLandmark(raycaster, stops, ids = Object.keys(stops)) {
+  let closest = null;
+  for (const id of ids) {
+    const stop = stops[id];
+    if (!stop?.hitObjects?.length || !raycaster.ray.intersectsSphere(stop.hitSphere)) continue;
+    for (const root of stop.hitObjects) root.updateWorldMatrix(true, true);
+    const hit = raycaster.intersectObjects(stop.hitObjects, true).find(({ object }) => {
+      // Three.js raycasts invisible descendants, so check the full ancestry.
+      for (let parent = object; parent; parent = parent.parent) if (!parent.visible) return false;
+      const materials = Array.isArray(object.material) ? object.material : [object.material];
+      return materials.some(material => material?.visible !== false && !(material?.transparent && material.opacity === 0));
+    });
+    if (hit && (!closest || hit.distance < closest.distance)) closest = { id, distance: hit.distance, object: hit.object };
+  }
+  return closest;
+}
+
+// Reserve the actual reader width and allow for shutters swinging toward the
+// camera. Fitting only the flat plate clips the open cabinet's nearer doors.
+export function inspectionCameraPose({ anchor, bearing = 0, width, height, fov = 36 }) {
+  const phone = width <= 600;
+  const aspect = width / height;
+  const availableWidth = phone ? 1 : 0.6;
+  const extent = phone ? 9.4 : 11.6;
+  const distance = Math.max(phone ? 30 : 12.3, extent / (2 * Math.tan(fov * Math.PI / 360) * aspect * availableWidth) * 1.11);
+  const viewportHeight = 2 * distance * Math.tan(fov * Math.PI / 360);
+  const viewportWidth = viewportHeight * aspect;
+  const right = new THREE.Vector3(Math.cos(bearing), 0, -Math.sin(bearing));
+  const forward = new THREE.Vector3(Math.sin(bearing), 0, Math.cos(bearing));
+  const target = anchor.clone().addScaledVector(right, phone ? 0 : viewportWidth * 0.2);
+  if (phone) target.y -= viewportHeight * 0.265;
+  return { target, position: target.clone().addScaledVector(forward, distance) };
+}
+
+/** Fixed-bearing lower gateway view; portrait screens keep the whole arch. */
+export function portalCameraPose({ anchor, bearing, aspect, fov = 36 }) {
+  const distance = Math.max(12.8, 4.1 / (2 * Math.tan(fov * Math.PI / 360) * aspect) * 1.3);
+  const position = anchor.clone().addScaledVector(new THREE.Vector3(Math.sin(bearing), 0, Math.cos(bearing)), distance);
+  position.y += distance * 0.075;
+  return { target: anchor.clone(), position };
+}
+
+/** Fit the actual body bounds and the host's measured native label boxes. */
+export function atlasCameraPose({ world, width, height, labels = [], fov = 36 }) {
+  const camera = new THREE.PerspectiveCamera(fov, width / height, 0.1, 130);
+  const target = new THREE.Vector3(...world.target);
+  const point = new THREE.Vector3();
+  const padding = Math.min(24, width * 0.06);
+  let scale = Math.max(1, Math.sqrt(1.45 / camera.aspect));
+  let fits = false;
+  const contains = (anchor, halfWidth = 0, halfHeight = 0) => {
+    point.copy(anchor).project(camera);
+    const x = (point.x * 0.5 + 0.5) * width;
+    const y = (-point.y * 0.5 + 0.5) * height;
+    return point.z >= -1 && point.z <= 1 && x - halfWidth >= padding && x + halfWidth <= width - padding
+      && y - halfHeight >= 76 && y + halfHeight <= height - 88;
+  };
+  for (let attempt = 0; attempt < 24; attempt++) {
+    camera.position.set(...world.camera).multiplyScalar(scale);
+    camera.lookAt(target); camera.updateMatrixWorld();
+    fits = labels.every(label => contains(world.stops[label.id].label, label.width / 2, label.height / 2))
+      && (world.fitPoints || []).every(anchor => contains(anchor));
+    if (fits) break;
+    scale *= 1.08;
+  }
+  return { target, position: camera.position.clone(), fits };
+}
+
+/** Keep the readable plate above scenery in the complete authored scene. */
+export function inspectionSceneAnchor({ world, collection }) {
+  const anchor = (world.stops[collection]?.position || world.stops.work.position).clone();
+  anchor.y = Math.max(anchor.y + 4.82, world.inspectionElevation);
+  return anchor;
+}
+
 function buildSea(group) {
   const kit = modelKit(group);
   const surfaceTextures = new Set();
@@ -147,6 +251,8 @@ function buildSea(group) {
       uIslands: { value: [] }, uRadii: { value: [] }, uCoastPhases: { value: [] },
       uReflection: { value: null }, uReflectionMatrix: { value: new THREE.Matrix4() },
       uReflectionStrength: { value: 0 },
+      uKeyDirection: { value: new THREE.Vector3(-0.54, 0.2, -0.817).normalize() },
+      uKeyColor: { value: new THREE.Color('#c2ceff') }, uHazeColor: { value: new THREE.Color('#253653') },
     },
     vertexShader: `varying vec3 vWorld; varying vec4 vReflection; uniform float uTime;
       uniform mat4 uReflectionMatrix;
@@ -163,6 +269,7 @@ function buildSea(group) {
     fragmentShader: `varying vec3 vWorld; varying vec4 vReflection;
       uniform float uTime; uniform float uField; uniform float uSpacing;
       uniform sampler2D uReflection; uniform float uReflectionStrength;
+      uniform vec3 uKeyDirection; uniform vec3 uKeyColor; uniform vec3 uHazeColor;
       uniform vec2 uIslands[5]; uniform float uRadii[5]; uniform vec3 uCoastPhases[5];
       float grain(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
       void main() {
@@ -202,12 +309,11 @@ function buildSea(group) {
         reflected += texture2D(uReflection, reflectionSample + vec2(0.0009, 0.0006)).rgb * 0.25;
         reflected += texture2D(uReflection, reflectionSample - vec2(0.0009, 0.0006)).rgb * 0.25;
         sea = mix(sea, reflected, (0.1 + fresnel * 0.82) * uReflectionStrength * reflectionValid);
-        vec3 sunDirection = normalize(vec3(-8.0, 14.0, 7.0));
-        vec3 halfDirection = normalize(sunDirection + view);
-        float sunGlint = pow(max(dot(normal, halfDirection), 0.0), 340.0);
-        sea += vec3(1.0, 0.83, 0.61) * sunGlint * 0.75;
+        vec3 halfDirection = normalize(uKeyDirection + view);
+        float moonGlint = pow(max(dot(normal, halfDirection), 0.0), 240.0);
+        sea += uKeyColor * moonGlint * 0.9;
         float atmospheric = 1.0 - exp(-length(cameraPosition - vWorld) * 0.0035);
-        sea = mix(sea, vec3(0.23, 0.38, 0.44), atmospheric);
+        sea = mix(sea, uHazeColor, atmospheric);
         // An illustrative analytic field, not measured ocean or paper data.
         float frequency = 4.2;
         vec2 source = normalize(vec2(1.3, -0.65)) * mix(0.55, 2.55, uSpacing);
@@ -314,6 +420,32 @@ function buildSea(group) {
     }
     attachStop(kit, stops, id, p, id === 'news' ? 3.9 : 2.65, glow);
   });
+  // Low, distant headlands give the lower view a horizon and scale. They are
+  // scenery, outside both the five-stop loop and its registered hit targets.
+  const distantStone = kit.mat('#34434e', { ...stoneStudy, bumpScale: 0.03, roughness: 0.98, metalness: 0 });
+  for (const [index, distance, offset, radius, rise] of [[0, 29, -14, 7, 2.5], [1, 42, 11, 9, 3.1], [2, 51, -4, 6, 1.9]]) {
+    const vertices = [0, rise, 0]; const uv = [0.5, 0.5]; const indices = [];
+    const rings = [0.24, 0.49, 0.73, 1]; const segments = 56;
+    for (let ring = 0; ring < rings.length; ring++) for (let i = 0; i < segments; i++) {
+      const angle = i / segments * TAU;
+      const irregular = 1 + Math.sin(angle * 3 + index) * 0.13 + Math.sin(angle * 7 - index * 2) * 0.08;
+      const r = radius * rings[ring] * irregular;
+      const y = ring === 3 ? -0.25 : rise * Math.pow(1 - rings[ring], 0.78)
+        * (0.84 + Math.sin(angle * 2 + index) * 0.13 + Math.cos(angle * 5) * 0.11);
+      vertices.push(Math.cos(angle) * r, y, Math.sin(angle) * r);
+      uv.push(Math.cos(angle) * r * 0.18, Math.sin(angle) * r * 0.18);
+      const a = 1 + ring * segments + i; const b = 1 + ring * segments + (i + 1) % segments;
+      if (!ring) indices.push(0, b, a);
+      if (ring < rings.length - 1) indices.push(a, b, a + segments, b, b + segments, a + segments);
+    }
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    geometry.setIndex(indices); geometry.computeVertexNormals();
+    const position = near.clone().multiplyScalar(-distance).addScaledVector(right, offset);
+    const headland = kit.mesh(geometry, distantStone, position.x, 0, position.z);
+    headland.name = `distant-headland-${index}`; headland.castShadow = false; headland.receiveShadow = false;
+  }
   // Scale each coherent landmark assembly around its own island, preserving
   // doors, mullions, and support spacing. The map gains room without losing
   // the readable landmark silhouettes that give each destination its identity.
@@ -343,7 +475,7 @@ function buildSea(group) {
   kit.beam([w[0] - 0.78, 1.52, w[2] - 0.45], [w[0] - 0.78, 1.89, w[2] - 0.45], 0.015, brass);
   kit.beam([w[0] + 0.28, 1.52, w[2] - 0.45], [w[0] + 0.28, 1.77, w[2] - 0.45], 0.015, brass);
   kit.box(1.6, 0.012, 0.014, glow, w[0], 0.57, w[2] + 0.65);
-  finishLandmark(w, landmarkStart);
+  bindLandmarkTargets(stops.work, [finishLandmark(w, landmarkStart)]);
   // Observatory with an open dome slit and a precise telescope, not a stock icon.
   const r = positions.research;
   landmarkStart = group.children.length;
@@ -359,7 +491,7 @@ function buildSea(group) {
   const observatoryOrbit = kit.ring(1.11, 0.022, brass, r[0], 1.82, r[2]);
   observatoryOrbit.rotation.set(0.36, 0, -0.18);
   kit.ring(0.96, 0.009, glow, r[0], 1.65, r[2]);
-  finishLandmark(r, landmarkStart);
+  bindLandmarkTargets(stops.research, [finishLandmark(r, landmarkStart)]);
   // Journal courtyard and cypress: a quiet outdoor desk rather than another building.
   const j = positions.journal;
   landmarkStart = group.children.length;
@@ -375,16 +507,26 @@ function buildSea(group) {
     const cypress = kit.mesh(new THREE.IcosahedronGeometry(0.29 - crown * 0.033, 1), foliage, j[0] + 0.74, 1.3 + crown * 0.23, j[2] - 0.35);
     cypress.scale.set(0.8, 1.28, 0.77); cypress.rotation.y = crown * 0.7;
   }
-  finishLandmark(j, landmarkStart, 1.08);
+  bindLandmarkTargets(stops.journal, [finishLandmark(j, landmarkStart, 1.08)]);
   // Harbor steps, a pier, and mooring posts.
   const h = positions.journey;
   landmarkStart = group.children.length;
   for (let i = 0; i < 5; i++) kit.box(1.25 + i * 0.1, 0.08, 0.44, white, h[0], 0.03 + i * 0.12, h[2] + 2.08 - i * 0.29);
   for (let plank = 0; plank < 8; plank++) kit.box(0.58, 0.075, 0.16, wood, h[0] + 0.71, 0.09, h[2] + 1.4 + plank * 0.18);
   [-0.2, 0.2].forEach((x) => kit.cylinder(0.04, 0.04, 0.4, ink, h[0] + 0.71 + x, 0.17, h[2] + 2.56));
-  kit.ring(0.61, 0.035, ink, h[0] - 0.34, 0.57, h[2] - 0.3);
-  const harbor = finishLandmark(h, landmarkStart, 1.08);
+  const harbor = finishLandmark(h, landmarkStart, 0.45);
   harbor.rotation.y = Math.atan2(-h[0], -h[2]);
+  // The gateway is an actual open, weathered structure on the outer shore.
+  // Its foundation stays outside the sailing corridor; no image covers the bay.
+  const portalPosition = new THREE.Vector3(h[0], 0.43, h[2]).addScaledVector(near, 0.45);
+  const portal = createRealmPortal({ position: portalPosition, bearing, scale: 0.78 });
+  group.add(portal.group);
+  const portalBounds = new THREE.Box3().setFromObject(portal.group);
+  stops.journey.label.copy(portalPosition).setY(portalBounds.max.y + 0.42);
+  bindLandmarkTargets(stops.journey, [harbor, portal.group]);
+  const fitPoints = [];
+  for (const x of [portalBounds.min.x, portalBounds.max.x]) for (const y of [portalBounds.min.y, portalBounds.max.y])
+    for (const z of [portalBounds.min.z, portalBounds.max.z]) fitPoints.push(new THREE.Vector3(x, y, z));
   // News lighthouse; its slow beam gives the world a distinct, legible motion.
   const n = positions.news;
   landmarkStart = group.children.length;
@@ -399,7 +541,9 @@ function buildSea(group) {
   lightBeam.rotation.z = Math.PI / 2;
   lightBeam.castShadow = false;
   group.add(beacon);
-  finishLandmark(n, landmarkStart, 1.08);
+  const lighthouse = finishLandmark(n, landmarkStart, 1.08);
+  // The faint sweeping beam is scenery, not an oversized click target.
+  bindLandmarkTargets(stops.news, lighthouse.children.filter(piece => piece !== beacon));
   // A slender bronze-trimmed sailing craft and a small, original sailor figure.
   const traveler = new THREE.Group();
   const boatBody = new THREE.Group();
@@ -607,10 +751,15 @@ function buildSea(group) {
   nauticalRoute.position.y = -0.025;
   nauticalRoute.computeLineDistances();
   group.add(nauticalRoute);
+  const coast = createCoastalDetail({ stops, route, bearing });
+  group.add(coast.group);
   return {
-    kit, stops, traveler, route, setField, update, instrumentHit: instrument, background: '#081b36', fog: ['#081b36', 29, 61], camera: [11.5, 11.4, 14.5], target: [0, 0.1, 0],
+    kit, stops, traveler, route, setField, update, instrumentHit: instrument, fitPoints,
+    approach: { anchor: portalPosition.clone().setY(2.35), bearing },
+    background: '#081b36', fog: ['#081b36', 29, 61], camera: [11.5, 11.4, 14.5], target: [0, 0.1, 0],
     travelPoint(id) { return route.point(order.indexOf(id)); },
     animate(time) {
+      coast.update(time);
       water.uniforms.uTime.value = time;
       beacon.rotation.y = time * 0.23;
       observatoryOrbit.rotation.y = time * 0.12;
@@ -619,13 +768,15 @@ function buildSea(group) {
       boatBody.rotation.x = Math.sin(time * 1.2) * 0.021;
       traveler.position.y = Math.sin(time * 1.6) * 0.022;
     },
-    dispose() { routeMaterial.dispose(); surfaceTextures.forEach((texture) => texture.dispose()); },
+    dispose() { coast.dispose(); portal.dispose(); routeMaterial.dispose(); surfaceTextures.forEach((texture) => texture.dispose()); },
   };
 }
 
 function buildOrbital(group) {
   const kit = modelKit(group);
-  const ceramic = kit.mat('#d8dbe7', { metalness: 0.26, roughness: 0.4 });
+  const ceramicStudy = createRealmSurface('ceramic', 89);
+  const ceramic = kit.mat('#d8dbe7', { map: ceramicStudy.map, bumpMap: ceramicStudy.bumpMap,
+    roughnessMap: ceramicStudy.roughnessMap, bumpScale: 0.008, metalness: 0.16, roughness: 1 });
   const graphite = kit.mat('#283349', { metalness: 0.65, roughness: 0.35 });
   const trim = kit.mat('#8b91af', { metalness: 0.65 });
   const glow = kit.mat('#b2aaff', { emissive: '#8772ec', emissiveIntensity: 0.8 });
@@ -672,6 +823,7 @@ function buildOrbital(group) {
     attachStop(kit, stops, id, p, p[1] + labelHeight, glow);
   });
   const w = positions.work;
+  let landmarkStart = group.children.length;
   kit.box(1.5, 0.8, 1.1, ceramic, w[0], w[1] + 0.5, w[2]);
   kit.box(0.7, 0.4, 0.04, glass, w[0], w[1] + 0.58, w[2] + 0.56);
   const arrays = [];
@@ -682,7 +834,9 @@ function buildOrbital(group) {
     arrays.push(panel);
     for (let i = 0; i < 5; i++) kit.box(0.01, 0.055, 0.89, trim, w[0] + side * 1.45 - 0.43 + i * 0.21, w[1] + 0.51, w[2]);
   });
+  bindLandmarkTargets(stops.work, group.children.slice(landmarkStart));
   const r = positions.research;
+  landmarkStart = group.children.length;
   kit.cylinder(0.13, 0.32, 0.8, graphite, r[0], r[1] + 0.3, r[2]);
   const instrument = new THREE.Group();
   instrument.position.set(r[0], r[1] + 1.02, r[2]);
@@ -692,7 +846,9 @@ function buildOrbital(group) {
   middle.rotation.set(0.1, 0.6, 1.2);
   kit.sphere(0.24, glass, 0, 0, 0, instrument);
   group.add(instrument);
+  bindLandmarkTargets(stops.research, group.children.slice(landmarkStart));
   const j = positions.journal;
+  landmarkStart = group.children.length;
   kit.cylinder(0.66, 0.66, 0.08, graphite, j[0], j[1] + 0.08, j[2]);
   for (let i = 0; i < 5; i++) {
     const angle = i / 5 * TAU;
@@ -700,15 +856,20 @@ function buildOrbital(group) {
     tablet.rotation.y = Math.PI / 2 - angle;
     kit.sphere(0.027, glow, j[0] + Math.cos(angle) * 0.74, j[1] + 0.91, j[2] + Math.sin(angle) * 0.74);
   }
+  bindLandmarkTargets(stops.journal, group.children.slice(landmarkStart));
   const h = positions.journey;
+  landmarkStart = group.children.length;
   const dock = kit.ring(0.87, 0.12, ceramic, h[0], h[1] + 0.85, h[2]);
   dock.rotation.x = 0;
   kit.box(1.9, 0.1, 0.58, graphite, h[0], h[1] + 0.05, h[2]);
+  bindLandmarkTargets(stops.journey, group.children.slice(landmarkStart));
   const n = positions.news;
+  landmarkStart = group.children.length;
   kit.cylinder(0.05, 0.1, 1.2, trim, n[0], n[1] + 0.55, n[2]);
   const dish = kit.mesh(new THREE.SphereGeometry(0.65, 24, 14, 0, TAU, 0, Math.PI * 0.42), ceramic, n[0], n[1] + 1.3, n[2]);
   dish.rotation.set(0.45, 0, -0.4);
   kit.beam([n[0], n[1] + 1.2, n[2]], [n[0] + 0.25, n[1] + 1.86, n[2] + 0.3], 0.015, amber);
+  bindLandmarkTargets(stops.news, group.children.slice(landmarkStart));
   // Seeded stars are geometry. Nothing is fetched from a skybox service.
   const starRandom = randomFrom(701);
   const starPositions = new Float32Array(320 * 3);
@@ -741,16 +902,20 @@ function buildOrbital(group) {
       stars.rotation.y = time * 0.002;
       traveler.children[0].rotation.z = Math.sin(time * 1.1) * 0.02;
     },
-    dispose() { starsMaterial.dispose(); },
+    dispose() { ceramicStudy.dispose(); starsMaterial.dispose(); },
   };
 }
 
 function buildWoodland(group) {
   const kit = modelKit(group);
-  const earth = kit.mat('#163b35');
-  const moss = kit.mat('#4f7660');
+  const mossStudy = createRealmSurface('moss', 53);
+  const timberStudy = createRealmSurface('timber', 41);
+  const mossMaps = { map: mossStudy.map, bumpMap: mossStudy.bumpMap, roughnessMap: mossStudy.roughnessMap, roughness: 1, metalness: 0 };
+  const earth = kit.mat('#163b35', { ...mossMaps, bumpScale: 0.03 });
+  const moss = kit.mat('#4f7660', { ...mossMaps, bumpScale: 0.025 });
   const path = kit.mat('#9ba98a');
-  const timber = kit.mat('#a38766');
+  const timber = kit.mat('#a38766', { map: timberStudy.map, bumpMap: timberStudy.bumpMap,
+    roughnessMap: timberStudy.roughnessMap, bumpScale: 0.018, metalness: 0, roughness: 1 });
   const dark = kit.mat('#29443e');
   const roof = kit.mat('#799282', { metalness: 0.25 });
   const pale = kit.mat('#e8dfc7');
@@ -768,10 +933,20 @@ function buildWoodland(group) {
     const p = right.clone().multiplyScalar(Math.cos(angle) * 6.1).addScaledVector(near, Math.sin(angle) * 6.1);
     return [id, [p.x, 0.16, p.z]];
   }));
-  const land = kit.cylinder(10.5, 10.2, 0.4, earth, 0, -0.22, 0, group, 96);
-  land.scale.z = 0.86;
-  const under = kit.cylinder(10.2, 9.2, 0.45, dark, 0, -0.62, 0, group, 96);
-  under.scale.z = 0.86;
+  // Clearings sit on continuous terrain, with distant rolling ground instead
+  // of a visible circular plinth. The authored paths remain on the flat center.
+  const terrain = new THREE.PlaneGeometry(120, 120, 96, 96);
+  terrain.rotateX(-Math.PI / 2);
+  const terrainVertices = terrain.attributes.position;
+  for (let i = 0; i < terrainVertices.count; i++) {
+    const x = terrainVertices.getX(i); const z = terrainVertices.getZ(i);
+    const outer = THREE.MathUtils.smoothstep(Math.hypot(x, z), 10.5, 22);
+    const relief = 0.5 + Math.sin(x * 0.17 + z * 0.08) * 0.37 + Math.cos(z * 0.21 - x * 0.05) * 0.32;
+    terrainVertices.setY(i, -0.02 + outer * relief * 2.1);
+    terrain.attributes.uv.setXY(i, x * 0.15, z * 0.15);
+  }
+  terrain.computeVertexNormals(); terrain.computeBoundingSphere();
+  const land = kit.mesh(terrain, earth); land.name = 'continuous-woodland-terrain'; land.castShadow = false;
   Object.entries(positions).forEach(([id, p]) => {
     const clearing = kit.cylinder(id === 'journey' ? 1.45 : 1.65, 1.55, 0.05, moss, p[0], 0.02, p[2]);
     clearing.scale.z = 0.85;
@@ -844,6 +1019,7 @@ function buildWoodland(group) {
   }
   // Maker hut, with an asymmetrical sloping roof and a workbench outside.
   const w = positions.work;
+  let landmarkStart = group.children.length;
   kit.box(1.55, 0.93, 1.1, timber, w[0], 0.67, w[2]);
   const hutRoof = kit.box(1.85, 0.1, 1.5, roof, w[0], 1.21, w[2]);
   hutRoof.rotation.z = -0.1;
@@ -851,8 +1027,10 @@ function buildWoodland(group) {
   kit.box(0.53, 0.32, 0.035, glow, w[0] - 0.35, 0.79, w[2] + 0.565);
   kit.box(0.75, 0.07, 0.38, pale, w[0] - 0.6, 0.67, w[2] + 0.97);
   [-0.25, 0.25].forEach((x) => kit.box(0.05, 0.55, 0.24, dark, w[0] - 0.6 + x, 0.39, w[2] + 0.97));
+  bindLandmarkTargets(stops.work, group.children.slice(landmarkStart));
   // Glasshouse: slim timber mullions, actual transparent panels, and seedlings.
   const r = positions.research;
+  landmarkStart = group.children.length;
   kit.box(1.8, 0.12, 1.4, pale, r[0], 0.17, r[2]);
   kit.box(1.72, 0.94, 1.32, glass, r[0], 0.71, r[2]);
   [-0.85, 0, 0.85].forEach((x) => [-0.65, 0.65].forEach((z) => kit.box(0.035, 1.02, 0.035, timber, r[0] + x, 0.72, r[2] + z)));
@@ -869,25 +1047,32 @@ function buildWoodland(group) {
     kit.cylinder(0.12, 0.09, 0.18, timber, x, 0.34, z, group, 12);
     kit.sphere(0.13, lightFoliage, x, 0.51, z);
   }
+  bindLandmarkTargets(stops.research, group.children.slice(landmarkStart));
   const j = positions.journal;
+  landmarkStart = group.children.length;
   kit.box(1.25, 0.12, 0.38, timber, j[0], 0.55, j[2]);
   [-0.44, 0.44].forEach((x) => kit.box(0.09, 0.38, 0.32, dark, j[0] + x, 0.3, j[2]));
   kit.box(1.25, 0.43, 0.07, timber, j[0], 0.83, j[2] - 0.18);
   kit.box(0.31, 0.03, 0.24, pale, j[0] + 0.18, 0.635, j[2]);
   kit.cylinder(0.028, 0.035, 1.48, timber, j[0] - 0.77, 0.79, j[2] + 0.45);
   kit.sphere(0.14, glow, j[0] - 0.77, 1.54, j[2] + 0.45);
+  bindLandmarkTargets(stops.journal, group.children.slice(landmarkStart));
   const h = positions.journey;
+  landmarkStart = group.children.length;
   const arch = kit.mesh(new THREE.TorusGeometry(0.88, 0.055, 8, 48, Math.PI), timber, h[0], 0.25, h[2]);
   arch.rotation.z = 0;
   kit.box(0.7, 0.035, 0.2, pale, h[0], 1.1, h[2]);
   [-0.5, 0, 0.5].forEach((x) => kit.cylinder(0.17, 0.18, 0.05, path, h[0] + x * 0.1, 0.1, h[2] + 0.3 + x, group, 12));
+  bindLandmarkTargets(stops.journey, group.children.slice(landmarkStart));
   const n = positions.news;
+  landmarkStart = group.children.length;
   [-0.48, 0.48].forEach((x) => [-0.48, 0.48].forEach((z) => kit.box(0.055, 2.05, 0.055, timber, n[0] + x, 1.1, n[2] + z)));
   kit.box(1.16, 0.12, 1.16, pale, n[0], 2.12, n[2]);
   [-0.55, 0.55].forEach((z) => kit.box(1.16, 0.045, 0.035, timber, n[0], 2.62, n[2] + z));
   [-0.55, 0.55].forEach((x) => kit.box(0.035, 0.045, 1.16, timber, n[0] + x, 2.62, n[2]));
   for (let i = 0; i < 8; i++) kit.box(0.33, 0.035, 0.08, timber, n[0], 0.25 + i * 0.25, n[2] + 0.57);
   [-0.2, 0.2].forEach((x) => kit.box(0.04, 2.12, 0.04, timber, n[0] + x, 1.15, n[2] + 0.57));
+  bindLandmarkTargets(stops.news, group.children.slice(landmarkStart));
   const traveler = new THREE.Group();
   kit.sphere(0.075, glow, 0, 0, 0, traveler);
   const wingMaterial = kit.mat('#cfdfb1', { transparent: true, opacity: 0.5, side: THREE.DoubleSide });
@@ -905,46 +1090,26 @@ function buildWoodland(group) {
       wings.forEach((wing, i) => { wing.rotation.z = Math.sin(time * 15) * (i ? -0.2 : 0.2); });
       halo.scale.setScalar(0.9 + Math.sin(time * 2) * 0.08);
     },
+    dispose() { mossStudy.dispose(); timberStudy.dispose(); },
   };
 }
 
 const BUILDERS = { sea: buildSea, orbital: buildOrbital, woodland: buildWoodland };
 
-// A small authored sky supplies broad, coherent environment lighting. It is
-// generated locally; no HDRI, photograph or skybox is downloaded.
-function coastalSky() {
-  const width = 512; const height = 256;
-  const pixels = new Uint8Array(width * height * 4);
-  const zenith = new THREE.Color('#528eb3');
-  const horizon = new THREE.Color('#bddce0');
-  const ground = new THREE.Color('#45606b');
-  const warm = new THREE.Color('#fff0d3');
-  const color = new THREE.Color();
-  const direction = new THREE.Vector3();
-  const sun = new THREE.Vector3(-8, 14, 7).normalize();
-  for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
-    const latitude = (y / (height - 1) - 0.5) * Math.PI;
-    const longitude = (x / width - 0.5) * TAU;
-    direction.set(Math.cos(latitude) * Math.cos(longitude), Math.sin(latitude), Math.cos(latitude) * Math.sin(longitude));
-    const elevation = direction.y;
-    color.copy(elevation > 0 ? horizon : ground);
-    if (elevation > 0) color.lerp(zenith, Math.pow(elevation, 0.55));
-    const cloud = Math.sin(direction.x * 13 + direction.z * 9) * Math.sin(direction.z * 19 - direction.x * 6);
-    const veil = Math.max(0, cloud - 0.15) * 0.09 * Math.max(0, 1 - Math.abs(elevation - 0.32) * 3);
-    color.lerp(horizon, veil);
-    const glow = Math.pow(Math.max(0, direction.dot(sun)), 60) * 0.28;
-    color.lerp(warm, glow);
-    color.convertLinearToSRGB();
-    const offset = (y * width + x) * 4;
-    pixels[offset] = Math.round(color.r * 255); pixels[offset + 1] = Math.round(color.g * 255);
-    pixels[offset + 2] = Math.round(color.b * 255); pixels[offset + 3] = 255;
-  }
-  const texture = new THREE.DataTexture(pixels, width, height, THREE.RGBAFormat);
-  texture.mapping = THREE.EquirectangularReflectionMapping;
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.minFilter = THREE.LinearFilter; texture.magFilter = THREE.LinearFilter;
-  texture.needsUpdate = true;
-  return texture;
+/** Build native scene objects without a renderer, DOM or a network request. */
+export function buildRealmScene(id, group = new THREE.Group()) {
+  if (!Object.hasOwn(BUILDERS, id)) throw new TypeError('Unknown world setting.');
+  const world = BUILDERS[id](group);
+  group.updateWorldMatrix(true, true);
+  let ceiling = 0;
+  group.traverse(object => {
+    if (!object.isMesh || !object.visible) return;
+    ceiling = Math.max(ceiling, new THREE.Box3().setFromObject(object).max.y);
+  });
+  // The portrait inspection camera sits lower than its plate. Whole-scene
+  // source rays, rather than isolated housing bounds, establish this clearance.
+  world.inspectionElevation = Math.max(7.5, ceiling + 2.65);
+  return world;
 }
 
 // Reflect a camera across the flat mean water plane. Global clipping keeps
@@ -1001,7 +1166,7 @@ function seaReflection(surface, renderer) {
  * select() mirrors external content selection silently. Actual world interactions
  * invoke onVisit immediately; travel is visual and never gates access to content.
  */
-export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit = () => {}, onStatus = () => {}, onExit = () => {}, onFieldChange = () => {}, onViewChange = () => {} } = {}) {
+export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit = () => {}, onStatus = () => {}, onExit = () => {}, onFieldChange = () => {}, onViewChange = () => {}, onVoyageState = () => {}, onExplorationState = () => {}, onInspectionChange = () => {}, onInspectionImage = () => {} } = {}) {
   if (!mount) throw new TypeError('createWorld requires a mount element.');
   const noop = () => {};
   let renderer;
@@ -1009,7 +1174,7 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'low-power' });
   } catch {
     onStatus({ ready: false, message: 'The 3D view is unavailable here. Every destination is still available in the reading view.' });
-    return { select: noop, setTheme: noop, setMotion: noop, setField: noop, setView: noop, destroy: noop };
+    return { select: noop, navigate: noop, read: noop, interact: noop, setPlaying: noop, setSailingAxis: noop, setTheme: noop, setAppearance: noop, setMotion: noop, setField: noop, setView: noop, setInspection: noop, setInspectionStage: noop, destroy: noop };
   }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -1041,10 +1206,15 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   const initialTouch = window.matchMedia('(pointer: coarse)').matches;
   let motionRequested = !reducedMotion.matches && !initialTouch;
   let world;
+  let worldTheme = getTheme(themeId).id;
   let worldGroup;
+  let playing = false;
+  let beacons = null;
+  let approachPoints = [];
+  const exploration = createExploration({ order: destinations.map(stop => stop.id).filter(id => ['work', 'research', 'journal', 'journey', 'news'].includes(id)) });
+  let lastExplorationState = '';
   let reflection = null;
-  let skyTexture = null;
-  let skyEnvironment = null;
+  const atmospheres = new Map();
   let selectedId = destinations.some((stop) => stop.id === 'journey') ? 'journey' : destinations[0]?.id || 'work';
   let labels = [];
   let frame = 0;
@@ -1060,9 +1230,24 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   let height = 1;
   let lastArrowAt = -Infinity;
   let sceneView = 'atlas';
+  let voyageMotion = null;
+  let voyageCamera = null;
+  let voyageCameraIssue = '';
+  let sailingAxis = 0;
+  let externalSailingAxis = 0;
+  const sailingKeys = new Set();
+  let portalApproach = false;
+  let lastVoyageState = '';
   let fieldEnabled = false;
   let fieldSpacing = 0.45;
   let fieldDrag = null;
+  let landmarkPress = null;
+  let exposureMultiplier = 1;
+  let keyLightMultiplier = 1;
+  let themeExposure = 1;
+  let themeKeyIntensity = 3;
+  let inspection = null;
+  let restoredPose = null;
   const instrumentRay = new THREE.Raycaster();
   const pointerPosition = new THREE.Vector2();
   const labelPosition = new THREE.Vector3();
@@ -1075,6 +1260,180 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   let lastHeading = 0;
   const canDraw = () => !destroyed && !contextLost && inView && !document.hidden && width > 1 && height > 1;
   const moving = () => motionRequested && !reducedMotion.matches;
+  const controlsTravel = () => !fieldEnabled && (playing || (worldTheme === 'sea' && sceneView === 'voyage'));
+
+  function explorationStatus(dt = 0) {
+    if (!world) return;
+    const distances = Object.fromEntries(approachPoints.map(({ id, position }) => [id, world.traveler.position.distanceTo(position)]));
+    const state = exploration.update({ phase: routePhase, moving: moving(), distances });
+    if (beacons) {
+      beacons.group.visible = playing && !inspection && !fieldEnabled;
+      beacons.update(state, dt, { static: !moving() });
+    }
+    const available = playing && canDraw() && !inspection && !fieldEnabled;
+    // Proximity is sampled each frame, but DOM/status work is only needed at a
+    // zone boundary, chart event or lifecycle change. No per-frame live region.
+    const key = `${playing}:${state.nearId}:${state.revision}:${available}`;
+    if (key !== lastExplorationState) {
+      lastExplorationState = key;
+      onExplorationState({ ...state, playing, available, theme: worldTheme });
+    }
+  }
+
+  function clearSailingInput() {
+    sailingAxis = 0;
+    externalSailingAxis = 0;
+    sailingKeys.clear();
+  }
+
+  function heldKeyAxis() {
+    const forward = ['arrowright', 'arrowdown', 'd'].some(key => sailingKeys.has(key));
+    const backward = ['arrowleft', 'arrowup', 'a'].some(key => sailingKeys.has(key));
+    return Number(forward) - Number(backward);
+  }
+
+  function voyageStatus() {
+    const speed = voyageMotion?.snapshot().speed || 0;
+    const sailing = moving() && Math.abs(speed) > 0.015;
+    const acceptingInput = canDraw() && !inspection && controlsTravel();
+    const state = `${selectedId}:${sailing ? 'sailing' : 'anchored'}:${sailingAxis}:${acceptingInput}`;
+    if (state === lastVoyageState) return;
+    lastVoyageState = state;
+    onVoyageState({ destination: selectedId, sailing, axis: sailingAxis, acceptingInput });
+  }
+
+  function inspectionPose() {
+    // Leave the right 40% to the reader. On a phone the apparatus occupies the
+    // upper portion, with the native reader below; no rolled/orbiting horizon.
+    const pose = inspectionCameraPose({ anchor: inspection.anchor, bearing: inspection.bearing, width, height, fov: camera.fov });
+    desiredTarget.copy(pose.target);
+    desiredPosition.copy(pose.position);
+  }
+
+  function applyInspectionCamera(amount, closing = false) {
+    if (!inspection) return;
+    inspectionPose();
+    if (closing) {
+      camera.position.copy(inspection.exitPosition).lerp(inspection.saved.cameraPosition, amount);
+      cameraAim.copy(inspection.exitAim).lerp(inspection.saved.cameraAim, amount);
+      camera.fov = THREE.MathUtils.lerp(36, inspection.saved.fov, amount);
+      camera.updateProjectionMatrix();
+    } else {
+      camera.position.copy(inspection.saved.cameraPosition).lerp(desiredPosition, amount);
+      cameraAim.copy(inspection.saved.cameraAim).lerp(desiredTarget, amount);
+    }
+    camera.lookAt(cameraAim);
+    camera.updateMatrixWorld();
+  }
+
+  function settleInspectionOpening() {
+    if (!inspection || inspection.phase !== 'opening') return;
+    inspection.progress = 1;
+    inspection.open = 1;
+    inspection.phase = 'open';
+    inspection.rig.update(0, 1, true);
+    applyInspectionCamera(1);
+    if (!destroyed) onInspectionChange({ phase: 'open' });
+  }
+
+  function finishInspection(notify = true) {
+    if (!inspection) return;
+    const saved = inspection.saved;
+    inspection.rig.dispose();
+    inspection = null;
+    camera.position.copy(saved.cameraPosition);
+    cameraAim.copy(saved.cameraAim);
+    atlasPosition.copy(saved.atlasPosition);
+    atlasTarget.copy(saved.atlasTarget);
+    camera.lookAt(cameraAim);
+    camera.updateMatrixWorld();
+    routePhase = saved.routePhase;
+    transition = saved.transition;
+    world.traveler.position.copy(saved.travelerPosition);
+    world.traveler.quaternion.copy(saved.travelerQuaternion);
+    portalApproach = saved.portalApproach;
+    if (voyageMotion && saved.voyage) voyageMotion.restore(saved.voyage);
+    camera.fov = saved.fov; camera.updateProjectionMatrix();
+    lastTravelerPosition.copy(saved.lastTravelerPosition);
+    lastHeading = saved.lastHeading;
+    // The host restores its inline layout after 'closed'. That resize should
+    // not snap a voyage camera which was partway through a selected transition.
+    restoredPose = saved;
+    // Projected buttons were hidden during the passage. Restore their actual
+    // exploration visibility before the host tests the invoking focus target;
+    // projecting the saved pose in a still-fullscreen aspect would be wrong.
+    labels.forEach(({ element, id }) => { element.hidden = saved.labelVisibility.get(id) ?? true; });
+    renderer.domElement.style.touchAction = fieldEnabled ? 'pan-y' : 'auto';
+    renderer.domElement.style.cursor = fieldEnabled ? 'ew-resize' : 'default';
+    renderer.shadowMap.needsUpdate = true;
+    explorationStatus();
+    invalidate();
+    if (notify && !destroyed) {
+      onInspectionChange({ phase: 'closed' });
+      // A synchronous host layout restoration can be fitted before the next
+      // paint, avoiding a fullscreen canvas squeezed into its inline slot.
+      if (!contextLost) { resize(); updateLabels(); }
+    }
+  }
+
+  function setInspection({ active = false, imageUrl, stage = 0, collection = selectedId } = {}) {
+    if (destroyed || contextLost || !world) return;
+    if (!active) {
+      if (!inspection || inspection.phase === 'closing') return;
+      if (!moving() || !canDraw()) { finishInspection(); return; }
+      inspection.phase = 'closing';
+      inspection.progress = 0;
+      inspection.exitPosition = camera.position.clone();
+      inspection.exitAim = cameraAim.clone();
+      inspection.exitOpen = inspection.open;
+      onInspectionChange({ phase: 'closing' });
+      invalidate();
+      return;
+    }
+    if (inspection) {
+      if (inspection.phase === 'closing') finishInspection();
+      else { setInspectionStage({ imageUrl, stage }); return; }
+    }
+    if (!Number.isInteger(stage) || stage < 0 || stage > 2) throw new RangeError('Figure passage stage must be 0, 1 or 2.');
+    clearSailingInput();
+    cancelFieldDrag();
+    restoredPose = null;
+    const anchor = inspectionSceneAnchor({ world, collection: world.stops[collection] ? collection : selectedId });
+    const bearing = Math.atan2(world.camera[0], world.camera[2]);
+    const saved = {
+      cameraPosition: camera.position.clone(), cameraAim: cameraAim.clone(),
+      atlasPosition: atlasPosition.clone(), atlasTarget: atlasTarget.clone(),
+      routePhase, transition: transition ? { ...transition } : null,
+      travelerPosition: world.traveler.position.clone(), travelerQuaternion: world.traveler.quaternion.clone(),
+      lastTravelerPosition: lastTravelerPosition.clone(), lastHeading, width, height,
+      labelVisibility: new Map(labels.map(({ id, element }) => [id, element.hidden])),
+      fov: camera.fov, portalApproach, voyage: voyageMotion?.snapshot(),
+    };
+    camera.fov = 36; camera.updateProjectionMatrix();
+    const rig = createFigurePassage({ anchor, bearing, theme: worldTheme, onInvalidate: invalidate, onImage: state => {
+      if (!destroyed && !contextLost && inspection?.rig === rig) onInspectionImage({ ...state, error: Boolean(state.error) });
+    } });
+    inspection = { phase: 'opening', progress: 0, open: 0, rig, saved, anchor, bearing, collection, stage, imageUrl };
+    explorationStatus();
+    scene.add(rig.group);
+    renderer.domElement.style.touchAction = 'auto';
+    renderer.domElement.style.cursor = 'default';
+    labels.forEach(({ element }) => { element.hidden = true; });
+    rig.setStage(stage, imageUrl, true);
+    renderer.shadowMap.needsUpdate = true;
+    onInspectionChange({ phase: 'opening' });
+    if (!moving() || !canDraw()) settleInspectionOpening();
+    invalidate();
+  }
+
+  function setInspectionStage({ imageUrl, stage = 0 } = {}) {
+    if (destroyed || contextLost || !inspection || inspection.phase === 'closing') return;
+    inspection.imageUrl = imageUrl;
+    inspection.stage = stage;
+    inspection.rig.setStage(stage, imageUrl, !moving());
+    if (!moving()) inspection.rig.update(0, inspection.open, true);
+    invalidate();
+  }
 
   function placeTraveler(phase, direction = 1) {
     const position = world.route.point(phase);
@@ -1084,7 +1443,15 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   }
 
   function updateCamera(dt, immediate = false) {
-    if (sceneView === 'voyage') {
+    const fov = sceneView === 'voyage' && !portalApproach && !fieldEnabled ? 48 : 36;
+    if (camera.fov !== fov) { camera.fov = fov; camera.updateProjectionMatrix(); }
+    if (sceneView === 'voyage' && portalApproach && world.approach && !fieldEnabled) {
+      const pose = portalCameraPose({ ...world.approach, aspect: camera.aspect, fov: camera.fov });
+      desiredPosition.copy(pose.position); desiredTarget.copy(pose.target);
+    } else if (sceneView === 'voyage' && worldTheme === 'sea' && !fieldEnabled) {
+      const pose = voyageCamera.pose({ phase: routePhase, position: world.traveler.position, aspect: camera.aspect, fov: camera.fov });
+      desiredPosition.copy(pose.position); desiredTarget.copy(pose.target);
+    } else if (sceneView === 'voyage') {
       // A fixed bearing keeps reversing on the loop from flipping the camera.
       // Frame the current boat and its destination together; the field lens is
       // the focal point while inspecting the illustrative study.
@@ -1101,12 +1468,19 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     }
     const blend = immediate ? 1 : 1 - Math.exp(-dt * 4);
     camera.position.lerp(desiredPosition, blend);
-    cameraAim.lerp(desiredTarget, blend);
+    // Track the craft immediately; a lagging aim can push it off a tall screen.
+    if (worldTheme === 'sea' && sceneView === 'voyage' && !portalApproach && !fieldEnabled) cameraAim.copy(desiredTarget);
+    else cameraAim.lerp(desiredTarget, blend);
     camera.lookAt(cameraAim);
     camera.updateMatrixWorld();
   }
 
   function updateLabels() {
+    if (inspection || sceneView === 'voyage') {
+      if (!inspection && labels.some(({ element }) => element === document.activeElement)) mount.focus({ preventScroll: true });
+      labels.forEach(({ element }) => { element.hidden = true; });
+      return;
+    }
     labels.forEach(({ element, id, boxWidth, boxHeight }) => {
       labelPosition.copy(world.stops[id].label).project(camera);
       const x = (labelPosition.x * 0.5 + 0.5) * width;
@@ -1130,14 +1504,51 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     if (!canDraw()) { previousTimestamp = 0; return; }
     const dt = previousTimestamp ? Math.min((timestamp - previousTimestamp) / 1000, 0.06) : 0;
     previousTimestamp = timestamp;
-    if (moving()) {
+    let passageMoving = false;
+    if (inspection) {
+      if (moving()) {
+        if (inspection.phase === 'opening') {
+          inspection.progress = Math.min(1, inspection.progress + dt / 0.95);
+          const t = inspection.progress;
+          const ease = t * t * (3 - 2 * t);
+          inspection.open = ease;
+          applyInspectionCamera(ease);
+          if (t === 1) {
+            inspection.phase = 'open';
+            onInspectionChange({ phase: 'open' });
+          } else passageMoving = true;
+        } else if (inspection.phase === 'closing') {
+          inspection.progress = Math.min(1, inspection.progress + dt / 0.7);
+          const t = inspection.progress;
+          const ease = t * t * (3 - 2 * t);
+          inspection.open = inspection.exitOpen * (1 - ease);
+          applyInspectionCamera(ease, true);
+          if (t === 1) finishInspection();
+          else passageMoving = true;
+        }
+      }
+      if (inspection) passageMoving = inspection.rig.update(moving() ? dt : 0, inspection.open) || passageMoving;
+    } else if (moving()) {
       elapsed += dt;
-      if (transition) {
+      if (controlsTravel() && !portalApproach && voyageMotion
+        && (sailingAxis || Math.abs(voyageMotion.snapshot().speed) > 0)) {
+        transition = null;
+        const state = voyageMotion.step(dt, sailingAxis);
+        routePhase = state.phase;
+        world.traveler.position.copy(world.route.point(routePhase));
+        world.traveler.rotation.y = state.heading;
+        const nearest = world.route.order[((Math.round(routePhase) % world.route.order.length) + world.route.order.length) % world.route.order.length];
+        if (nearest !== selectedId) {
+          selectedId = nearest;
+          onVisit(nearest, { openReader: false, trigger: 'steering' });
+        }
+      } else if (transition) {
         transition.progress = Math.min(transition.progress + dt / transition.duration, 1);
         const t = transition.progress;
         const ease = t * t * (3 - 2 * t);
         routePhase = transition.from + (transition.to - transition.from) * ease;
         placeTraveler(routePhase, Math.sign(transition.to - transition.from) || 1);
+        voyageMotion?.reset(routePhase, world.traveler.rotation.y);
         if (t === 1) transition = null;
       }
       world.animate(elapsed);
@@ -1149,13 +1560,18 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
       lastTravelerPosition.copy(world.traveler.position);
       lastHeading = heading;
       updateCamera(dt);
+      voyageStatus();
     }
+    explorationStatus(!inspection && moving() ? dt : 0);
     reflection?.render(scene, camera, width);
     renderer.render(scene, camera);
     updateLabels();
     invalidated = false;
-    if (moving()) frame = requestAnimationFrame(draw);
-    else previousTimestamp = 0;
+    if (moving() && (!inspection || passageMoving)) {
+      // A lifecycle callback can invalidate while this draw is executing;
+      // keep one RAF chain rather than scheduling a second perpetual loop.
+      if (!frame) frame = requestAnimationFrame(draw);
+    } else if (!frame) previousTimestamp = 0;
   }
 
   function invalidate() {
@@ -1176,69 +1592,165 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     if (!width || !height || !world) return;
     renderer.setSize(width, height, false);
     camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    if (inspection) {
+      // Fullscreen and orientation changes reframe the apparatus, never the
+      // exploration snapshot or the underlying boat route.
+      applyInspectionCamera(inspection.phase === 'closing' ? inspection.progress * inspection.progress * (3 - 2 * inspection.progress) : inspection.open,
+        inspection.phase === 'closing');
+      invalidate();
+      return;
+    }
+    if (restoredPose && width === restoredPose.width && height === restoredPose.height) {
+      camera.position.copy(restoredPose.cameraPosition);
+      cameraAim.copy(restoredPose.cameraAim);
+      atlasPosition.copy(restoredPose.atlasPosition);
+      atlasTarget.copy(restoredPose.atlasTarget);
+      camera.lookAt(cameraAim);
+      camera.updateMatrixWorld();
+      restoredPose = null;
+      invalidate();
+      return;
+    }
+    restoredPose = null;
     // Hidden voyage labels still have to participate in the atlas fit.
     labels.forEach(label => {
       label.element.hidden = false;
       label.boxWidth = label.element.offsetWidth;
       label.boxHeight = label.element.offsetHeight;
     });
-    let scale = Math.max(1, Math.sqrt(1.45 / camera.aspect));
-    camera.updateProjectionMatrix();
-    // Fit projected labels as well as objects. A wide desktop composition should
-    // never push the lighthouse or its button out of a narrow mobile frame.
-    const padding = Math.min(24, width * 0.06);
-    for (let attempt = 0; attempt < 14; attempt++) {
-      camera.position.set(...world.camera).multiplyScalar(scale);
-      camera.lookAt(...world.target);
-      camera.updateMatrixWorld();
-      const fits = labels.every(({ element, id }) => {
-        const stop = world.stops[id];
-        labelPosition.copy(stop.label).project(camera);
-        const x = (labelPosition.x * 0.5 + 0.5) * width;
-        const y = (-labelPosition.y * 0.5 + 0.5) * height;
-        const halfWidth = element.offsetWidth / 2;
-        const halfHeight = element.offsetHeight / 2;
-        return x - halfWidth >= padding && x + halfWidth <= width - padding && y - halfHeight >= 76 && y + halfHeight <= height - 88;
-      });
-      if (fits) break;
-      scale *= 1.08;
-    }
-    atlasPosition.copy(camera.position);
-    atlasTarget.set(...world.target);
+    const pose = atlasCameraPose({ world, width, height, fov: 36,
+      labels: labels.map(({ id, boxWidth, boxHeight }) => ({ id, width: boxWidth, height: boxHeight })) });
+    atlasPosition.copy(pose.position);
+    atlasTarget.copy(pose.target);
     cameraAim.copy(atlasTarget);
+    if (sceneView === 'voyage' && !portalApproach && !fieldEnabled && (camera.aspect < 0.36 || !voyageCamera)) {
+      sceneView = 'atlas';
+      clearSailingInput();
+      onViewChange({ view: sceneView });
+    }
     updateCamera(0, true);
     invalidate();
   }
 
   function select(id, direction = 0) {
-    if (destroyed || !world?.stops[id]) return;
+    if (destroyed || inspection || !world?.stops[id]) return;
     if (selectedId === id && transition) return;
     selectedId = id;
+    restoredPose = null;
+    clearSailingInput();
+    voyageMotion?.reset(routePhase, world.traveler.rotation.y);
     const target = targetPhase(routePhase, world.route.order.indexOf(id), world.route.order.length, direction);
     if (target === null) return;
     if (moving() && canDraw() && Math.abs(target - routePhase) > 0.00001) {
       transition = { from: routePhase, to: target, progress: 0, duration: Math.min(2.8, 1.15 * Math.max(1, Math.abs(target - routePhase))) };
     } else {
       routePhase = target; placeTraveler(routePhase, direction || 1); transition = null;
+      voyageMotion?.reset(routePhase, world.traveler.rotation.y);
       lastTravelerPosition.copy(world.traveler.position); lastHeading = world.traveler.rotation.y;
       renderer.shadowMap.needsUpdate = true;
       updateCamera(0, true);
     }
     invalidate();
+    voyageStatus();
+    explorationStatus();
   }
 
-  function activate(id, openReader = false, direction = 0) {
-    select(id, direction);
-    onVisit(id, { openReader });
+  function navigate(direction = 1) {
+    if (inspection || !world) return;
+    const order = world.route.order.filter(id => labels.some(label => label.id === id));
+    const next = cyclicDestination(order, selectedId, direction < 0 ? 'ArrowLeft' : 'ArrowRight');
+    if (next) activate(next, false, direction, 'route');
+  }
+
+  function read() { if (!inspection) activate(selectedId, true, 0, 'keyboard'); }
+
+  function interact(invoker = mount) {
+    if (!playing || inspection || !canDraw() || fieldEnabled) return null;
+    explorationStatus();
+    const result = exploration.interact();
+    if (!result.id) return result;
+    clearSailingInput();
+    transition = null;
+    voyageMotion?.reset(routePhase, world.traveler.rotation.y);
+    selectedId = result.id;
+    explorationStatus();
+    voyageStatus();
+    invalidate();
+    onVisit(result.id, { openReader: true, trigger: 'discovery', invoker });
+    return result;
+  }
+
+  function setPlaying(enabled) {
+    if (destroyed || contextLost || inspection || !world) return;
+    playing = Boolean(enabled);
+    clearSailingInput();
+    voyageMotion?.reset(routePhase, world.traveler.rotation.y);
+    transition = null;
+    if (playing) {
+      setField(false, fieldSpacing);
+      setView(worldTheme === 'sea' ? 'voyage' : 'atlas');
+    }
+    explorationStatus();
+    voyageStatus();
+    invalidate();
+  }
+
+  function applySailingAxis(axis = 0) {
+    if (destroyed || contextLost || inspection || !controlsTravel()) return;
+    if (!canDraw()) { clearSailingInput(); voyageStatus(); return; }
+    const next = Math.sign(Number.isFinite(axis) ? axis : 0);
+    if (!next) { sailingAxis = 0; voyageStatus(); return; }
+    if (!moving()) { navigate(next); return; }
+    restoredPose = null;
+    sailingAxis = next;
+    const leavingPortal = portalApproach;
+    portalApproach = false;
+    transition = null;
+    if (leavingPortal) updateCamera(0, true);
+    voyageStatus(); invalidate();
+  }
+
+  function setSailingAxis(axis = 0) {
+    if (destroyed || contextLost || inspection || !controlsTravel()) return;
+    externalSailingAxis = Math.sign(Number.isFinite(axis) ? axis : 0);
+    applySailingAxis(externalSailingAxis + heldKeyAxis());
+  }
+
+  function activate(id, openReader = false, direction = 0, trigger = 'route', invoker = document.activeElement) {
+    if (inspection) return;
+    const reading = openReader || (playing && trigger === 'pointer');
+    if (playing && reading) {
+      // Reading remote work does not move or chart the player. Stop drift so
+      // an ordinary reading dialog cannot change collections underneath them.
+      if (!world?.stops[id]) return;
+      selectedId = id;
+      clearSailingInput();
+      transition = null;
+      voyageMotion?.reset(routePhase, world.traveler.rotation.y);
+      voyageStatus();
+      explorationStatus();
+    }
+    // Reading the selected work must preserve the current voyage for Return.
+    else if (!reading || id !== selectedId) select(id, direction);
+    onVisit(id, { openReader: reading, trigger, invoker });
   }
 
   function announce() {
-    onStatus({ ready: true, message: `Click a landmark to explore. Right / Down follow the loop clockwise; Left / Up go back. Enter reads the selected stop; Escape leaves the map.${world.setField ? ' F reveals the field; V changes the view.' : ''}` });
+    onStatus({ ready: true, message: voyageCameraIssue
+      ? `Atlas view remains available. ${voyageCameraIssue}`
+      : `Select a landmark to read. Sailing view uses held arrows or A / D; Atlas arrows visit neighboring stops. Enter reads; Escape releases the helm.${world.setField ? ' F reveals the field; V changes the view.' : ''}` });
   }
 
   function setTheme(id) {
     if (destroyed || contextLost) return;
+    const carriedInspection = inspection && inspection.phase !== 'closing'
+      ? { active: true, imageUrl: inspection.imageUrl, stage: inspection.stage, collection: inspection.collection }
+      : null;
+    if (inspection) finishInspection(!carriedInspection);
     suspend();
+    clearSailingInput();
+    portalApproach = false;
     cancelFieldDrag();
     transition = null;
     sceneView = 'atlas';
@@ -1248,37 +1760,63 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     labels.forEach(({ element }) => element.remove());
     labels = [];
     reflection?.dispose(); reflection = null;
+    voyageCamera?.dispose(); voyageCamera = null;
+    beacons?.dispose(); beacons = null;
+    voyageCameraIssue = '';
     if (world) { world.dispose?.(); world.kit.dispose(); scene.remove(worldGroup); }
     const theme = getTheme(id);
+    worldTheme = theme.id;
     worldGroup = new THREE.Group();
-    world = BUILDERS[theme.id](worldGroup);
-    scene.add(worldGroup);
-    scene.background = new THREE.Color(world.background);
-    scene.fog = new THREE.Fog(...world.fog);
-    if (theme.id === 'sea') {
-      if (!skyTexture) {
-        skyTexture = coastalSky();
-        const environmentGenerator = new THREE.PMREMGenerator(renderer);
-        try { skyEnvironment = environmentGenerator.fromEquirectangular(skyTexture); }
-        finally { environmentGenerator.dispose(); }
-      }
-      scene.environment = skyEnvironment.texture;
-      scene.environmentIntensity = 0.65;
-      scene.background = skyTexture;
-      scene.backgroundIntensity = 0.8;
-      scene.fog = new THREE.Fog('#91b6bd', 45, 115);
-      worldGroup.traverse(object => { if (object.isMesh && object.material.uniforms?.uReflection) reflection = seaReflection(object, renderer); });
-    } else {
-      scene.environment = null;
-      scene.backgroundIntensity = 1;
+    world = buildRealmScene(theme.id, worldGroup);
+    voyageMotion = createVoyageMotion({ route: world.route });
+    approachPoints = destinations.filter(stop => world.route.order.includes(stop.id)).map(stop => ({ id: stop.id, position: world.route.point(world.route.order.indexOf(stop.id)).clone() }));
+    if (approachPoints.length >= 3 && approachPoints.length <= 8) {
+      beacons = createExplorationBeacons({ anchors: approachPoints.map(({ id, position }) => ({ id, position: position.clone().add(new THREE.Vector3(0, 0.04, 0)) })), themeId: theme.id });
+      scene.add(beacons.group);
     }
-    renderer.toneMappingExposure = theme.id === 'sea' ? 0.95 : 1.12;
-    hemisphere.color.set(theme.id === 'orbital' ? '#b8c7ff' : theme.id === 'woodland' ? '#c9e5c2' : '#badce7');
-    hemisphere.intensity = theme.id === 'sea' ? 0.8 : 2.2;
-    keyLight.color.set(theme.id === 'sea' ? '#fff1d5' : '#fff2d8');
-    keyLight.intensity = theme.id === 'sea' ? 3.6 : 3.0;
-    fillLight.color.set(theme.id === 'sea' ? '#93bed2' : '#7dabbf');
-    fillLight.intensity = theme.id === 'sea' ? 0.45 : 1.3;
+    if (theme.id === 'sea') {
+      try { voyageCamera = createVoyageCamera({ world, group: worldGroup }); }
+      catch (error) { if (!(error instanceof RangeError)) throw error; voyageCameraIssue = error.message; }
+    }
+    scene.add(worldGroup);
+    // Every setting owns an original panorama and a reusable PMREM. Theme
+    // switching reuses the small cache; final teardown releases both resources.
+    if (!atmospheres.has(theme.id)) {
+      const atmosphere = createRealmAtmosphere(theme.id);
+      const generator = new THREE.PMREMGenerator(renderer);
+      try {
+        atmospheres.set(theme.id, { atmosphere, environment: generator.fromEquirectangular(atmosphere.texture) });
+      } catch (error) {
+        atmosphere.dispose();
+        throw error;
+      } finally { generator.dispose(); }
+    }
+    const { atmosphere, environment } = atmospheres.get(theme.id);
+    scene.background = atmosphere.texture;
+    scene.backgroundIntensity = atmosphere.backgroundIntensity;
+    scene.environment = environment.texture;
+    scene.environmentIntensity = atmosphere.environmentIntensity;
+    scene.fog = new THREE.Fog(atmosphere.fog.color, atmosphere.fog.near, atmosphere.fog.far);
+    const { hemisphere: ambient, key, fill } = atmosphere.lighting;
+    themeExposure = atmosphere.exposure;
+    renderer.toneMappingExposure = themeExposure * exposureMultiplier;
+    hemisphere.color.set(ambient[0]); hemisphere.groundColor.set(ambient[1]); hemisphere.intensity = ambient[2];
+    keyLight.color.set(key.color); keyLight.position.set(...key.position);
+    themeKeyIntensity = key.intensity;
+    keyLight.intensity = themeKeyIntensity * keyLightMultiplier;
+    // The sky-aligned moon is farther away than the old daylight lamp. Keep
+    // the authored landmarks inside its actual shadow-camera depth range.
+    keyLight.shadow.camera.far = 100; keyLight.shadow.camera.updateProjectionMatrix();
+    fillLight.color.set(fill.color); fillLight.position.set(...fill.position); fillLight.intensity = fill.intensity;
+    if (theme.id === 'sea') {
+      worldGroup.traverse(object => {
+        if (!object.isMesh || !object.material.uniforms?.uReflection) return;
+        object.material.uniforms.uKeyDirection.value.copy(keyLight.position).normalize();
+        object.material.uniforms.uKeyColor.value.copy(keyLight.color);
+        object.material.uniforms.uHazeColor.value.copy(scene.fog.color);
+        reflection = seaReflection(object, renderer);
+      });
+    }
     destinations.filter((stop) => world.stops[stop.id]).forEach((stop) => {
       const element = document.createElement('button');
       element.type = 'button';
@@ -1287,11 +1825,13 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
       element.dataset.destination = stop.id;
       element.setAttribute('aria-label', `Visit ${stop.label}`);
       element.addEventListener('click', event => {
-        // Native keyboard activation opens the reader. A pointer visit stays in
-        // the map so the next arrow keeps exploration going.
+        // Native keyboard activation reads; a pointer visit lets the host
+        // choose whether to read immediately or continue in the map.
         const openReader = event.detail === 0;
-        activate(stop.id, openReader);
+        // Focus the map before dispatch, so a configured dialog can own focus
+        // without this handler stealing it back after showModal().
         if (!openReader) mount.focus({ preventScroll: true });
+        activate(stop.id, openReader, 0, openReader ? 'keyboard' : 'pointer', element);
       });
       mount.append(element);
       labels.push({ element, id: stop.id });
@@ -1299,6 +1839,7 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     if (!world.stops[selectedId]) selectedId = destinations[0]?.id || 'work';
     routePhase = world.route.order.indexOf(selectedId);
     placeTraveler(routePhase);
+    voyageMotion?.reset(routePhase, world.traveler.rotation.y);
     world.animate(0);
     world.setField?.(fieldEnabled, fieldSpacing);
     lastTravelerPosition.copy(world.traveler.position);
@@ -1308,55 +1849,113 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     renderer.shadowMap.needsUpdate = true;
     resize();
     announce();
+    voyageStatus();
+    explorationStatus();
+    if (carriedInspection) setInspection(carriedInspection);
+  }
+
+  function setAppearance({ exposure = exposureMultiplier, keyLightMultiplier: key = keyLightMultiplier } = {}) {
+    if (destroyed || contextLost) return;
+    if (!Number.isFinite(exposure) || exposure < 0.5 || exposure > 1.6 || !Number.isFinite(key) || key < 0.2 || key > 1.6) throw new RangeError('World appearance is outside its supported range.');
+    exposureMultiplier = exposure;
+    keyLightMultiplier = key;
+    renderer.toneMappingExposure = themeExposure * exposureMultiplier;
+    keyLight.intensity = themeKeyIntensity * keyLightMultiplier;
+    renderer.shadowMap.needsUpdate = true;
+    // One requested frame refreshes the sea reflection too, even while paused.
+    invalidate();
   }
 
   function setMotion(enabled) {
     if (destroyed) return;
     motionRequested = Boolean(enabled);
+    if (!motionRequested) clearSailingInput();
     suspend();
+    if (!moving()) {
+      // Static interaction must not leave the host locked in a half-closed
+      // fullscreen passage. Opening resolves to its deliberate reading pose.
+      if (inspection?.phase === 'closing') finishInspection();
+      else settleInspectionOpening();
+    }
     // Pause freezes ambient geometry and an in-flight traveler at their current pose.
+    voyageStatus();
+    explorationStatus();
     invalidate();
   }
 
   function setField(enabled, spacing = fieldSpacing) {
-    if (destroyed || contextLost || !world?.setField) return;
-    fieldEnabled = Boolean(enabled);
+    if (destroyed || contextLost || inspection || !world?.setField) return;
+    fieldEnabled = !playing && Boolean(enabled);
+    restoredPose = null;
+    clearSailingInput();
+    voyageMotion?.reset(routePhase, world.traveler.rotation.y);
+    portalApproach = false;
     if (!fieldEnabled) cancelFieldDrag();
     if (Number.isFinite(spacing)) fieldSpacing = Math.max(0, Math.min(1, spacing));
     world.setField(fieldEnabled, fieldSpacing);
     renderer.domElement.style.touchAction = fieldEnabled ? 'pan-y' : 'auto';
     renderer.domElement.style.cursor = fieldEnabled ? 'ew-resize' : 'default';
     onFieldChange({ enabled: fieldEnabled, spacing: fieldSpacing });
-    if (!moving()) updateCamera(0, true);
+    // Mode changes cut to their checked pose; sailing keeps its smooth follow.
+    updateCamera(0, true);
     invalidate();
   }
 
-  function setView(view) {
-    if (destroyed || contextLost || !world) return;
+  function setView(view, { portal = false } = {}) {
+    if (destroyed || contextLost || inspection || !world) return;
     sceneView = view === 'voyage' ? 'voyage' : 'atlas';
+    restoredPose = null;
+    if (sceneView === 'voyage' && !portal && (camera.aspect < 0.36 || !voyageCamera)) sceneView = 'atlas';
+    clearSailingInput();
+    voyageMotion?.reset(routePhase, world.traveler.rotation.y);
+    portalApproach = sceneView === 'voyage' && Boolean(portal);
     onViewChange({ view: sceneView });
-    updateCamera(0, !moving());
+    voyageStatus();
+    explorationStatus();
+    updateCamera(0, true);
     invalidate();
   }
 
   function handleKey(event) {
-    if (destroyed || contextLost || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    if (destroyed || contextLost || inspection || !canDraw() || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
     const focusedLabel = event.target.closest?.('.world-label');
-    if (!mount.contains(document.activeElement) || (event.target !== mount && !focusedLabel)) return;
+    const inPlayFrame = playing && mount.parentElement.contains(document.activeElement)
+      && !event.target.closest?.('input, select, textarea, [contenteditable="true"]');
+    if (!inPlayFrame && (!mount.contains(document.activeElement) || (event.target !== mount && !focusedLabel))) return;
     if (event.key === 'Escape') {
       event.preventDefault();
+      clearSailingInput();
       mount.blur();
       onExit();
       return;
     }
     if (event.key === 'Enter' && event.target === mount) {
       event.preventDefault();
-      if (!event.repeat) activate(selectedId, true);
+      if (!event.repeat) activate(selectedId, true, 0, 'keyboard');
+      return;
+    }
+    if (playing && (['e', 'E'].includes(event.key) || event.key === ' ' && event.target === mount)) {
+      event.preventDefault();
+      if (!event.repeat) interact(event.target);
+      return;
+    }
+    const sailKey = ['ArrowRight', 'ArrowDown', 'd', 'D'].includes(event.key) ? 1
+      : ['ArrowLeft', 'ArrowUp', 'a', 'A'].includes(event.key) ? -1 : 0;
+    if (controlsTravel() && sailKey) {
+      event.preventDefault();
+      if (!moving()) { if (!event.repeat) navigate(sailKey); return; }
+      const key = event.key.toLowerCase();
+      if (event.repeat && !sailingKeys.has(key)) return;
+      sailingKeys.add(key);
+      applySailingAxis(externalSailingAxis + heldKeyAxis());
       return;
     }
     const shortcut = event.key.toLowerCase();
     if (world.setField && (shortcut === 'f' || shortcut === 'v')) {
       event.preventDefault();
+      // Field mode has its own controls outside the play session. Keeping it
+      // off here prevents an invisible shortcut stranding the player.
+      if (playing && shortcut === 'f') return;
       if (!event.repeat) {
         if (shortcut === 'f') setField(!fieldEnabled);
         else setView(sceneView === 'atlas' ? 'voyage' : 'atlas');
@@ -1380,12 +1979,27 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     }
   }
 
+  function handleKeyRelease(event) {
+    if (!sailingKeys.delete(event.key.toLowerCase())) return;
+    applySailingAxis(externalSailingAxis + heldKeyAxis());
+  }
+
   function handleBackgroundPointer(event) {
-    if (destroyed || contextLost || event.target !== renderer.domElement || event.button !== 0) return;
+    if (destroyed || contextLost || inspection || event.target !== renderer.domElement || event.button !== 0 || event.isPrimary === false) return;
+    cancelFieldDrag();
     mount.focus({ preventScroll: true });
-    if (hitsInstrument(event)) {
+    if (!playing && hitsInstrument(event)) {
       setField(!fieldEnabled);
       event.preventDefault();
+    } else {
+      const hit = hitsLandmark(event);
+      if (hit) {
+        // A tap opens the same semantic destination as its HTML button. Wait
+        // for release so scrolling or dragging over a landmark does not read it.
+        landmarkPress = { id: event.pointerId, destination: hit.id, x: event.clientX, y: event.clientY, moved: false };
+        renderer.domElement.setPointerCapture(event.pointerId);
+        return;
+      }
     }
     if (fieldEnabled) {
       fieldDrag = { id: event.pointerId, x: event.clientX, y: event.clientY, spacing: fieldSpacing };
@@ -1393,11 +2007,23 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
     }
   }
 
-  function hitsInstrument(event) {
-    if (!world?.instrumentHit) return false;
+  function rayFromPointer(event) {
     const rect = mount.getBoundingClientRect();
-    pointerPosition.set((event.clientX - rect.left) / width * 2 - 1, -(event.clientY - rect.top) / height * 2 + 1);
+    if (!rect.width || !rect.height) return false;
+    pointerPosition.set((event.clientX - rect.left) / rect.width * 2 - 1, -(event.clientY - rect.top) / rect.height * 2 + 1);
+    camera.updateWorldMatrix(true, false);
     instrumentRay.setFromCamera(pointerPosition, camera);
+    return true;
+  }
+
+  function hitsLandmark(event) {
+    if (!world?.stops || !rayFromPointer(event)) return null;
+    return pickLandmark(instrumentRay, world.stops, labels.map(label => label.id));
+  }
+
+  function hitsInstrument(event) {
+    if (!world?.instrumentHit || !rayFromPointer(event)) return false;
+    world.instrumentHit.updateWorldMatrix(true, true);
     return instrumentRay.intersectObject(world.instrumentHit, true).some(hit => {
       // Raycaster also intersects hidden meshes; a dormant projection is not
       // an invisible button over otherwise empty water.
@@ -1407,7 +2033,11 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   }
 
   function handleFieldPointerMove(event) {
-    if (destroyed || contextLost || event.target !== renderer.domElement) return;
+    if (destroyed || contextLost || inspection || event.target !== renderer.domElement) return;
+    if (landmarkPress && event.pointerId === landmarkPress.id) {
+      if (Math.hypot(event.clientX - landmarkPress.x, event.clientY - landmarkPress.y) > 6) landmarkPress.moved = true;
+      return;
+    }
     if (fieldDrag && event.pointerId === fieldDrag.id && fieldEnabled) {
       const dx = event.clientX - fieldDrag.x;
       if (Math.abs(dx) > 5 && Math.abs(dx) > Math.abs(event.clientY - fieldDrag.y)) {
@@ -1415,39 +2045,68 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
         setField(true, fieldDrag.spacing + dx / width * 1.25);
       }
     } else if (event.pointerType === 'mouse') {
-      renderer.domElement.style.cursor = fieldEnabled ? 'ew-resize' : hitsInstrument(event) ? 'pointer' : 'default';
+      renderer.domElement.style.cursor = !playing && hitsInstrument(event) || hitsLandmark(event) ? 'pointer' : fieldEnabled ? 'ew-resize' : 'default';
     }
   }
 
+  function handleCanvasPointerUp(event) {
+    const press = landmarkPress;
+    cancelFieldDrag();
+    if (destroyed || contextLost || inspection || !press || press.id !== event.pointerId || press.moved
+      || Math.hypot(event.clientX - press.x, event.clientY - press.y) > 6) return;
+    const hit = hitsLandmark(event);
+    if (!hit || hit.id !== press.destination) return;
+    event.preventDefault();
+    const label = labels.find(({ id, element }) => id === hit.id && !element.hidden)?.element;
+    activate(hit.id, true, 0, 'pointer', label || mount);
+  }
+
   function cancelFieldDrag() {
-    if (fieldDrag && renderer.domElement.hasPointerCapture(fieldDrag.id)) renderer.domElement.releasePointerCapture(fieldDrag.id);
+    const ids = new Set([fieldDrag?.id, landmarkPress?.id].filter(id => id !== undefined));
     fieldDrag = null;
+    landmarkPress = null;
+    for (const id of ids) if (renderer.domElement.hasPointerCapture(id)) renderer.domElement.releasePointerCapture(id);
   }
 
   function handleVisibility() {
-    if (document.hidden) { suspend(); cancelFieldDrag(); }
+    if (document.hidden) { suspend(); cancelFieldDrag(); clearSailingInput(); voyageStatus(); }
     else if (invalidated || moving()) invalidate();
   }
-  function handleReducedMotion() { suspend(); invalidate(); }
+  function handleReducedMotion() {
+    suspend();
+    clearSailingInput(); voyageStatus();
+    if (!moving()) {
+      if (inspection?.phase === 'closing') finishInspection();
+      else settleInspectionOpening();
+    }
+    invalidate();
+  }
   function handleContextLost(event) {
     event.preventDefault();
     contextLost = true;
+    const passagePhase = inspection?.phase;
+    if (inspection) finishInspection(false);
     cancelFieldDrag();
+    clearSailingInput(); voyageStatus();
     suspend();
     renderer.domElement.hidden = true;
     renderer.domElement.style.display = 'none';
     labels.forEach(({ element }) => { element.hidden = true; });
+    // Loss of graphics does not discard a readable paper. An already-closing
+    // passage can return normally; an open reader switches to its HTML plate.
+    if (passagePhase) onInspectionChange({ phase: passagePhase === 'closing' ? 'closed' : 'unavailable' });
     onStatus({ ready: false, message: 'The 3D view stopped because its graphics context was lost. The reading view still contains every destination. Reload to retry the world.' });
   }
-  function handleWindowBlur() { previousTimestamp = 0; cancelFieldDrag(); }
-  mount.addEventListener('keydown', handleKey);
+  function handleWindowBlur() { previousTimestamp = 0; cancelFieldDrag(); clearSailingInput(); voyageStatus(); }
+  document.addEventListener('keydown', handleKey);
   mount.addEventListener('pointerdown', handleBackgroundPointer);
   mount.addEventListener('pointermove', handleFieldPointerMove);
-  renderer.domElement.addEventListener('pointerup', cancelFieldDrag);
+  renderer.domElement.addEventListener('pointerup', handleCanvasPointerUp);
   renderer.domElement.addEventListener('pointercancel', cancelFieldDrag);
   renderer.domElement.addEventListener('lostpointercapture', cancelFieldDrag);
   mount.addEventListener('blur', handleWindowBlur);
   window.addEventListener('blur', handleWindowBlur);
+  window.addEventListener('keyup', handleKeyRelease);
   document.addEventListener('visibilitychange', handleVisibility);
   reducedMotion.addEventListener('change', handleReducedMotion);
   renderer.domElement.addEventListener('webglcontextlost', handleContextLost);
@@ -1455,7 +2114,7 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   resizeObserver.observe(mount);
   const intersectionObserver = new IntersectionObserver(([entry]) => {
     inView = entry.isIntersecting;
-    if (!inView) { suspend(); cancelFieldDrag(); }
+    if (!inView) { suspend(); cancelFieldDrag(); clearSailingInput(); voyageStatus(); }
     else if (invalidated || moving()) invalidate();
   }, { threshold: 0.01 });
   intersectionObserver.observe(mount);
@@ -1464,32 +2123,37 @@ export function createWorld({ mount, themeId = 'sea', destinations = [], onVisit
   function destroy() {
     if (destroyed) return;
     destroyed = true;
+    if (inspection) finishInspection(false);
     cancelFieldDrag();
+    clearSailingInput();
     suspend();
     resizeObserver.disconnect();
     intersectionObserver.disconnect();
-    mount.removeEventListener('keydown', handleKey);
+    document.removeEventListener('keydown', handleKey);
     mount.removeEventListener('pointerdown', handleBackgroundPointer);
     mount.removeEventListener('pointermove', handleFieldPointerMove);
-    renderer.domElement.removeEventListener('pointerup', cancelFieldDrag);
+    renderer.domElement.removeEventListener('pointerup', handleCanvasPointerUp);
     renderer.domElement.removeEventListener('pointercancel', cancelFieldDrag);
     renderer.domElement.removeEventListener('lostpointercapture', cancelFieldDrag);
     mount.removeEventListener('blur', handleWindowBlur);
     window.removeEventListener('blur', handleWindowBlur);
+    window.removeEventListener('keyup', handleKeyRelease);
     document.removeEventListener('visibilitychange', handleVisibility);
     reducedMotion.removeEventListener('change', handleReducedMotion);
     renderer.domElement.removeEventListener('webglcontextlost', handleContextLost);
     labels.forEach(({ element }) => element.remove());
     world?.dispose?.();
     world?.kit.dispose();
+    voyageCamera?.dispose();
+    beacons?.dispose();
     reflection?.dispose();
-    skyEnvironment?.dispose();
-    skyTexture?.dispose();
+    atmospheres.forEach(({ atmosphere, environment }) => { environment.dispose(); atmosphere.dispose(); });
+    atmospheres.clear();
     keyLight.shadow.map?.dispose();
     renderer.dispose();
     renderer.domElement.remove();
     scene.clear();
   }
 
-  return { select, setTheme, setMotion, setField, setView, destroy };
+  return { select, navigate, read, interact, setPlaying, setSailingAxis, setTheme, setAppearance, setMotion, setField, setView, setInspection, setInspectionStage, destroy };
 }

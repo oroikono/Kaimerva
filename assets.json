@@ -2,13 +2,31 @@
   "schemaVersion": 1,
   "assets": [
     {
+      "id": "exploration-session",
+      "path": "src/exploration.js",
+      "creator": "Orestis Oikonomou, with AI-assisted implementation",
+      "origin": "authored",
+      "source": "Original content-independent route discovery state authored in this repository",
+      "license": "MIT",
+      "changes": "Physical approach-distance samples and deliberate chart actions, stable per-session discovery sequence, cyclic route fallback and validated snapshots. No game engine, account service or third-party gameplay code."
+    },
+    {
+      "id": "exploration-beacons",
+      "path": "src/exploration-beacons.js",
+      "creator": "Orestis Oikonomou, with AI-assisted implementation",
+      "origin": "authored",
+      "source": "Original procedural Three.js navigation glyphs and bounded discovery pulses",
+      "license": "MIT",
+      "changes": "Three theme glyphs, nearby glow, persistent charted rings and a completed route constellation. Local geometry/materials only, with no imported assets. Transparent nonphysical markers neither raycast nor cast shadows; they are hidden during work inspection."
+    },
+    {
       "id": "procedural-worlds",
       "path": "src/world.js",
       "creator": "Orestis Oikonomou",
       "origin": "authored",
       "source": "repository source",
       "license": "MIT",
-      "changes": "AI-assisted procedural geometry, locally generated sky/stone/wood/linen textures, materials, scene arrangement, motion, and planar reflection pass authored for this starter. No third-party models, textures, portraits, or paper figures included."
+      "changes": "AI-assisted original geometry, locally generated stone/wood/linen textures, arrangement, motion and bounded planar reflections. Distant coastal headlands and continuous woodland terrain are native geometry; sky/lighting and gateway modules have separate records. No third-party models, texture packs, portraits or paper figures included."
     },
     {
       "id": "starter-previews",
@@ -20,6 +38,24 @@
       "changes": "Unedited sea, orbital, and woodland preview captures. No reference-site imagery is included."
     },
     {
+      "id": "starter-demo-video",
+      "path": "docs/assets/personal-worlds-demo.mp4",
+      "creator": "Orestis Oikonomou",
+      "origin": "authored",
+      "source": "Actual browser captures of this repository's procedural starter, recorded locally on 2026-10-06",
+      "license": "MIT",
+      "changes": "AI-assisted edit with original title cards and captions. Silent; no stock footage, music, downloaded models, private research, or third-party reference imagery. The poster, GIF preview and 15-second personal-worlds-x-teaser.mp4 are derived from this edit. Caption glyphs use installed system fonts; no font files are distributed. See docs/demo-video.md for capture boundaries."
+    },
+    {
+      "id": "futuristic-demo-film-v2",
+      "path": "docs/assets/personal-worlds-futuristic-v2.mp4",
+      "creator": "Orestis Oikonomou",
+      "origin": "authored",
+      "source": "Actual browser captures of this repository's procedural starter, recorded locally on 2026-10-06",
+      "license": "MIT",
+      "changes": "AI-assisted full-frame edit with original animated typography, editorial skill-method orbit, reframing and code-generated harmonic pulse audio. New close-voyage and illuminated-field captures accompany the existing actual theme and local-refresh footage. The teaser, poster and GIF preview with the same futuristic-v2 filename prefix are derived from this edit. No stock footage, downloaded music/samples, third-party models, private research or reference-site imagery. Captions use installed system fonts without distributing font software. The method illustration and example brief do not depict an agent execution or new app features. See docs/demo-video.md."
+    },
+    {
       "id": "three-renderer",
       "path": "vendor/three.module.js",
       "creator": "Three.js authors",
@@ -29,6 +65,124 @@
       "notice": "vendor/three-LICENSE.txt",
       "version": "0.186.1",
       "changes": "Unmodified ES modules copied from the installed package during build; three.core.js is included too."
+    },
+    {
+      "id": "signature-wave-plates",
+      "path": "figures/",
+      "creator": "Orestis Oikonomou",
+      "origin": "authored",
+      "source": "Original vector artwork and deterministic scalar evaluation authored for this repository",
+      "license": "MIT",
+      "changes": "AI-assisted original SVG plates: wave-sources.svg, wave-propagation.svg and wave-interference.svg. Fixed sources A = (\u22122.25, 0), B = (+2.25, 0); domain x \u2208 [\u22127, 7], y \u2208 [\u22123.5, 3.5]; k = 2\u03c0 / 2.4. Final color cells and level contours directly evaluate cos(k rA) + cos(k rB). This is an illustrative static scalar construction, not a physical solver or publication claim. No third-party figures, fonts, scripts, foreign objects, or remote image references are distributed."
+    },
+    {
+      "id": "kaimerva-brand-icon",
+      "path": "assets/brand/kaimerva-icon.png",
+      "copies": [
+        "skills/kaimerva/assets/kaimerva-icon.png",
+        "skills/kaimerva/assets/starter/assets/brand/kaimerva-icon.png"
+      ],
+      "creator": "AI-generated artwork; art direction and selection by Orestis Oikonomou",
+      "origin": "authored",
+      "source": "OpenAI built-in image-generation tool, 2026-10-08; revised from earlier AI-generated Kaimerva concepts in the same authoring session",
+      "license": "MIT",
+      "notice": "assets/brand/ATTRIBUTION.md",
+      "sha256": "0232e81a490c235befb665e434d1be4ba9a29b9ec66bb88fb955c8581e077842",
+      "changes": "Selected cinematic portal revision 3, copied unchanged into the repository and portable skill. Weathered stone, inset gold keystone, violet night sky and moonlit sea. No external reference artwork or franchise assets were supplied to the generation tool. Full final prompt, process and attribution are documented in docs/branding.md. AI generation does not establish exclusive copyright or trademark clearance."
+    },
+    {
+      "id": "kaimerva-launch-film",
+      "path": "docs/assets/kaimerva-launch.mp4",
+      "copies": [
+        "docs/assets/kaimerva-launch-poster.jpg"
+      ],
+      "creator": "Orestis Oikonomou, with AI-assisted editing",
+      "origin": "authored",
+      "source": "Earlier original browser recordings from 2026-10-06 and the approved Kaimerva portal icon; edited on 2026-10-08",
+      "license": "MIT",
+      "notice": "docs/launch-video.md",
+      "sha256": "da4fdb4a3071f1248b44dbddc87c4b49804fc4f968e99c6eadc504cef42ea879",
+      "changes": "24-second cinematic edit with original typography, restrained motion graphics, scene reframing and synthesized stereo sound. Shows actual earlier sea/field/reader/orbital/woodland footage. Does not show newer figure-passage or world-setting editing, or agent execution. No downloaded footage, music, samples or font software are distributed. Source footage and portal PNG remain unchanged. See the notice for exact crops, sources, output checksums and limits."
+    },
+    {
+      "id": "inspection-instruments",
+      "path": "src/figure-passage.js",
+      "copies": [
+        "skills/kaimerva/assets/instruments/figure-passage.js"
+      ],
+      "creator": "Orestis Oikonomou, with AI-assisted implementation",
+      "origin": "authored",
+      "source": "Original procedural meshes and motion authored for this starter",
+      "license": "MIT",
+      "notice": "skills/kaimerva/assets/NOTICE.md",
+      "changes": "Three original inspection housings: sea optical iris, orbital gantry with folding/retracting shutter banks, and woodland glass cabinet with hinged doors and sliding drawers. Common source-image carrier preserves supplied aspect and color. No imported meshes, textures or third-party application code. The portable asset is an unchanged copy of the tested source. Supplied-image material also bypasses scene fog."
+    },
+    {
+      "id": "starter-project-plates",
+      "path": "figures/",
+      "creator": "Orestis Oikonomou, with AI-assisted vector authoring",
+      "origin": "authored",
+      "source": "Original explanatory diagrams of the Kaimerva starter architecture",
+      "license": "MIT",
+      "notice": "docs/project-views.md",
+      "changes": "project-overview.svg, project-inspection.svg and project-editing.svg, each 1200 by 720. Original local vector geometry and system-font names; no external media, font software, scripts or foreign objects. Supplied project views, not screenshots or scientific results."
+    },
+    {
+      "id": "realm-gateway",
+      "path": "src/realm-portal.js",
+      "creator": "Orestis Oikonomou, with AI-assisted implementation",
+      "origin": "authored",
+      "source": "Original procedural native geometry and DataTexture math, directed by the approved Kaimerva icon",
+      "license": "MIT",
+      "notice": "docs/realm-refinement-2026-10-08.md",
+      "changes": "Segmented chipped stone arch with a real opening, inset gold diamond, recessed emissive channels, wet stepped foundations and local shadow-free light. No imported model or raster art. The separately attributed branding icon is a visual target, not a scene billboard."
+    },
+    {
+      "id": "realm-atmospheres",
+      "path": "src/realm-atmosphere.js",
+      "creator": "Orestis Oikonomou, with AI-assisted implementation",
+      "origin": "authored",
+      "source": "Original deterministic math-generated equirectangular panoramas and per-theme lighting settings",
+      "license": "MIT",
+      "notice": "docs/realm-refinement-2026-10-08.md",
+      "changes": "Three locally generated 512 by 256 DataTextures: sea moon and marine clouds, orbital starfield/nebula, and moonlit woodland canopy/mist. No downloaded skybox, HDRI, photograph or external reference image."
+    },
+    {
+      "id": "realm-surfaces",
+      "path": "src/realm-surfaces.js",
+      "creator": "Orestis Oikonomou, with AI-assisted implementation",
+      "origin": "authored",
+      "source": "Original periodic multiscale fields written directly to native DataTextures",
+      "license": "MIT",
+      "notice": "docs/realm-refinement-2026-10-08.md",
+      "changes": "Stone, timber, ceramic and moss surface studies; each owns 128 by 128 albedo, bump and roughness maps. No image editing, photograph, Canvas, texture service or imported texture pack."
+    },
+    {
+      "id": "coastal-shore-detail",
+      "path": "src/coastal-detail.js",
+      "creator": "Orestis Oikonomou",
+      "origin": "authored",
+      "source": "Original native Three.js geometry and deterministic local surface studies authored in this repository",
+      "license": "MIT",
+      "changes": "AI-assisted eroded shoreline ledges, depressed shore pools, timber jetties, mooring rope and cleats, lanterns and layered cypresses. Instanced construction owns six generated maps. No downloaded model, stock texture or external design code."
+    },
+    {
+      "id": "held-voyage-controller",
+      "path": "src/voyage.js",
+      "creator": "Orestis Oikonomou",
+      "origin": "authored",
+      "source": "Original closed-route motion and camera helpers authored in this repository",
+      "license": "MIT",
+      "changes": "AI-assisted held-axis acceleration, signed route motion, bounded heading turns, release braking, state restoration and shallow third-person framing. The host integrates keyboard/pointer controls and scene-aware clearance."
+    },
+    {
+      "id": "voyage-camera-course",
+      "path": "src/voyage-clearance.js",
+      "creator": "Orestis Oikonomou",
+      "origin": "authored",
+      "source": "Original camera course and conservative static native mesh bounds authored in this repository",
+      "license": "MIT",
+      "changes": "AI-assisted low trailing camera on the authored closed sea route. Native per-instance bounds derive the clear water annulus once. The canonical course stays steady while the boat reverses. No per-frame triangle queries or copied external camera code."
     }
   ]
 }

@@ -5,7 +5,7 @@ export const themePresets = Object.freeze([
     name: 'Aegean observatory',
     title: 'An ocean. An instrument.',
     kicker: 'An instrument on open water',
-    description: 'Sail a ring of limestone islands. Reveal the invisible patterns between them.',
+    description: 'Sail moonlit limestone islands. Approach the gateway, or reveal the patterns beneath the surface.',
     accent: '#61d5cf',
   },
   {

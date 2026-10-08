@@ -3,26 +3,62 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Personal Worlds: a free agent skill and starter for building a portfolio that feels like your world.">
+  <meta name="description" content="Kaimerva: a free agent skill and starter for turning your story into an explorable portfolio world. Summon your world.">
   <meta name="theme-color" content="#09181f">
-  <title>Personal Worlds — beyond the visible</title>
-  <link rel="stylesheet" href="./src/styles.css?v=8ae8eefc8fb7">
+  <title>Kaimerva — summon your world</title>
+  <link rel="icon" type="image/png" href="./assets/brand/kaimerva-icon.png">
+  <link rel="stylesheet" href="./src/styles.css?v=39a02493892c">
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
-  <script type="module" src="./src/main.js?v=8ae8eefc8fb7"></script>
+  <script type="module" src="./src/main.js?v=39a02493892c"></script>
 </head>
-<body data-theme="sea">
+<body data-theme="sea" data-panel="solid" data-button-shape="square">
   <a class="skip" href="#content">Skip the world. Read the work.</a>
   <header class="masthead">
-    <a class="brand" href="./" aria-label="Personal Worlds home"><span class="brand-mark" aria-hidden="true">pw.</span> <span>Personal<br>Worlds</span></a>
+    <a class="brand" href="./" aria-label="Kaimerva home"><img class="brand-mark" src="./assets/brand/kaimerva-icon.png" alt="" width="48" height="48"><span class="brand-name">Kaimerva<small>Summon your world.</small></span></a>
     <p class="edition">Open-source observatory <span>/</span> 001</p>
     <a href="#content" class="quiet-link">Browse the content <span aria-hidden="true">↗</span></a>
   </header>
   <main>
+    <section class="world-section" aria-labelledby="world-title">
+      <div class="world-slot"><div class="world-frame">
+        <div id="world" class="world" tabindex="0" role="group" aria-label="Interactive portfolio world. Hold Right or D to travel forward, and Left or A to travel back. While playing, E or Space charts a nearby beacon. Enter reads the selected work. Escape leaves play." aria-describedby="scene-status"></div>
+        <div class="play-entry" id="play-entry"><p class="eyebrow">A world you can play</p><h2 id="play-entry-title">Take the longer way around.</h2><p id="play-entry-description">Five islands, five signals. Sail to their beacons, chart what you find, and step inside the work.</p><div class="play-entry-actions"><button type="button" id="play-enter" disabled>Enter the world <span aria-hidden="true">→</span></button><button type="button" id="play-browse">Read the portfolio ↗</button></div><p class="play-entry-note">No login. No timer. Your discoveries stay for this visit.</p></div>
+        <div class="play-overlay" id="play-overlay" hidden>
+          <div class="play-journal"><p class="eyebrow" id="play-objective">Chart the archipelago</p><p class="play-progress" id="play-progress">0 / 5 beacons charted</p><ol id="play-chart" aria-label="Charted destinations"></ol><p class="play-journal-hint" id="play-next">Follow a light. Find what is there.</p></div>
+          <div class="play-menu"><button type="button" id="play-map" aria-pressed="false">Map view</button><button type="button" id="play-pause" aria-pressed="false">Pause</button><button type="button" id="play-leave">Leave world <span aria-hidden="true">↙</span></button></div>
+          <div class="play-action"><p class="eyebrow" id="play-near-label">Follow the beacons</p><h2 id="play-near-title">Open water</h2><p id="play-feedback" role="status" aria-live="polite">Approach a beacon to chart it.</p><button type="button" id="play-interact" disabled><kbd>E / Space</kbd><span id="play-interact-label">Approach a beacon</span></button><button type="button" id="play-read" class="play-direct-read">Read the selected work ↗</button></div>
+          <div class="play-movement"><p id="play-controls-hint">Hold A / D or ← / → to travel.</p><div class="sail-buttons" role="group" aria-label="Travel direction"><button type="button" data-sail="-1" aria-label="Hold to travel backward">← <span>Back</span></button><button type="button" data-sail="1" aria-label="Hold to travel forward"><span>Forward</span> →</button></div></div>
+        </div>
+        <div class="scene-heading"><p class="eyebrow">Kaimerva / explorable worlds</p><h1 id="scene-realm-title">The Aegean, after dark.</h1><p>Follow the water. Find the work.</p></div>
+        <div class="voyage-hud" id="voyage-hud" hidden>
+          <div class="voyage-destination"><span class="eyebrow" id="voyage-destination-number">01 / Near the studio</span><h2 id="voyage-destination">Projects</h2><p id="voyage-state">At anchor</p><button id="read-destination" type="button">Read the selected work <span aria-hidden="true">↗</span></button></div>
+          <div class="voyage-input"><p id="voyage-hint">Hold ← / A or → / D to sail the loop.<br>Enter reads · Esc releases controls</p><div class="sail-buttons" role="group" aria-label="Sailing direction"><button type="button" data-sail="-1" aria-label="Hold to sail counterclockwise" aria-describedby="voyage-hint">← <span>Back</span></button><button type="button" data-sail="1" aria-label="Hold to sail clockwise" aria-describedby="voyage-hint"><span>Forward</span> →</button></div></div>
+        </div>
+        <div class="world-caption"><span class="mini-compass" aria-hidden="true">N ↟</span><span id="world-description">Sail moonlit limestone islands. Approach the gateway, or reveal the patterns beneath the surface.</span></div>
+        <div class="world-controls"><button id="explore">Take the helm <span aria-hidden="true">↻</span></button><button id="motion" aria-pressed="false">Pause motion</button></div>
+      </div></div>
+      <div class="world-bar"><div><span class="eyebrow" id="world-kicker">01 / Aegean observatory</span><h2 id="world-title">An ocean. An instrument.</h2></div><div class="inspection-launch"><label for="inspect-entry">Choose a work to inspect</label><select id="inspect-entry" disabled></select><button id="inspect-figure" class="passage-entry" aria-describedby="inspection-hint" disabled>Inspect in 3D <span aria-hidden="true">↗</span></button><p id="inspection-hint">Read immediately. Switch views with buttons or ← →. Return to world when you're done.</p></div></div>
+      <div class="sea-instruments" id="sea-instruments" role="group" aria-label="Aegean observatory instruments">
+        <p class="instrument-label"><span class="eyebrow">Surface instrument / 01</span><span>A second way to see.</span></p>
+        <div class="instrument-actions">
+          <button id="field-toggle" aria-pressed="false" aria-controls="field-settings" disabled>Reveal the field</button>
+          <button id="view-toggle" aria-pressed="false" disabled>Voyage view</button>
+          <button id="portal-approach" disabled>Approach the portal</button>
+        </div>
+        <div class="field-settings" id="field-settings" hidden>
+          <div class="field-description"><p class="eyebrow">Wave interference · illustrative study</p><p id="field-description">Two wave sources overlap to form an interference pattern. Drag across the sea or adjust Wave spacing to move them closer or farther apart.</p></div>
+          <div class="field-slider"><label for="wave-spacing">Wave spacing <output id="wave-spacing-value" for="wave-spacing">0.45</output></label><input id="wave-spacing" type="range" min="0" max="1" step="0.01" value="0.45" aria-describedby="field-description" disabled><span class="slider-ends" aria-hidden="true"><span>Closer</span><span>Farther</span></span></div>
+        </div>
+      </div>
+      <p class="world-instructions" id="scene-status" role="status">Loading the world. Every destination is also available below.</p>
+      <div class="world-maintenance"><p>World settings live in <code>data/world.json</code>.</p><button id="refresh-world" class="text-button">Refresh world settings ↻</button><p id="world-settings-status" role="status">Loading world settings…</p></div>
+    </section>
+
     <section class="intro" aria-labelledby="intro-title">
       <div class="intro-copy">
-        <p class="eyebrow"><span class="status-dot"></span> Personal worlds / beyond the ordinary</p>
-        <h1 id="intro-title">Beyond the<br><em>visible.</em></h1>
-        <p class="lede">A place for your work, your questions, and everything still taking shape. Explore the world. Reveal its hidden field.</p>
+        <p class="eyebrow"><span class="status-dot"></span> Kaimerva / beyond the ordinary</p>
+        <h1 id="intro-title">One story.<br><em>Different worlds.</em></h1>
+        <p class="lede">An explorable portfolio for projects, research and everything still taking shape. Read directly, or take the longer way around.</p>
       </div>
       <div class="theme-selector">
         <p class="eyebrow">Three possible worlds</p>
@@ -32,27 +68,6 @@
           <button data-theme="woodland" aria-pressed="false"><span class="theme-number">03</span><span>Woodland trail<small>Glasshouses · paths · quiet growth</small></span><span aria-hidden="true">↗</span></button>
         </div>
       </div>
-    </section>
-
-    <section class="world-section" aria-labelledby="world-title">
-      <div class="world-bar"><div><span class="eyebrow" id="world-kicker">01 / Aegean observatory</span><h2 id="world-title">An ocean. An instrument.</h2></div><span class="world-tag">An original procedural world</span></div>
-      <div class="world-frame">
-        <div id="world" class="world" tabindex="0" role="group" aria-label="Interactive portfolio map. Right and Down follow the circular route clockwise. Left and Up go counterclockwise. Enter reads the selected destination. Escape leaves the map." aria-describedby="scene-status"></div>
-        <div class="world-caption"><span class="mini-compass" aria-hidden="true">N ↟</span><span id="world-description">Sail a ring of limestone islands. Reveal the invisible patterns between them.</span></div>
-        <div class="world-controls"><button id="explore">Explore the loop <span aria-hidden="true">↻</span></button><button id="motion" aria-pressed="false">Pause motion</button></div>
-      </div>
-      <div class="sea-instruments" id="sea-instruments" role="group" aria-label="Aegean observatory instruments">
-        <p class="instrument-label"><span class="eyebrow">Surface instrument / 01</span><span>A second way to see.</span></p>
-        <div class="instrument-actions">
-          <button id="field-toggle" aria-pressed="false" aria-controls="field-settings" disabled>Reveal the field</button>
-          <button id="view-toggle" aria-pressed="false" disabled>Voyage view</button>
-        </div>
-        <div class="field-settings" id="field-settings" hidden>
-          <div class="field-description"><p class="eyebrow">Wave interference · illustrative study</p><p id="field-description">Two wave sources overlap to form an interference pattern. Drag across the sea or adjust Wave spacing to move them closer or farther apart.</p></div>
-          <div class="field-slider"><label for="wave-spacing">Wave spacing <output id="wave-spacing-value" for="wave-spacing">0.45</output></label><input id="wave-spacing" type="range" min="0" max="1" step="0.01" value="0.45" aria-describedby="field-description" disabled><span class="slider-ends" aria-hidden="true"><span>Closer</span><span>Farther</span></span></div>
-        </div>
-      </div>
-      <p class="world-instructions" id="scene-status" role="status">Loading the world. Every destination is also available below.</p>
     </section>
 
     <section id="content" class="content-section" aria-labelledby="content-title">
@@ -70,6 +85,31 @@
       <noscript><p class="noscript-note">The interactive demo needs JavaScript. The <a href="./content.json">plain content JSON</a> remains available. A production portfolio should generate its readable pages on the server or during its build; this small starter does not include that renderer.</p></noscript>
     </section>
   </main>
-  <footer><p>Personal Worlds <span>·</span> Made by <a href="https://orestis-site.vercel.app" rel="noopener noreferrer">Orestis Oikonomou</a></p><div><a href="./LICENSE">MIT license</a><a href="./vendor/three-LICENSE.txt">Three.js notice</a><a href="./assets.json">Asset provenance</a></div></footer>
+  <dialog id="figure-passage" class="figure-passage" aria-labelledby="passage-title" aria-describedby="passage-origin">
+    <section class="passage-visual" aria-label="Figure inspection instrument">
+      <div class="passage-heading"><p class="eyebrow" id="passage-instrument-label">Sea / optical telescope</p><p class="passage-stage-number" id="passage-stage-number" aria-hidden="true">01 / 03</p><h2 id="passage-stage-label">Sources</h2></div>
+      <img id="passage-fallback" class="passage-fallback" alt="" hidden>
+      <div class="passage-navigation"><p id="passage-progress" class="eyebrow">Explore the supplied views</p><div id="passage-stages" class="passage-stages" role="group" aria-label="Work views"></div><p class="passage-key-hint">← → switch views · Esc returns to the world</p><p id="passage-stage-description"></p></div>
+    </section>
+    <section class="passage-reader" aria-labelledby="passage-title">
+      <div class="passage-toolbar"><p class="eyebrow">Inside the work</p><button id="passage-close" type="button">Return to world <span aria-hidden="true">↙</span></button></div>
+      <div class="passage-translation"><p>Same work, another instrument</p><div id="passage-worlds" role="group" aria-label="Inspection setting"><button type="button" data-inspection-theme="sea" aria-pressed="true">Sea · telescope</button><button type="button" data-inspection-theme="orbital" aria-pressed="false">Space · scanner</button><button type="button" data-inspection-theme="woodland" aria-pressed="false">Nature · cabinet</button></div><p class="passage-translation-note">Your selected work and view stay with you.</p></div>
+      <p id="passage-origin" class="passage-origin"></p>
+      <h2 id="passage-title" tabindex="-1"></h2>
+      <p id="passage-summary" class="passage-summary"></p>
+      <p id="passage-reader-stage" class="passage-reader-stage"></p>
+      <p id="passage-body" class="passage-body"></p>
+      <div id="passage-links" class="passage-links"></div>
+      <details class="passage-flat"><summary>Read this view <span aria-hidden="true">↗</span></summary><figure><img id="passage-flat-image" alt=""><figcaption id="passage-caption"></figcaption></figure><a id="passage-source" href="./" target="_blank" rel="noopener noreferrer">Open this view full-size ↗</a></details>
+      <div class="passage-footer"><button id="passage-index" type="button">Browse all research ↗</button><button id="passage-motion" type="button" aria-pressed="false">Pause motion</button></div>
+      <p id="passage-status" class="passage-status" role="status"></p>
+    </section>
+  </dialog>
+  <dialog id="reader-dialog" class="reader-dialog" aria-labelledby="dialog-reader-label">
+    <div class="reader-toolbar"><h2 class="eyebrow" id="dialog-reader-label" tabindex="-1">Projects</h2><button id="close-reader" type="button" class="dialog-close">Close <span aria-hidden="true">×</span></button></div>
+    <div id="dialog-entries"></div>
+    <p class="dialog-index-note">This collection is also available in the readable index below the world.</p>
+  </dialog>
+  <footer><p>Kaimerva <span>·</span> Made by <a href="https://orestis-site.vercel.app" rel="noopener noreferrer">Orestis Oikonomou</a></p><div><a href="./LICENSE">MIT license</a><a href="./vendor/three-LICENSE.txt">Three.js notice</a><a href="./assets/brand/ATTRIBUTION.md">Artwork credit</a><a href="./assets.json">Asset provenance</a></div></footer>
 </body>
 </html>
