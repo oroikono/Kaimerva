@@ -4,7 +4,7 @@
 
 A free agent skill and Three.js starter for making your portfolio a place people can explore. Bring your research, projects, notes or personal story. Give them a setting that feels like you, with useful interactions and work that stays easy to read.
 
-Built by [Orestis Oikonomou](https://orestis-site.vercel.app), with AI assistance, while exploring what his own research and creative portfolio could become.
+Built, while exploringmore creative ideas of presenting research alongside personal protfolio.
 
 **[Try the demo](https://huggingface.co/spaces/oroikono/kaimerva)** · **[Read the skill](skills/kaimerva/SKILL.md)** · **[Use the starter](https://github.com/oroikono/Kaimerva/generate)**
 
